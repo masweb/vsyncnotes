@@ -39,9 +39,93 @@
 
 ---
 
+## Rust backend — current state
+
+### Completed phases
+- **Phase 0** — Tauri 2 bootstrap (done by user + CLI)
+- **Phase 1** — Data models, filesystem storage, Tauri commands
+
+### Rust crate layout (`src-tauri/src/`)
+```
+models/
+  mod.rs
+  notebook.rs    → Notebook { id: Uuid, parent_id: Option<Uuid>, title, sort_order, created_at, updated_at }
+  note.rs        → Note { id, notebook_id, title, body: Value (Tiptap JSON), body_format, sort_order, is_pinned, timestamps }
+                   NoteMeta (same minus body — used in list responses)
+  attachment.rs  → Attachment { id, note_id, filename, mime, size_bytes, hash_sha256, timestamps }
+storage/
+  mod.rs
+  repo.rs        → async_trait StorageRepo (list/get/save/delete for each entity)
+  fs_repo.rs     → FsRepo: impl StorageRepo — reads/writes pretty JSON files via tokio::fs
+crypto/
+  mod.rs
+  envelope.rs    → placeholder for Phase 2 (AES-256-GCM + Argon2id E2EE)
+commands/
+  mod.rs         → all #[tauri::command] functions (see list below)
+lib.rs           → setup closure: creates FsRepo(app_data_dir/vault), app.manage(repo)
+main.rs          → unchanged (calls lib::run)
+```
+
+### Vault directory structure (`$APP_DATA/vault/`)
+```
+notebooks/{uuid}.json
+notes/{uuid}.json
+attachments/{uuid}.json   ← metadata
+attachments/{uuid}.bin    ← raw binary data (will be encrypted in Phase 2)
+```
+
+### Tauri commands (all in `commands::`)
+| Command | Signature |
+|---------|-----------|
+| `notebooks_list` | `() → Vec<Notebook>` |
+| `notebook_get` | `(id: Uuid) → Notebook` |
+| `notebook_create` | `(title, parent_id?) → Notebook` |
+| `notebook_update` | `(notebook: Notebook) → ()` |
+| `notebook_delete` | `(id: Uuid) → ()` |
+| `notes_list` | `(notebook_id: Uuid) → Vec<NoteMeta>` |
+| `note_get` | `(id: Uuid) → Note` |
+| `note_create` | `(notebook_id, title) → Note` |
+| `note_update` | `(note: Note) → ()` |
+| `note_delete` | `(id: Uuid) → ()` |
+| `attachment_save` | `(note_id, filename, mime, data: Vec<u8>) → Attachment` |
+| `attachment_get` | `(id: Uuid) → Vec<u8>` |
+| `attachment_delete` | `(id: Uuid) → ()` |
+
+All commands return `Result<T, String>` (Tauri requirement). `attachment_save` computes SHA-256 and size on the backend.
+
+### Key Cargo.toml dependencies
+```toml
+tauri = { version = "2", features = [] }        # NO protocol-asset yet — needs tauri.conf.json config too (add in Phase 4)
+tauri-plugin-fs = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v7"] }     # Uuid::now_v7()
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
+anyhow = "1"
+sha2 = "0.10"
+tokio = { version = "1", features = ["fs"] }    # must be explicit even though tauri re-exports it
+```
+
+### Known gotchas
+- `use tauri::Manager` is required in `lib.rs` to call `app.path()` and `app.manage()`
+- `tokio` must be a **direct** dependency to use `tokio::fs` in own code
+- `protocol-asset` tauri feature requires a matching entry in `tauri.conf.json` — leave it out until Phase 4
+- `tauri-plugin-sql` was removed — this project uses JSON filesystem storage, not SQLite
+- `capabilities/default.json` must NOT list `sql:default`
+
+### Next phase — Phase 2: E2EE encryption
+Deps to add: `aes-gcm = "0.10"`, `argon2 = "0.5"`, `rand = "0.8"`, `zeroize = "1"`
+New module: `crypto/envelope.rs` — master password → Argon2id → master_key, DEK per note, AES-256-GCM
+New commands: `vault_create`, `vault_unlock`, `vault_lock`, `vault_change_password`
+Note/attachment JSON on disk changes to store encrypted fields (see PLAN.md §2.4)
+
+---
+
 ## Git commits
 
 - Title: English, imperative, conventional commits (`feat:`, `fix:`, `refactor:`…)
 - Body: 2–4 lines, what and why, in English
-- Always add: `Co-Authored-By: Z.GLM-5 <noreply@glm-5.com>`
+- Always add: `Co-Authored-By: Claude`
 - **Never commit unless the user explicitly asks**
