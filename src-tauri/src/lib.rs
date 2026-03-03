@@ -18,16 +18,25 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            // Vault
+            commands::vault_create,
+            commands::vault_unlock,
+            commands::vault_lock,
+            commands::vault_change_password,
+            commands::vault_status,
+            // Notebooks
             commands::notebooks_list,
             commands::notebook_get,
             commands::notebook_create,
             commands::notebook_update,
             commands::notebook_delete,
+            // Notes
             commands::notes_list,
             commands::note_get,
             commands::note_create,
             commands::note_update,
             commands::note_delete,
+            // Attachments
             commands::attachment_save,
             commands::attachment_get,
             commands::attachment_delete,
