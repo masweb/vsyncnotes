@@ -14,10 +14,10 @@ export default defineConfig(async () => ({
       dts: 'src/auto-imports.d.ts',
       imports: ['vue', 'pinia', 'vee-validate'],
       include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],
-      dirs: ['src/composables/**', 'src/plugins/**', 'src/services/**', 'src/utils/**', 'src/types/**']
+      dirs: ['src/composables/**', 'src/plugins/**', 'src/services/**', 'src/stores/**', 'src/utils/**', 'src/types/**']
     }) as Plugin,
     Components({
-      dirs: ['src/services/**', 'src/components/**']
+      dirs: ['src/components/**', 'src/views/**']
     }) as Plugin
   ],
   resolve: {

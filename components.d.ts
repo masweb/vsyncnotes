@@ -11,7 +11,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    FirstComponent: typeof import('./src/components/FirstComponent.vue')['default']
-    FisrtComponent: typeof import('./src/components/FisrtComponent.vue')['default']
+    MainView: typeof import('./src/views/MainView.vue')['default']
   }
 }
