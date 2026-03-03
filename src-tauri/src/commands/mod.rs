@@ -1,3 +1,5 @@
+pub mod seed;
+
 use sha2::{Digest, Sha256};
 use tauri::State;
 use uuid::Uuid;
