@@ -40,6 +40,8 @@ pub fn run() {
             commands::attachment_save,
             commands::attachment_get,
             commands::attachment_delete,
+            // Dev
+            commands::seed::dev_seed,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
