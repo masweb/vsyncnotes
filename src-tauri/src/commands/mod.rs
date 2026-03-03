@@ -9,7 +9,44 @@ use crate::models::{
 };
 use crate::storage::{fs_repo::FsRepo, repo::StorageRepo};
 
-// ── Notebooks ────────────────────────────────────────────────────────────────
+// ── Vault ─────────────────────────────────────────────────────────────────────
+
+#[tauri::command]
+pub async fn vault_create(repo: State<'_, FsRepo>, password: String) -> Result<(), String> {
+    repo.vault_create(&password).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn vault_unlock(repo: State<'_, FsRepo>, password: String) -> Result<(), String> {
+    repo.vault_unlock(&password).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn vault_lock(repo: State<'_, FsRepo>) -> Result<(), String> {
+    repo.vault_lock().await;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn vault_change_password(
+    repo: State<'_, FsRepo>,
+    old_password: String,
+    new_password: String,
+) -> Result<(), String> {
+    repo.vault_change_password(&old_password, &new_password)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn vault_status(repo: State<'_, FsRepo>) -> Result<serde_json::Value, String> {
+    Ok(serde_json::json!({
+        "exists": repo.vault_exists().await,
+        "locked": repo.is_locked().await,
+    }))
+}
+
+// ── Notebooks ─────────────────────────────────────────────────────────────────
 
 #[tauri::command]
 pub async fn notebooks_list(repo: State<'_, FsRepo>) -> Result<Vec<Notebook>, String> {
@@ -33,10 +70,7 @@ pub async fn notebook_create(
 }
 
 #[tauri::command]
-pub async fn notebook_update(
-    repo: State<'_, FsRepo>,
-    notebook: Notebook,
-) -> Result<(), String> {
+pub async fn notebook_update(repo: State<'_, FsRepo>, notebook: Notebook) -> Result<(), String> {
     repo.save_notebook(&notebook).await.map_err(|e| e.to_string())
 }
 

@@ -115,11 +115,33 @@ tokio = { version = "1", features = ["fs"] }    # must be explicit even though t
 - `tauri-plugin-sql` was removed — this project uses JSON filesystem storage, not SQLite
 - `capabilities/default.json` must NOT list `sql:default`
 
-### Next phase — Phase 2: E2EE encryption
-Deps to add: `aes-gcm = "0.10"`, `argon2 = "0.5"`, `rand = "0.8"`, `zeroize = "1"`
-New module: `crypto/envelope.rs` — master password → Argon2id → master_key, DEK per note, AES-256-GCM
-New commands: `vault_create`, `vault_unlock`, `vault_lock`, `vault_change_password`
-Note/attachment JSON on disk changes to store encrypted fields (see PLAN.md §2.4)
+### Phase 2 — E2EE encryption (DONE)
+
+**Added deps:** `aes-gcm = "0.10"`, `argon2 = "0.5"`, `rand = "0.8"`, `zeroize = "1"`, `base64 = "0.22"`, `tokio/sync`
+
+**`crypto/envelope.rs`** — pure functions:
+- `encrypt(plaintext, key: &[u8;32]) -> (ciphertext_b64, nonce_b64)`
+- `decrypt(ct_b64, nonce_b64, key) -> Vec<u8>`
+- `generate_dek() -> Zeroizing<[u8;32]>`
+- `derive_key(password, salt) -> Zeroizing<[u8;32]>` — Argon2id default params
+- `make_key_check / verify_key_check` — known-plaintext vault verification
+
+**`models/vault.rs`** — `VaultMeta { version, salt, key_check, key_check_nonce }` (vault.json)
+
+**`FsRepo`** now holds `master_key: Mutex<Option<Zeroizing<[u8;32]>>>` (interior mutability, auto-zeroed on drop/lock)
+
+**On-disk formats:**
+- Notes → `EncryptedNote` (private struct in fs_repo): title_encrypted, body_encrypted, dek_encrypted + nonces
+- Attachments → `EncryptedAttachmentMeta` (dek_encrypted + nonce_dek) + separate .bin with encrypted data + nonce_data
+- Notebooks → still plaintext (no sensitive content in plan)
+
+**Vault commands:** `vault_create`, `vault_unlock`, `vault_lock`, `vault_change_password`, `vault_status`
+
+**`vault_change_password`** re-encrypts all DEKs (not the data itself) — O(n notes + attachments), no atomic rollback (acceptable for now)
+
+### Next phase — Phase 3: UI layout + notebook tree
+Vue components: `UnlockView`, `MainView` (3-column), `NotebookTree` (recursive), `NoteList`, stores Pinia
+See PLAN.md §3 for full component breakdown
 
 ---
 
