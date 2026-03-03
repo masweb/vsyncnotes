@@ -11,6 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppNavbar: typeof import('./src/components/AppNavbar.vue')['default']
     MainView: typeof import('./src/views/MainView.vue')['default']
   }
 }
