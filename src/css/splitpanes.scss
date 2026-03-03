@@ -1,20 +1,81 @@
-// Override splitpanes default theme with Bootstrap border tokens
-.splitpanes__splitter {
-  background-color: var(--bs-border-color);
-  transition: background-color 0.15s ease;
+// Override default-theme pane background (splitpanes sets #f2f2f2 by default)
+.default-theme.splitpanes .splitpanes__pane {
+  background-color: transparent;
+}
 
-  &:hover,
-  &:active {
-    background-color: var(--bs-primary);
+// Dark theme — mirrors default-theme visuals with dark palette
+// Scoped to [data-coreui-theme='dark'] set by coreui-dark-vue.js
+[data-coreui-theme='dark'] {
+  .split-dark.splitpanes .splitpanes__pane {
+    background-color: transparent;
   }
-}
-
-// Horizontal splitter width
-.splitpanes--horizontal > .splitpanes__splitter {
-  height: 4px;
-}
-
-// Vertical splitter width
-.splitpanes--vertical > .splitpanes__splitter {
-  width: 4px;
+  .split-dark.splitpanes .splitpanes__splitter {
+    background-color: #303445;
+    box-sizing: border-box;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .split-dark.splitpanes .splitpanes__splitter:before,
+  .split-dark.splitpanes .splitpanes__splitter:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: #61698c;
+    transition: background-color 0.3s;
+  }
+  .split-dark.splitpanes .splitpanes__splitter:hover:before,
+  .split-dark.splitpanes .splitpanes__splitter:hover:after {
+    background-color: #7c87b3;
+  }
+  .split-dark.splitpanes .splitpanes__splitter:first-child {
+    cursor: auto;
+  }
+  .split-dark.splitpanes .splitpanes .splitpanes__splitter {
+    z-index: 1;
+  }
+  .split-dark.splitpanes--vertical > .splitpanes__splitter,
+  .split-dark .splitpanes--vertical > .splitpanes__splitter {
+    width: 7px;
+    border-left: 1px solid transparent;
+    margin-left: -1px;
+  }
+  .split-dark.splitpanes--vertical > .splitpanes__splitter:before,
+  .split-dark.splitpanes--vertical > .splitpanes__splitter:after,
+  .split-dark .splitpanes--vertical > .splitpanes__splitter:before,
+  .split-dark .splitpanes--vertical > .splitpanes__splitter:after {
+    transform: translateY(-50%);
+    width: 1px;
+    height: 30px;
+  }
+  .split-dark.splitpanes--vertical > .splitpanes__splitter:before,
+  .split-dark .splitpanes--vertical > .splitpanes__splitter:before {
+    margin-left: -2px;
+  }
+  .split-dark.splitpanes--vertical > .splitpanes__splitter:after,
+  .split-dark .splitpanes--vertical > .splitpanes__splitter:after {
+    margin-left: 1px;
+  }
+  .split-dark.splitpanes--horizontal > .splitpanes__splitter,
+  .split-dark .splitpanes--horizontal > .splitpanes__splitter {
+    height: 7px;
+    border-top: 1px solid transparent;
+    margin-top: -1px;
+  }
+  .split-dark.splitpanes--horizontal > .splitpanes__splitter:before,
+  .split-dark.splitpanes--horizontal > .splitpanes__splitter:after,
+  .split-dark .splitpanes--horizontal > .splitpanes__splitter:before,
+  .split-dark .splitpanes--horizontal > .splitpanes__splitter:after {
+    transform: translate(-50%);
+    width: 30px;
+    height: 1px;
+  }
+  .split-dark.splitpanes--horizontal > .splitpanes__splitter:before,
+  .split-dark .splitpanes--horizontal > .splitpanes__splitter:before {
+    margin-top: -2px;
+  }
+  .split-dark.splitpanes--horizontal > .splitpanes__splitter:after,
+  .split-dark .splitpanes--horizontal > .splitpanes__splitter:after {
+    margin-top: 1px;
+  }
 }

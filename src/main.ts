@@ -1,3 +1,4 @@
+import './utils/coreui-dark-vue.js'
 import './css/app.scss'
 import 'splitpanes/dist/splitpanes.css'
 import './css/splitpanes.scss'

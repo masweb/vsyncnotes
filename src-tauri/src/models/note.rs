@@ -44,6 +44,7 @@ impl Note {
         }
     }
 
+    #[allow(dead_code)]
     pub fn to_meta(&self) -> NoteMeta {
         NoteMeta {
             id: self.id,
