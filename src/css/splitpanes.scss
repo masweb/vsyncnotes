@@ -1,0 +1,20 @@
+// Override splitpanes default theme with Bootstrap border tokens
+.splitpanes__splitter {
+  background-color: var(--bs-border-color);
+  transition: background-color 0.15s ease;
+
+  &:hover,
+  &:active {
+    background-color: var(--bs-primary);
+  }
+}
+
+// Horizontal splitter width
+.splitpanes--horizontal > .splitpanes__splitter {
+  height: 4px;
+}
+
+// Vertical splitter width
+.splitpanes--vertical > .splitpanes__splitter {
+  width: 4px;
+}
