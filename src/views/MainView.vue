@@ -21,15 +21,13 @@ const snap = ref({ p1: 15, p2: 25, p3: 60 })
 
 const collapseSidebar = () => {
   snap.value = { p1: p1.value, p2: p2.value, p3: p3.value }
+  sidebarOpen.value = false
   p3.value += p1.value
   p1.value = 0
-  // p2 unchanged
-  sidebarOpen.value = false
 }
 
 const expandSidebar = () => {
   const restored = snap.value.p1
-  // Respect user's manual resize of P2↔P3 while collapsed
   p1.value = restored
   p2.value = snap.value.p2
   p3.value = p3.value - restored
@@ -63,14 +61,16 @@ const rootClass = computed(() => [
 
       <!-- Panel 1: collapsible tree -->
       <Pane :size="p1" :min-size="0">
-        <div class="h-100 position-relative d-flex align-items-center justify-content-center text-muted">
-          Panel 1 — Árbol
-          <button
-            class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-1"
-            @click="collapseSidebar"
-          >
-            <IconLayoutSidebarLeftCollapse :size="15" stroke-width="1.5" />
-          </button>
+        <div v-show="sidebarOpen" class="h-100">
+          <div class="h-100 position-relative d-flex align-items-center justify-content-center text-muted">
+            Panel 1 — Árbol
+            <button
+              class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-1"
+              @click="collapseSidebar"
+            >
+              <IconLayoutSidebarLeftCollapse :size="15" stroke-width="1.5" />
+            </button>
+          </div>
         </div>
       </Pane>
 

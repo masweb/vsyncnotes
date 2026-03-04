@@ -1,3 +1,9 @@
+// Disable default 0.2s width transition on panes (causes squish on collapse, puffer-fish on expand)
+// Manual drag is unaffected — splitpanes already sets transition:none during drag.
+.splitpanes__pane {
+  transition: none !important;
+}
+
 // Hide first splitter when sidebar is collapsed (Panel 1 size=0)
 .sidebar-collapsed.splitpanes--vertical > .splitpanes__pane:first-child + .splitpanes__splitter {
   width: 0 !important;
