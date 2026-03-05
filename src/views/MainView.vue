@@ -98,11 +98,12 @@ const rootClass = computed(() => [
 
       <!-- Panel 2: note list -->
       <Pane :size="p2" :min-size="15">
-        <div class="h-100 position-relative d-flex align-items-center justify-content-center text-muted">
-          Panel 2 — Lista
+        <div class="h-100 position-relative">
+          <NoteList />
           <button
             v-if="!sidebarOpen"
             class="btn btn-sm btn-outline-secondary position-absolute top-0 start-0 m-1"
+            style="z-index: 10"
             @click="expandSidebar"
           >
             <IconLayoutSidebarLeftExpand :size="15" stroke-width="1.5" />

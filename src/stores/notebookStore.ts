@@ -37,8 +37,8 @@ export const useNotebookStore = defineStore('notebooks', () => {
     }
   }
 
-  const createNotebook = async (title: string, parentId?: string) => {
-    const nb = await api.notebookCreate(title, parentId)
+  const createNotebook = async (title: string, parentId?: string | null) => {
+    const nb = await api.notebookCreate(title, parentId ?? undefined)
     notebooks.value.push(nb)
     return nb
   }
