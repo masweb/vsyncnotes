@@ -7,3 +7,17 @@ body,
   overflow: hidden;
   margin: 0;
 }
+
+// ── Notebook tree ─────────────────────────────────────────────────────────────
+
+.notebook-item {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  &--selected {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+  }
+}

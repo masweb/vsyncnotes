@@ -13,5 +13,9 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppNavbar: typeof import('./src/components/AppNavbar.vue')['default']
     MainView: typeof import('./src/views/MainView.vue')['default']
+    NotebookTree: typeof import('./src/components/sidebar/NotebookTree.vue')['default']
+    NotebookTreeItem: typeof import('./src/components/sidebar/NotebookTreeItem.vue')['default']
+    SidebarActions: typeof import('./src/components/sidebar/SidebarActions.vue')['default']
+    UnlockView: typeof import('./src/views/UnlockView.vue')['default']
   }
 }
