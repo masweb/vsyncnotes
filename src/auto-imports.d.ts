@@ -69,6 +69,7 @@ declare global {
   const toValue: typeof import('vue').toValue
   const triggerRef: typeof import('vue').triggerRef
   const unref: typeof import('vue').unref
+  const useAppStore: typeof import('./stores/appStore').useAppStore
   const useAttrs: typeof import('vue').useAttrs
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
@@ -88,6 +89,7 @@ declare global {
   const useIsFormValid: typeof import('vee-validate').useIsFormValid
   const useIsSubmitting: typeof import('vee-validate').useIsSubmitting
   const useModel: typeof import('vue').useModel
+  const useNotebookStore: typeof import('./stores/notebookStore').useNotebookStore
   const useResetForm: typeof import('vee-validate').useResetForm
   const useSlots: typeof import('vue').useSlots
   const useSubmitCount: typeof import('vee-validate').useSubmitCount

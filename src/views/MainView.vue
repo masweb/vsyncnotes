@@ -1,9 +1,6 @@
 <script lang="ts" setup>
 import { Splitpanes, Pane } from 'splitpanes'
-import {
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
-} from '@tabler/icons-vue'
+import { IconLayoutSidebarLeftExpand } from '@tabler/icons-vue'
 import AppNavbar from '@/components/AppNavbar.vue'
 
 const { currentTheme } = useTheme()
@@ -95,15 +92,7 @@ const rootClass = computed(() => [
       <!-- Panel 1: collapsible tree (min 200px, except when collapsed) -->
       <Pane :size="p1" :min-size="sidebarOpen ? p1MinSize : 0">
         <div v-show="sidebarOpen" class="h-100">
-          <div class="h-100 position-relative d-flex align-items-center justify-content-center text-muted">
-            Panel 1 — Árbol
-            <button
-              class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-1"
-              @click="collapseSidebar"
-            >
-              <IconLayoutSidebarLeftCollapse :size="15" stroke-width="1.5" />
-            </button>
-          </div>
+          <NotebookTree @collapse="collapseSidebar" />
         </div>
       </Pane>
 

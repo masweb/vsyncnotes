@@ -8,7 +8,10 @@
 .sidebar-collapsed.splitpanes--vertical > .splitpanes__pane:first-child + .splitpanes__splitter {
   width: 0 !important;
   pointer-events: none;
-  &::before, &::after { display: none; }
+  &::before,
+  &::after {
+    display: none;
+  }
 }
 
 // Override default-theme pane background (splitpanes sets #f2f2f2 by default)
