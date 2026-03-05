@@ -89,6 +89,7 @@ declare global {
   const useIsFormValid: typeof import('vee-validate').useIsFormValid
   const useIsSubmitting: typeof import('vee-validate').useIsSubmitting
   const useModel: typeof import('vue').useModel
+  const useNoteStore: typeof import('./stores/noteStore').useNoteStore
   const useNotebookStore: typeof import('./stores/notebookStore').useNotebookStore
   const useResetForm: typeof import('vee-validate').useResetForm
   const useSlots: typeof import('vue').useSlots

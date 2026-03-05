@@ -23,8 +23,8 @@ export const devSeed = () =>
 export const notebooksList = () =>
   invoke<Notebook[]>('notebooks_list')
 
-export const notebookCreate = (title: string, parent_id?: string) =>
-  invoke<Notebook>('notebook_create', { title, parent_id: parent_id ?? null })
+export const notebookCreate = (title: string, parentId?: string) =>
+  invoke<Notebook>('notebook_create', { title, parentId: parentId ?? null })
 
 export const notebookUpdate = (notebook: Notebook) =>
   invoke<void>('notebook_update', { notebook })
@@ -34,11 +34,11 @@ export const notebookDelete = (id: string) =>
 
 // ── Notes ─────────────────────────────────────────────────────────────────────
 
-export const notesList = (notebook_id: string) =>
-  invoke<NoteMeta[]>('notes_list', { notebook_id })
+export const notesList = (notebookId: string) =>
+  invoke<NoteMeta[]>('notes_list', { notebookId })
 
-export const noteCreate = (notebook_id: string, title: string) =>
-  invoke<Note>('note_create', { notebook_id, title })
+export const noteCreate = (notebookId: string, title: string) =>
+  invoke<Note>('note_create', { notebookId, title })
 
 export const noteGet = (id: string) =>
   invoke<Note>('note_get', { id })

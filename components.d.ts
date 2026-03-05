@@ -15,6 +15,8 @@ declare module 'vue' {
     MainView: typeof import('./src/views/MainView.vue')['default']
     NotebookTree: typeof import('./src/components/sidebar/NotebookTree.vue')['default']
     NotebookTreeItem: typeof import('./src/components/sidebar/NotebookTreeItem.vue')['default']
+    NoteList: typeof import('./src/components/notelist/NoteList.vue')['default']
+    NoteListItem: typeof import('./src/components/notelist/NoteListItem.vue')['default']
     SidebarActions: typeof import('./src/components/sidebar/SidebarActions.vue')['default']
     UnlockView: typeof import('./src/views/UnlockView.vue')['default']
   }
