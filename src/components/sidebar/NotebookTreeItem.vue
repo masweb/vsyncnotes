@@ -11,8 +11,28 @@ const props = defineProps<{
 const { t } = useI18n()
 const appStore = useAppStore()
 const notebookStore = useNotebookStore()
+const noteStore = useNoteStore()
 
-const expanded = ref(true)
+const EXPANDED_KEY = 'vsyncnotes:tree-expanded'
+const getExpandedSet = (): Set<string> => {
+  try {
+    const raw = localStorage.getItem(EXPANDED_KEY)
+    return raw ? new Set(JSON.parse(raw)) : new Set()
+  } catch { return new Set() }
+}
+const saveExpandedSet = (set: Set<string>) => {
+  localStorage.setItem(EXPANDED_KEY, JSON.stringify([...set]))
+}
+
+const expanded = ref(getExpandedSet().has(props.node.id))
+
+const toggleExpanded = () => {
+  expanded.value = !expanded.value
+  const set = getExpandedSet()
+  if (expanded.value) set.add(props.node.id)
+  else set.delete(props.node.id)
+  saveExpandedSet(set)
+}
 const isSelected = computed(() => appStore.selectedNotebookId === props.node.id)
 const hasChildren = computed(() => props.node.children.length > 0)
 
@@ -23,7 +43,12 @@ const newTitle = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 
 const startCreate = async () => {
-  expanded.value = true
+  if (!expanded.value) {
+    expanded.value = true
+    const set = getExpandedSet()
+    set.add(props.node.id)
+    saveExpandedSet(set)
+  }
   showInput.value = true
   await nextTick()
   inputRef.value?.focus()
@@ -71,11 +96,18 @@ const cancelRename = () => {
 
 // ── Context menu ──────────────────────────────────────────────────────────────
 
+const createNoteHere = async () => {
+  appStore.selectNotebook(props.node.id)
+  const note = await noteStore.createNote(props.node.id, t('note.new_title'))
+  appStore.selectNote(note.id)
+}
+
 const onContextMenu = async (e: MouseEvent) => {
   e.preventDefault()
   const menu = await Menu.new({
     items: [
       await MenuItem.new({ text: t('nav.new_child_notebook'), action: startCreate }),
+      await MenuItem.new({ text: t('nav.new_note_here'), action: createNoteHere }),
       await MenuItem.new({ text: t('nav.rename_notebook'), action: startRename }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
@@ -101,7 +133,7 @@ const onContextMenu = async (e: MouseEvent) => {
       <span
         class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
         style="width: 12px"
-        @click.stop="expanded = !expanded"
+        @click.stop="toggleExpanded"
       >
         <IconChevronRight
           v-if="hasChildren || showInput"
