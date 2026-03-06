@@ -1,0 +1,34 @@
+{
+  "name": "guille/vsyncnotes",
+  "version": "1.0.0",
+  "summary": "Tauri 2 + Vue 3 encrypted notes app — conventions, rules and skills",
+  "private": true,
+  "steering": {
+    "communication": {
+      "rules": ".claude/rules/communication.md"
+    },
+    "frontend": {
+      "rules": ".claude/rules/frontend.md"
+    },
+    "editor": {
+      "rules": ".claude/rules/editor.md"
+    },
+    "rust-backend": {
+      "rules": ".claude/rules/rust-backend.md"
+    },
+    "git": {
+      "rules": ".claude/rules/git.md"
+    }
+  },
+  "skills": {
+    "vue-component": {
+      "path": ".claude/skills/vue-component/SKILL.md"
+    },
+    "tauri-command": {
+      "path": ".claude/skills/tauri-command/SKILL.md"
+    },
+    "i18n-keys": {
+      "path": ".claude/skills/i18n-keys/SKILL.md"
+    }
+  }
+}
