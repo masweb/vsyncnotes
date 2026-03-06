@@ -13,12 +13,18 @@ body,
 
 .notebook-item {
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 
   &:hover {
-    background-color: var(--bs-secondary-bg);
+    background-color: rgba(0, 0, 0, 0.06);
   }
 
   &--selected {
     background-color: rgba(var(--bs-primary-rgb), 0.1);
   }
+}
+
+[data-coreui-theme='dark'] .notebook-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }

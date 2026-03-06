@@ -33,7 +33,7 @@ const cancelCreate = () => {
 
 <template>
   <div class="flex-shrink-0">
-    <div class="d-flex align-items-center px-2 py-1 border-bottom">
+    <div class="d-flex align-items-center px-3 py-2 border-bottom">
       <span class="small fw-semibold flex-grow-1">{{ $t('nav.notebooks') }}</span>
       <button
         class="btn btn-sm p-0 lh-1 me-1 text-muted"

@@ -95,6 +95,7 @@ const onContextMenu = async (e: MouseEvent) => {
       :class="{ 'notebook-item--selected': isSelected }"
       :style="{ paddingLeft: `${depth * 12 + 8}px` }"
       @click="appStore.selectNotebook(node.id)"
+      @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
       @contextmenu="onContextMenu"
     >
       <span

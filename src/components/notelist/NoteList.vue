@@ -4,6 +4,12 @@ import { IconPlus, IconNote } from '@tabler/icons-vue'
 const { t } = useI18n()
 const appStore = useAppStore()
 const noteStore = useNoteStore()
+const notebookStore = useNotebookStore()
+
+const currentNotebookName = computed(() => {
+  if (!appStore.selectedNotebookId) return t('note.root')
+  return notebookStore.notebooks.find(n => n.id === appStore.selectedNotebookId)?.title ?? t('note.root')
+})
 
 watch(
   () => appStore.selectedNotebookId,
@@ -26,8 +32,8 @@ const createNote = async () => {
 
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom flex-shrink-0">
-      <span class="text-muted text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.06em">
-        {{ $t('note.header') }}
+      <span class="small fw-semibold flex-grow-1">
+        {{ $t('note.header') }} <span class="text-muted fw-normal">· {{ currentNotebookName }}</span>
       </span>
       <button
         v-if="appStore.selectedNotebookId"
