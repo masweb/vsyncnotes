@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { IconPlus, IconNote } from '@tabler/icons-vue'
+import { Menu, MenuItem } from '@tauri-apps/api/menu'
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -25,6 +26,17 @@ const createNote = async () => {
   const note = await noteStore.createNote(appStore.selectedNotebookId, t('note.new_title'))
   appStore.selectNote(note.id)
 }
+
+const onBodyContextMenu = async (e: MouseEvent) => {
+  if (!appStore.selectedNotebookId) return
+  e.preventDefault()
+  const menu = await Menu.new({
+    items: [
+      await MenuItem.new({ text: t('note.new'), action: createNote }),
+    ],
+  })
+  await menu.popup()
+}
 </script>
 
 <template>
@@ -47,7 +59,7 @@ const createNote = async () => {
     </div>
 
     <!-- Body -->
-    <div class="flex-grow-1 overflow-y-auto">
+    <div class="flex-grow-1 overflow-y-auto" @contextmenu="onBodyContextMenu">
 
       <!-- Sin notebook seleccionado -->
       <div

@@ -11,6 +11,7 @@
     "notebook_placeholder": "Nombre del notebook...",
     "no_notebooks": "Sin notebooks",
     "new_child_notebook": "Nueva libreta aquí",
+    "new_note_here": "Nueva nota aquí",
     "rename_notebook": "Renombrar",
     "delete_notebook": "Eliminar"
   },
@@ -27,7 +28,9 @@
     "characters": "caracteres",
     "words": "palabras",
     "new_title": "Sin título",
-    "title_required": "El título es obligatorio"
+    "title_required": "El título es obligatorio",
+    "rename": "Renombrar",
+    "delete": "Eliminar"
   },
   "editor": {
     "placeholder": "Escribe algo...",

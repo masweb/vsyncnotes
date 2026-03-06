@@ -37,9 +37,16 @@ export const useNoteStore = defineStore('notes', () => {
     notes.value = notes.value.filter(n => n.id !== id)
   }
 
+  const renameNote = async (id: string, title: string) => {
+    const note = await api.noteGet(id)
+    await api.noteUpdate({ ...note, title })
+    const meta = notes.value.find(n => n.id === id)
+    if (meta) meta.title = title
+  }
+
   const clear = () => {
     notes.value = []
   }
 
-  return { notes, sortedNotes, loading, error, loadNotes, createNote, deleteNote, clear }
+  return { notes, sortedNotes, loading, error, loadNotes, createNote, deleteNote, renameNote, clear }
 })

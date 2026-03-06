@@ -11,6 +11,7 @@
     "notebook_placeholder": "Notebook name...",
     "no_notebooks": "No notebooks",
     "new_child_notebook": "New notebook here",
+    "new_note_here": "New note here",
     "rename_notebook": "Rename",
     "delete_notebook": "Delete"
   },
@@ -27,7 +28,9 @@
     "characters": "characters",
     "words": "words",
     "new_title": "Untitled",
-    "title_required": "Title is required"
+    "title_required": "Title is required",
+    "rename": "Rename",
+    "delete": "Delete"
   },
   "editor": {
     "placeholder": "Write something...",
