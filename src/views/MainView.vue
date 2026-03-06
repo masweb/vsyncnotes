@@ -113,9 +113,7 @@ const rootClass = computed(() => [
 
       <!-- Panel 3: content / editor -->
       <Pane :size="p3" :min-size="30">
-        <div class="h-100 d-flex align-items-center justify-content-center text-muted">
-          Panel 3 — Contenido
-        </div>
+        <NoteEditor />
       </Pane>
 
     </Splitpanes>

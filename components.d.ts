@@ -12,9 +12,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppNavbar: typeof import('./src/components/AppNavbar.vue')['default']
+    ImageNodeView: typeof import('./src/components/editor/ImageNodeView.vue')['default']
     MainView: typeof import('./src/views/MainView.vue')['default']
     NotebookTree: typeof import('./src/components/sidebar/NotebookTree.vue')['default']
     NotebookTreeItem: typeof import('./src/components/sidebar/NotebookTreeItem.vue')['default']
+    NoteEditor: typeof import('./src/components/editor/NoteEditor.vue')['default']
     NoteList: typeof import('./src/components/notelist/NoteList.vue')['default']
     NoteListItem: typeof import('./src/components/notelist/NoteListItem.vue')['default']
     SidebarActions: typeof import('./src/components/sidebar/SidebarActions.vue')['default']
