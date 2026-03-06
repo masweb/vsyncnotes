@@ -16,6 +16,7 @@
   },
   "note": {
     "header": "Notas",
+    "root": "Raíz",
     "new": "Nueva",
     "select_notebook": "Selecciona un notebook",
     "no_notes": "Sin notas — crea una",
