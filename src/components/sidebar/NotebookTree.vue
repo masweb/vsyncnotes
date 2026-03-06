@@ -21,7 +21,7 @@ onMounted(notebookStore.loadNotebooks)
         v-if="!notebookStore.loading && notebookStore.tree.length === 0"
         class="text-muted small px-3 py-2"
       >
-        Sin notebooks
+        {{ $t('nav.no_notebooks') }}
       </div>
     </div>
   </div>

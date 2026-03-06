@@ -1,0 +1,54 @@
+{
+  "validation": {
+    "required": "This field is required",
+    "min": "Minimum {min} characters",
+    "confirmed": "Passwords do not match"
+  },
+  "nav": {
+    "notebooks": "Notebooks",
+    "new_notebook": "New notebook",
+    "collapse_sidebar": "Collapse panel",
+    "notebook_placeholder": "Notebook name...",
+    "no_notebooks": "No notebooks"
+  },
+  "note": {
+    "header": "Notes",
+    "new": "New",
+    "select_notebook": "Select a notebook",
+    "no_notes": "No notes — create one",
+    "loading_list": "Loading...",
+    "loading": "Loading note...",
+    "select_hint": "Select a note",
+    "saving": "Saving...",
+    "characters": "characters",
+    "words": "words",
+    "new_title": "Untitled",
+    "title_required": "Title is required"
+  },
+  "editor": {
+    "placeholder": "Write something...",
+    "spellcheck": "Check Spelling While Typing",
+    "read_aloud": "Read Aloud"
+  },
+  "table": {
+    "insert": "Insert table",
+    "add_col": "Add column",
+    "del_col": "Delete column",
+    "add_row": "Add row",
+    "del_row": "Delete row",
+    "delete": "Delete table"
+  },
+  "color": {
+    "none": "No color"
+  },
+  "link": {
+    "open": "Open link",
+    "edit": "Edit link",
+    "remove": "Remove link"
+  },
+  "date": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "days_ago": "{n} days ago"
+  }
+}

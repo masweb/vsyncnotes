@@ -34,17 +34,17 @@ const cancelCreate = () => {
 <template>
   <div class="flex-shrink-0">
     <div class="d-flex align-items-center px-2 py-1 border-bottom">
-      <span class="small fw-semibold flex-grow-1">Notebooks</span>
+      <span class="small fw-semibold flex-grow-1">{{ $t('nav.notebooks') }}</span>
       <button
         class="btn btn-sm p-0 lh-1 me-1 text-muted"
-        title="Nuevo notebook"
+        :title="$t('nav.new_notebook')"
         @click="startCreate"
       >
         <IconPlus :size="14" stroke-width="2" />
       </button>
       <button
         class="btn btn-sm p-0 lh-1 text-muted"
-        title="Colapsar panel"
+        :title="$t('nav.collapse_sidebar')"
         @click="emit('collapse')"
       >
         <IconLayoutSidebarLeftCollapse :size="15" stroke-width="1.5" />
@@ -56,7 +56,7 @@ const cancelCreate = () => {
         ref="inputRef"
         v-model="newTitle"
         class="form-control form-control-sm"
-        placeholder="Nombre del notebook..."
+        :placeholder="$t('nav.notebook_placeholder')"
         @keyup.enter="confirmCreate"
         @keyup.escape="cancelCreate"
         @blur="confirmCreate"

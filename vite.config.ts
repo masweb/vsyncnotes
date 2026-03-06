@@ -12,7 +12,7 @@ export default defineConfig(async () => ({
     vue(),
     AutoImport({
       dts: 'src/auto-imports.d.ts',
-      imports: ['vue', 'pinia', 'vee-validate'],
+      imports: ['vue', 'pinia', 'vee-validate', 'vue-i18n'],
       include: [/\.[tj]sx?$/, /\.vue$/, /\.vue\?vue/],
       dirs: ['src/composables/**', 'src/plugins/**', 'src/stores/**', 'src/utils/**']
     }) as Plugin,
