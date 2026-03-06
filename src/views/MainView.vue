@@ -10,6 +10,7 @@ const splitClass = computed(() => currentTheme.value === 'dark' ? 'split-dark' :
 const splitpanesEl = ref<HTMLElement | null>(null)
 const containerWidth = ref(800)
 const p1MinSize = computed(() => Math.min(30, (200 / containerWidth.value) * 100))
+const p1CollapsedSize = computed(() => Math.max(1, (22 / containerWidth.value) * 100))
 
 onMounted(() => {
   const ro = new ResizeObserver(([entry]) => {
@@ -40,23 +41,25 @@ const sidebarOpen = ref(localStorage.getItem('vsyncnotes:sidebar-open') !== 'fal
 const initial = loadSizes()
 const snap = ref({ ...initial })
 
-const p1 = ref(sidebarOpen.value ? initial.p1 : 0)
+const p1 = ref(sidebarOpen.value ? initial.p1 : p1CollapsedSize.value)
 const p2 = ref(initial.p2)
-const p3 = ref(sidebarOpen.value ? initial.p3 : initial.p3 + initial.p1)
+const p3 = ref(sidebarOpen.value ? initial.p3 : initial.p3 + initial.p1 - p1CollapsedSize.value)
 
 const collapseSidebar = () => {
   snap.value = { p1: p1.value, p2: p2.value, p3: p3.value }
   sidebarOpen.value = false
   localStorage.setItem('vsyncnotes:sidebar-open', 'false')
-  p3.value += p1.value
-  p1.value = 0
+  const cs = p1CollapsedSize.value
+  p3.value += p1.value - cs
+  p1.value = cs
 }
 
 const expandSidebar = () => {
   const restored = snap.value.p1
+  const cs = p1CollapsedSize.value
   p1.value = restored
   p2.value = snap.value.p2
-  p3.value = p3.value - restored
+  p3.value = p3.value - (restored - cs)
   sidebarOpen.value = true
   localStorage.setItem('vsyncnotes:sidebar-open', 'true')
 }
@@ -89,26 +92,24 @@ const rootClass = computed(() => [
       @resized="onResized"
     >
 
-      <!-- Panel 1: collapsible tree (min 200px, except when collapsed) -->
-      <Pane :size="p1" :min-size="sidebarOpen ? p1MinSize : 0">
+      <!-- Panel 1: collapsible tree (min 200px) — collapsed = 18px strip with expand button -->
+      <Pane :size="p1" :min-size="sidebarOpen ? p1MinSize : p1CollapsedSize">
         <div v-show="sidebarOpen" class="h-100">
           <NotebookTree @collapse="collapseSidebar" />
         </div>
-      </Pane>
-
-      <!-- Panel 2: note list -->
-      <Pane :size="p2" :min-size="15">
-        <div class="h-100 position-relative">
-          <NoteList />
+        <div v-show="!sidebarOpen" class="h-100 d-flex align-items-start justify-content-center pt-1">
           <button
-            v-if="!sidebarOpen"
-            class="btn btn-sm btn-outline-secondary position-absolute top-0 start-0 m-1"
-            style="z-index: 10"
+            class="btn btn-sm p-0 lh-1 text-muted"
             @click="expandSidebar"
           >
             <IconLayoutSidebarLeftExpand :size="15" stroke-width="1.5" />
           </button>
         </div>
+      </Pane>
+
+      <!-- Panel 2: note list -->
+      <Pane :size="p2" :min-size="15">
+        <NoteList />
       </Pane>
 
       <!-- Panel 3: content / editor -->

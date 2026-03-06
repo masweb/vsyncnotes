@@ -10,6 +10,7 @@ declare global {
   const FieldContextKey: typeof import('vee-validate').FieldContextKey
   const FormContextKey: typeof import('vee-validate').FormContextKey
   const acceptHMRUpdate: typeof import('pinia').acceptHMRUpdate
+  const availableLocales: typeof import('./composables/useLocale').availableLocales
   const computed: typeof import('vue').computed
   const configure: typeof import('vee-validate').configure
   const createApp: typeof import('vue').createApp
@@ -80,6 +81,7 @@ declare global {
   const useForm: typeof import('vee-validate').useForm
   const useFormErrors: typeof import('vee-validate').useFormErrors
   const useFormValues: typeof import('vee-validate').useFormValues
+  const useI18n: typeof import('vue-i18n').useI18n
   const useId: typeof import('vue').useId
   const useIsFieldDirty: typeof import('vee-validate').useIsFieldDirty
   const useIsFieldTouched: typeof import('vee-validate').useIsFieldTouched
@@ -88,6 +90,7 @@ declare global {
   const useIsFormTouched: typeof import('vee-validate').useIsFormTouched
   const useIsFormValid: typeof import('vee-validate').useIsFormValid
   const useIsSubmitting: typeof import('vee-validate').useIsSubmitting
+  const useLocale: typeof import('./composables/useLocale').useLocale
   const useModel: typeof import('vue').useModel
   const useNoteStore: typeof import('./stores/noteStore').useNoteStore
   const useNotebookStore: typeof import('./stores/notebookStore').useNotebookStore
@@ -110,4 +113,7 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { LocaleOption } from './composables/useLocale'
+  import('./composables/useLocale')
 }
