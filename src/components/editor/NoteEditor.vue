@@ -108,9 +108,11 @@ const saveTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const editingTitle = ref(false)
 const titleInput = ref<HTMLInputElement | null>(null)
 const { handleSubmit: handleTitleSubmit, resetForm: resetTitleForm } = useForm({ validateOnMount: false })
-const { value: titleValue, errorMessage: titleError } = useField<string>('title', 'required', {
-  validateOnValueUpdate: false,
-})
+const { value: titleValue, errorMessage: titleError } = useField<string>(
+  'title',
+  (v) => (v && String(v).trim().length > 0) || 'El título es obligatorio',
+  { validateOnValueUpdate: false },
+)
 
 const startEditTitle = () => {
   if (!note.value) return
