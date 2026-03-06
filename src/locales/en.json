@@ -9,7 +9,10 @@
     "new_notebook": "New notebook",
     "collapse_sidebar": "Collapse panel",
     "notebook_placeholder": "Notebook name...",
-    "no_notebooks": "No notebooks"
+    "no_notebooks": "No notebooks",
+    "new_child_notebook": "New notebook here",
+    "rename_notebook": "Rename",
+    "delete_notebook": "Delete"
   },
   "note": {
     "header": "Notes",
