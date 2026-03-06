@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates the implementation of a Tauri command that reports the vault's existence and lock state. The command must check disk for vault.json presence and inspect the in-memory application state for an active master key. Accurate reflection of all three states (no vault, locked, unlocked) is required.",
+  "type": "weighted_checklist",
+  "capability_tested": "Vault Status Check",
+  "checklist": [
+    {
+      "name": "VaultStatus type",
+      "description": "Defines a `VaultStatus` struct (or equivalent) with both a boolean `exists` field and a boolean `locked` field, serializable to JSON via serde.",
+      "max_score": 15
+    },
+    {
+      "name": "Disk existence check",
+      "description": "Correctly checks whether `vault.json` exists on disk using `FsRepo::vault_exists()` or equivalent filesystem inspection to set the `exists` field.",
+      "max_score": 25
+    },
+    {
+      "name": "Lock state from AppState",
+      "description": "Correctly determines the `locked` state by inspecting the mutex-protected `master_key` field in `AppState`—locked when the key is `None`, unlocked when it holds a value.",
+      "max_score": 30
+    },
+    {
+      "name": "Tauri command registration",
+      "description": "The function is annotated with `#[tauri::command]` and accepts `tauri::State<'_, AppState>` as a parameter so it can be invoked from the frontend.",
+      "max_score": 20
+    },
+    {
+      "name": "Correct state combinations",
+      "description": "Returns `{ exists: false, locked: true }` when no vault is present; `{ exists: true, locked: true }` when vault exists but key is absent; `{ exists: true, locked: false }` when vault exists and key is held.",
+      "max_score": 10
+    }
+  ]
+}

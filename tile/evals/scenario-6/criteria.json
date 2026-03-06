@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates a Vue 3 composable that manages light/dark theme state. The composable must read the initial theme from localStorage, fall back to the system's prefers-color-scheme preference, apply the theme via a data attribute on the document root, and expose reactive helpers for querying and toggling the theme. Persistence and system integration are both required.",
+  "type": "weighted_checklist",
+  "capability_tested": "Theme Management",
+  "checklist": [
+    {
+      "name": "localStorage persistence",
+      "description": "Saves the selected theme to `localStorage` under the key `\"theme\"` when `setTheme` is called, and reads from this key during initialization to restore a previously chosen theme.",
+      "max_score": 20
+    },
+    {
+      "name": "System preference fallback",
+      "description": "When no theme is stored in `localStorage`, reads the `prefers-color-scheme` media query to determine the initial theme (`\"dark\"` if the query matches, `\"light\"` otherwise).",
+      "max_score": 20
+    },
+    {
+      "name": "data-coreui-theme attribute",
+      "description": "Applies the active theme by setting `document.documentElement.setAttribute(\"data-coreui-theme\", theme)` so CoreUI components render in the correct theme.",
+      "max_score": 25
+    },
+    {
+      "name": "toggleTheme function",
+      "description": "Implements `toggleTheme()` that switches from `\"dark\"` to `\"light\"` or from `\"light\"` to `\"dark\"` and calls `setTheme` with the new value.",
+      "max_score": 20
+    },
+    {
+      "name": "isDark and isLight helpers",
+      "description": "Provides `isDark()` returning `true` when `theme.value === \"dark\"` and `isLight()` returning `true` when `theme.value === \"light\"`, using the reactive `theme` ref.",
+      "max_score": 15
+    }
+  ]
+}

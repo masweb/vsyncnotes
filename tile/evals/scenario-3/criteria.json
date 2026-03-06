@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates the `buildTree` function that converts a flat array of notebook objects with `parent_id` references into a nested `NotebookNode` tree. The implementation must correctly handle root nodes, single-level children, multi-level nesting, and maintain sort order among siblings. Efficient single-pass construction using a map lookup is expected.",
+  "type": "weighted_checklist",
+  "capability_tested": "Notebook Hierarchy Tree Construction",
+  "checklist": [
+    {
+      "name": "NotebookNode interface",
+      "description": "Defines or uses a `NotebookNode` type that extends `Notebook` with a `children: NotebookNode[]` array, enabling recursive nesting.",
+      "max_score": 15
+    },
+    {
+      "name": "Root node identification",
+      "description": "Correctly identifies root notebooks as those where `parent_id` is `null` or `undefined`, and places only these in the returned top-level array.",
+      "max_score": 20
+    },
+    {
+      "name": "Child node placement",
+      "description": "Places each notebook with a non-null `parent_id` into the `children` array of the corresponding parent node rather than in the root array.",
+      "max_score": 25
+    },
+    {
+      "name": "Multi-level nesting",
+      "description": "Correctly handles notebooks nested more than one level deep: a grandchild appears in its parent's `children`, not at the root level.",
+      "max_score": 20
+    },
+    {
+      "name": "Map-based algorithm",
+      "description": "Uses a map (object or `Map`) keyed by notebook ID for O(n) construction, avoiding nested array searches for parent lookup.",
+      "max_score": 20
+    }
+  ]
+}

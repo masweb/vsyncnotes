@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates a Tauri command that lists notes for a notebook by decrypting only the metadata (title, pin state, timestamps) using the vault master key, and returns them sorted with pinned notes first and more recently updated notes earlier within each group. The implementation must handle the locked-vault error case and use the vsyncnotes encrypted note storage format.",
+  "type": "weighted_checklist",
+  "capability_tested": "Notes List with Sort Order",
+  "checklist": [
+    {
+      "name": "Master key access",
+      "description": "Reads the master key from the mutex-protected `AppState.master_key` and returns an error if the vault is locked (key is `None`).",
+      "max_score": 20
+    },
+    {
+      "name": "Metadata-only decryption",
+      "description": "Decrypts only the note title and metadata fields (not the body) using `decrypt_note_meta()` or equivalent, returning `NoteMeta` objects without loading the full note body.",
+      "max_score": 25
+    },
+    {
+      "name": "Pin-first sort",
+      "description": "Sorts the resulting `NoteMeta` list so that notes with `is_pinned: true` appear before notes with `is_pinned: false`, regardless of their `updated_at` timestamps.",
+      "max_score": 25
+    },
+    {
+      "name": "Recency secondary sort",
+      "description": "Within the pinned group and within the unpinned group, notes are ordered by `updated_at` descending (most recently modified first).",
+      "max_score": 20
+    },
+    {
+      "name": "NoteMeta return type",
+      "description": "Returns a `Vec<NoteMeta>` where each element includes `id`, `notebook_id`, `title`, `is_pinned`, `created_at`, and `updated_at` fields.",
+      "max_score": 10
+    }
+  ]
+}

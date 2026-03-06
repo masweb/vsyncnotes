@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates the implementation of the `derive_key` function that uses Argon2id to derive a 256-bit master key from a password and salt. The function must produce deterministic output for given inputs, use the Argon2id variant, and return the key in a `Zeroizing` wrapper that clears memory on drop. This function is the cryptographic foundation of the vsyncnotes vault.",
+  "type": "weighted_checklist",
+  "capability_tested": "Master Key Derivation",
+  "checklist": [
+    {
+      "name": "Argon2id variant",
+      "description": "Uses the Argon2id algorithm variant (not Argon2i or Argon2d) via `argon2::Argon2::default()` or explicit `Algorithm::Argon2id` configuration.",
+      "max_score": 25
+    },
+    {
+      "name": "32-byte output",
+      "description": "Produces exactly 32 bytes of output key material (256 bits), correctly sized for use as an AES-256 key.",
+      "max_score": 20
+    },
+    {
+      "name": "Deterministic derivation",
+      "description": "Returns the same 32-byte key for identical password and salt inputs, and different keys when either input differs.",
+      "max_score": 20
+    },
+    {
+      "name": "Zeroizing wrapper",
+      "description": "Returns the derived key wrapped in `Zeroizing<[u8; 32]>` from the `zeroize` crate so that the key bytes are automatically set to zero when the value is dropped.",
+      "max_score": 25
+    },
+    {
+      "name": "Error handling",
+      "description": "Returns `Result<Zeroizing<[u8; 32]>, anyhow::Error>` and propagates Argon2 errors rather than panicking.",
+      "max_score": 10
+    }
+  ]
+}

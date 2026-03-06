@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates a frontend Pinia store action that toggles the `is_pinned` flag on a note and ensures the computed `sortedNotes` property reflects the pin-first, recency-second ordering. The implementation must persist the change via the vsyncnotes Tauri IPC bridge and maintain correct sort order across all pin states.",
+  "type": "weighted_checklist",
+  "capability_tested": "Note Pin Toggle",
+  "checklist": [
+    {
+      "name": "togglePin implementation",
+      "description": "Implements a `togglePin(id: string)` action that finds the note by ID, flips the `is_pinned` boolean, and calls the Tauri `note_update` command to persist the change.",
+      "max_score": 25
+    },
+    {
+      "name": "sortedNotes computed",
+      "description": "Defines `sortedNotes` as a Vue computed property that returns a copy of `notes` sorted by `is_pinned` descending (pinned notes first), then by `updated_at` descending as a tiebreaker.",
+      "max_score": 30
+    },
+    {
+      "name": "Pin-first ordering",
+      "description": "A note with `is_pinned: true` always appears before a note with `is_pinned: false` in `sortedNotes`, regardless of their relative `updated_at` values.",
+      "max_score": 25
+    },
+    {
+      "name": "Store reactivity",
+      "description": "After `togglePin` resolves, the `notes` reactive array is updated in place so that `sortedNotes` recomputes automatically without requiring a manual reload.",
+      "max_score": 20
+    }
+  ]
+}

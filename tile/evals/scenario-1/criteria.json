@@ -1,0 +1,37 @@
+{
+  "context": "Evaluates the implementation of a Tauri command that creates and persists a new notebook. The command must assign a UUIDv7 identifier and timestamps, accept an optional parent_id for nested hierarchy, and write the notebook as JSON to the correct file path. Proper use of the vsyncnotes Notebook struct and FsRepo persistence layer is assessed.",
+  "type": "weighted_checklist",
+  "capability_tested": "Notebook Create",
+  "checklist": [
+    {
+      "name": "Notebook struct usage",
+      "description": "Constructs a `Notebook` value using the expected fields: `id` (UUIDv7), `title`, `parent_id` (Option<Uuid>), `sort_order` (defaulting to 0), `created_at`, and `updated_at`.",
+      "max_score": 20
+    },
+    {
+      "name": "UUIDv7 generation",
+      "description": "Assigns a new UUIDv7 identifier to the notebook using `uuid::Uuid::now_v7()` or the equivalent v7 generation API, not v4 or a static value.",
+      "max_score": 20
+    },
+    {
+      "name": "Timestamp assignment",
+      "description": "Sets both `created_at` and `updated_at` to the current UTC time at creation; both fields should be equal on a freshly created notebook.",
+      "max_score": 15
+    },
+    {
+      "name": "Optional parent_id",
+      "description": "Accepts an `Option<Uuid>` for `parent_id` and stores it correctly in the `Notebook` struct, enabling hierarchical notebook organization.",
+      "max_score": 15
+    },
+    {
+      "name": "FsRepo persistence",
+      "description": "Calls `FsRepo::save_notebook()` (or equivalent) to write the notebook to `notebooks/{uuid}.json` within the vault directory.",
+      "max_score": 20
+    },
+    {
+      "name": "Tauri command return",
+      "description": "Returns the created `Notebook` struct (not just an ID) on success, and a `String` error on failure, following the `Result<Notebook, String>` pattern.",
+      "max_score": 10
+    }
+  ]
+}

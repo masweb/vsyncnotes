@@ -1,0 +1,37 @@
+{
+  "context": "Evaluates the implementation of envelope encryption for note storage, comprising `encrypt_note` and `decrypt_note` functions. Each note must be encrypted with a freshly generated per-note DEK, and the DEK must be encrypted with the vault master key. The `EncryptedNote` struct must store all ciphertext and nonce values needed for round-trip decryption. Authentication tag validation must reject incorrect master keys.",
+  "type": "weighted_checklist",
+  "capability_tested": "Envelope Encryption Pattern",
+  "checklist": [
+    {
+      "name": "Fresh DEK per encrypt call",
+      "description": "Calls `generate_dek()` to produce a new random 32-byte DEK on each invocation of `encrypt_note`, ensuring that identical notes produce different ciphertexts.",
+      "max_score": 20
+    },
+    {
+      "name": "DEK encryption with master key",
+      "description": "Encrypts the DEK bytes with the master key using `encrypt()`, and stores the resulting DEK ciphertext and nonce in `EncryptedNote.dek_ciphertext` and `dek_nonce`.",
+      "max_score": 20
+    },
+    {
+      "name": "Note content encryption",
+      "description": "Encrypts note title and body separately with the DEK using `encrypt()`, storing each ciphertext and nonce in the corresponding `EncryptedNote` fields.",
+      "max_score": 20
+    },
+    {
+      "name": "Round-trip correctness",
+      "description": "`decrypt_note` with the same master key reconstructs the original `Note` with matching title, body, and metadata fields.",
+      "max_score": 20
+    },
+    {
+      "name": "Wrong key rejection",
+      "description": "`decrypt_note` returns an `Err` (AES-GCM authentication failure) when called with a different master key, rather than silently returning garbage data.",
+      "max_score": 15
+    },
+    {
+      "name": "EncryptedNote struct completeness",
+      "description": "The `EncryptedNote` struct contains all required fields: `id`, `notebook_id`, `title_ciphertext`, `title_nonce`, `body_ciphertext`, `body_nonce`, `dek_ciphertext`, `dek_nonce`, `is_pinned`, `created_at`, `updated_at`.",
+      "max_score": 5
+    }
+  ]
+}

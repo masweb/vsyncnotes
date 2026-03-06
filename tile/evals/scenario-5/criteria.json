@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates the implementation of `make_key_check` and `verify_key_check` functions that enable password validation by encrypting a fixed sentinel string. On vault creation, `make_key_check` produces storable ciphertext. On vault unlock, `verify_key_check` confirms that the candidate master key matches the stored material. These functions underpin the vsyncnotes zero-knowledge password validation scheme.",
+  "type": "weighted_checklist",
+  "capability_tested": "Key Check Verification",
+  "checklist": [
+    {
+      "name": "Sentinel string usage",
+      "description": "Uses the exact sentinel string `\"vsyncnotes-v1-key-check\"` as the plaintext that is encrypted by `make_key_check` and matched by `verify_key_check`.",
+      "max_score": 20
+    },
+    {
+      "name": "make_key_check output",
+      "description": "`make_key_check` encrypts the sentinel with the provided 32-byte key using AES-256-GCM and returns a tuple of (base64-encoded ciphertext, base64-encoded nonce) suitable for storage.",
+      "max_score": 25
+    },
+    {
+      "name": "verify_key_check correctness",
+      "description": "`verify_key_check` returns `true` when given the ciphertext and nonce produced by `make_key_check` with the same key, and `false` when given a different key or corrupted ciphertext.",
+      "max_score": 30
+    },
+    {
+      "name": "AES-256-GCM primitives",
+      "description": "Delegates the actual encryption and decryption to the `encrypt()` and `decrypt()` functions from the vsyncnotes crypto module rather than re-implementing cipher operations.",
+      "max_score": 15
+    },
+    {
+      "name": "Error propagation",
+      "description": "Returns `Result<..., anyhow::Error>` and propagates errors from the underlying encrypt/decrypt operations rather than panicking or swallowing errors.",
+      "max_score": 10
+    }
+  ]
+}

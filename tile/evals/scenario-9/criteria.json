@@ -1,0 +1,37 @@
+{
+  "context": "Evaluates the implementation of the attachment save Tauri command, which encrypts binary attachment data using a freshly generated per-attachment DEK and stores both encrypted metadata and encrypted binary data. The implementation must compute a SHA-256 integrity hash of the original unencrypted data, encrypt the DEK with the master key, and write two separate files to the vault directory.",
+  "type": "weighted_checklist",
+  "capability_tested": "Attachment Save",
+  "checklist": [
+    {
+      "name": "SHA-256 hash computation",
+      "description": "Computes the SHA-256 digest of the original (unencrypted) input bytes using the `sha2` crate and stores the result as a hex-encoded string in `Attachment.sha256`.",
+      "max_score": 20
+    },
+    {
+      "name": "Per-attachment DEK generation",
+      "description": "Calls `generate_dek()` to produce a unique random 32-byte DEK for each attachment, then encrypts the DEK with the vault master key and stores the DEK ciphertext and nonce in the metadata.",
+      "max_score": 20
+    },
+    {
+      "name": "Binary data encryption",
+      "description": "Encrypts the raw attachment bytes with the per-attachment DEK using AES-256-GCM (`encrypt()`), writing only the ciphertext bytes to `attachments/{uuid}.bin`.",
+      "max_score": 20
+    },
+    {
+      "name": "Dual-file persistence",
+      "description": "Writes the encrypted metadata (JSON with DEK ciphertext, nonce, filename, MIME, size, SHA-256) to `attachments/{uuid}.json` and the encrypted binary data to `attachments/{uuid}.bin`.",
+      "max_score": 20
+    },
+    {
+      "name": "Locked vault error",
+      "description": "Returns a `String` error when `AppState.master_key` is `None` (vault is locked) rather than panicking or proceeding with encryption.",
+      "max_score": 10
+    },
+    {
+      "name": "Attachment return value",
+      "description": "Returns an `Attachment` struct with the new UUID, `note_id`, `filename`, `mime`, `size` (byte count of original data), and `sha256` fields correctly populated.",
+      "max_score": 10
+    }
+  ]
+}
