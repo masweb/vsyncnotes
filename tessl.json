@@ -1,0 +1,140 @@
+{
+  "name": "project",
+  "dependencies": {
+    "tessl/npm-tabler--icons-vue": {
+      "version": "3.34.0"
+    },
+    "tessl/npm-tauri-apps--api": {
+      "version": "2.8.0"
+    },
+    "tessl/npm-tiptap--extension-blockquote": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-bullet-list": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-character-count": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-code": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-code-block-lowlight": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-color": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-hard-break": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-heading": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-highlight": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-history": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-horizontal-rule": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-link": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-list-item": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-strike": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-table-cell": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-table-header": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-table-row": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-task-item": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-text-style": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--extension-underline": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-tiptap--vue-3": {
+      "version": "3.4.0"
+    },
+    "tessl/npm-pinia": {
+      "version": "3.0.0"
+    },
+    "tessl/npm-vee-validate": {
+      "version": "4.15.0"
+    },
+    "tessl/npm-vue": {
+      "version": "3.5.0"
+    },
+    "tessl/npm-tauri-apps--cli": {
+      "version": "2.8.0"
+    },
+    "tessl/npm-trivago--prettier-plugin-sort-imports": {
+      "version": "5.2.0"
+    },
+    "tessl/npm-vitest--coverage-v8": {
+      "version": "4.0.2"
+    },
+    "tessl/npm-vue--eslint-config-typescript": {
+      "version": "14.6.0"
+    },
+    "tessl/npm-vue--test-utils": {
+      "version": "2.4.0"
+    },
+    "tessl/npm-vue--tsconfig": {
+      "version": "0.8.1"
+    },
+    "tessl/npm-eslint": {
+      "version": "9.34.0"
+    },
+    "tessl/npm-eslint-config-prettier": {
+      "version": "10.1.0"
+    },
+    "tessl/npm-eslint-plugin-vue": {
+      "version": "10.4.0"
+    },
+    "tessl/npm-jiti": {
+      "version": "2.5.0"
+    },
+    "tessl/npm-jsdom": {
+      "version": "27.4.0"
+    },
+    "tessl/npm-oxlint": {
+      "version": "1.16.0"
+    },
+    "tessl/npm-prettier": {
+      "version": "3.6.0"
+    },
+    "tessl/npm-typescript": {
+      "version": "5.9.1"
+    },
+    "tessl/npm-unplugin-vue-components": {
+      "version": "29.0.0"
+    },
+    "tessl/npm-vite": {
+      "version": "7.3.0"
+    },
+    "tessl/npm-vite-plugin-vue-devtools": {
+      "version": "8.0.0"
+    },
+    "tessl/npm-vitest": {
+      "version": "4.0.0"
+    },
+    "tessl/npm-vue-tsc": {
+      "version": "3.0.0"
+    }
+  }
+}

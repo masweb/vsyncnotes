@@ -26,6 +26,17 @@ export interface Note extends NoteMeta {
   body_format: string
 }
 
+export interface Attachment {
+  id: string
+  note_id: string
+  filename: string
+  mime: string
+  size_bytes: number
+  hash_sha256: string
+  created_at: string
+  updated_at: string
+}
+
 export interface VaultStatus {
   exists: boolean
   locked: boolean
