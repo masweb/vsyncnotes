@@ -95,6 +95,7 @@ const VsyncImage = Image.extend({
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const noteStore = useNoteStore()
 
@@ -108,11 +109,9 @@ const saveTimer = ref<ReturnType<typeof setTimeout> | null>(null)
 const editingTitle = ref(false)
 const titleInput = ref<HTMLInputElement | null>(null)
 const { handleSubmit: handleTitleSubmit, resetForm: resetTitleForm } = useForm({ validateOnMount: false })
-const { value: titleValue, errorMessage: titleError } = useField<string>(
-  'title',
-  (v) => (v && String(v).trim().length > 0) || 'El título es obligatorio',
-  { validateOnValueUpdate: false },
-)
+const { value: titleValue, errorMessage: titleError } = useField<string>('title', 'required', {
+  validateOnValueUpdate: false,
+})
 
 const startEditTitle = () => {
   if (!note.value) return
@@ -322,13 +321,13 @@ const onEditorContextMenu = async (e: MouseEvent) => {
       await PredefinedMenuItem.new({ item: 'Paste' }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await CheckMenuItem.new({
-        text: 'Revisar ortografía al escribir',
+        text: t('editor.spellcheck'),
         checked: spellcheck.value,
         action: toggleSpellcheck,
       }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
-        text: 'Leer en voz alta',
+        text: t('editor.read_aloud'),
         enabled: !!selection,
         action: () => {
           const utterance = new SpeechSynthesisUtterance(selection)
@@ -385,7 +384,7 @@ const editor = new Editor({
     ListItem,
     OrderedList,
     Paragraph,
-    Placeholder.configure({ placeholder: 'Escribe algo...' }),
+    Placeholder.configure({ placeholder: t('editor.placeholder') }),
     Strike,
     Text,
     Underline,
@@ -581,24 +580,24 @@ onBeforeUnmount(() => {
       <Teleport to="body">
         <div v-if="tableOpen" :style="tableMenuStyle" class="border rounded shadow-sm bg-body p-1" style="min-width:190px">
           <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" @click="editor.chain().focus().insertTable({ rows:3, cols:3, withHeaderRow:true }).run(); tableOpen=false">
-            <IconTablePlus :size="16" stroke-width="1.2" /> Insertar tabla
+            <IconTablePlus :size="16" stroke-width="1.2" /> {{ $t('table.insert') }}
           </button>
           <hr class="my-1" />
           <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().addColumnAfter().run(); tableOpen=false">
-            <IconColumnInsertRight :size="16" stroke-width="1.2" /> Añadir columna
+            <IconColumnInsertRight :size="16" stroke-width="1.2" /> {{ $t('table.add_col') }}
           </button>
           <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().deleteColumn().run(); tableOpen=false">
-            <IconColumnRemove :size="16" stroke-width="1.2" /> Eliminar columna
+            <IconColumnRemove :size="16" stroke-width="1.2" /> {{ $t('table.del_col') }}
           </button>
           <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().addRowAfter().run(); tableOpen=false">
-            <IconRowInsertBottom :size="16" stroke-width="1.2" /> Añadir fila
+            <IconRowInsertBottom :size="16" stroke-width="1.2" /> {{ $t('table.add_row') }}
           </button>
           <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().deleteRow().run(); tableOpen=false">
-            <IconRowRemove :size="16" stroke-width="1.2" /> Eliminar fila
+            <IconRowRemove :size="16" stroke-width="1.2" /> {{ $t('table.del_row') }}
           </button>
           <hr class="my-1" />
           <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2 text-danger" :disabled="!editor.isActive('table')" @click="editor.chain().focus().deleteTable().run(); tableOpen=false">
-            <IconTableMinus :size="16" stroke-width="1.2" /> Eliminar tabla
+            <IconTableMinus :size="16" stroke-width="1.2" /> {{ $t('table.delete') }}
           </button>
         </div>
       </Teleport>
@@ -654,14 +653,14 @@ onBeforeUnmount(() => {
         <div class="d-flex flex-wrap gap-1" style="width:134px">
           <button v-for="c in COLORS" :key="c" type="button" class="color-swatch" :style="{ background: c, outline: editor.getAttributes('textStyle').color === c ? '2px solid var(--bs-primary)' : '1px solid var(--bs-border-color)' }" @click="pickColor(c)" />
         </div>
-        <button type="button" class="btn btn-sm btn-link px-0 mt-1 text-secondary small" @click="clearColor">Sin color</button>
+        <button type="button" class="btn btn-sm btn-link px-0 mt-1 text-secondary small" @click="clearColor">{{ $t('color.none') }}</button>
       </div>
     </Teleport>
 
     <!-- Badge guardando -->
     <Teleport to="body">
       <Transition name="fade">
-        <span v-if="saving" class="saving-badge position-fixed text-secondary small">Guardando...</span>
+        <span v-if="saving" class="saving-badge position-fixed text-secondary small">{{ $t('note.saving') }}</span>
       </Transition>
     </Teleport>
 
@@ -676,7 +675,7 @@ onBeforeUnmount(() => {
           :class="{ 'is-invalid': titleError }"
           @blur="submitTitle"
         />
-        <div v-if="titleError" class="invalid-feedback">El título es obligatorio</div>
+        <div v-if="titleError" class="invalid-feedback">{{ titleError }}</div>
       </form>
       <h5
         v-else
@@ -695,9 +694,9 @@ onBeforeUnmount(() => {
       @click.self="editor.commands.focus()"
       @contextmenu="onEditorContextMenu"
     >
-      <div v-if="loading" class="text-secondary small mt-3">Cargando nota...</div>
+      <div v-if="loading" class="text-secondary small mt-3">{{ $t('note.loading') }}</div>
       <div v-else-if="!note" class="d-flex align-items-center justify-content-center h-100 text-muted small">
-        Selecciona una nota
+        {{ $t('note.select_hint') }}
       </div>
       <EditorContent v-else :editor="editor" />
 
@@ -721,8 +720,8 @@ onBeforeUnmount(() => {
 
     <!-- Footer con contadores -->
     <div class="border-top px-3 py-1 text-end text-secondary small flex-shrink-0">
-      <span class="me-3">{{ editor.storage.characterCount?.characters() ?? 0 }} caracteres</span>
-      <span>{{ editor.storage.characterCount?.words() ?? 0 }} palabras</span>
+      <span class="me-3">{{ editor.storage.characterCount?.characters() ?? 0 }} {{ $t('note.characters') }}</span>
+      <span>{{ editor.storage.characterCount?.words() ?? 0 }} {{ $t('note.words') }}</span>
     </div>
 
   </div>

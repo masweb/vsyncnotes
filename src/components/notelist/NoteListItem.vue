@@ -5,15 +5,16 @@ import type { NoteMeta } from '@/types/models'
 const props = defineProps<{ note: NoteMeta }>()
 
 const appStore = useAppStore()
+const { t, locale } = useI18n()
 const isSelected = computed(() => appStore.selectedNoteId === props.note.id)
 
 const formattedDate = computed(() => {
   const d = new Date(props.note.updated_at)
   const diffDays = Math.floor((Date.now() - d.getTime()) / 86400000)
-  if (diffDays === 0) return 'Hoy'
-  if (diffDays === 1) return 'Ayer'
-  if (diffDays < 7) return `Hace ${diffDays} días`
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' })
+  if (diffDays === 0) return t('date.today')
+  if (diffDays === 1) return t('date.yesterday')
+  if (diffDays < 7) return t('date.days_ago', { n: diffDays })
+  return d.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: 'short', year: '2-digit' })
 })
 </script>
 

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { IconPlus, IconNote } from '@tabler/icons-vue'
 
+const { t } = useI18n()
 const appStore = useAppStore()
 const noteStore = useNoteStore()
 
@@ -15,7 +16,7 @@ watch(
 
 const createNote = async () => {
   if (!appStore.selectedNotebookId) return
-  const note = await noteStore.createNote(appStore.selectedNotebookId, 'Sin título')
+  const note = await noteStore.createNote(appStore.selectedNotebookId, t('note.new_title'))
   appStore.selectNote(note.id)
 }
 </script>
@@ -26,7 +27,7 @@ const createNote = async () => {
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom flex-shrink-0">
       <span class="text-muted text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.06em">
-        Notas
+        {{ $t('note.header') }}
       </span>
       <button
         v-if="appStore.selectedNotebookId"
@@ -35,7 +36,7 @@ const createNote = async () => {
         @click="createNote"
       >
         <IconPlus :size="12" stroke-width="2.5" />
-        Nueva
+        {{ $t('note.new') }}
       </button>
     </div>
 
@@ -48,7 +49,7 @@ const createNote = async () => {
         class="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-2 px-3 text-center"
       >
         <IconNote :size="30" stroke-width="1" class="opacity-40" />
-        <span class="small">Selecciona un notebook</span>
+        <span class="small">{{ $t('note.select_notebook') }}</span>
       </div>
 
       <!-- Cargando -->
@@ -57,7 +58,7 @@ const createNote = async () => {
         class="d-flex align-items-center justify-content-center h-100"
       >
         <div class="spinner-border spinner-border-sm text-secondary" role="status">
-          <span class="visually-hidden">Cargando...</span>
+          <span class="visually-hidden">{{ $t('note.loading_list') }}</span>
         </div>
       </div>
 
@@ -75,7 +76,7 @@ const createNote = async () => {
         class="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-2 px-3 text-center"
       >
         <IconNote :size="30" stroke-width="1" class="opacity-40" />
-        <span class="small">Sin notas — crea una</span>
+        <span class="small">{{ $t('note.no_notes') }}</span>
       </div>
 
       <!-- Lista -->

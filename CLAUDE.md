@@ -139,7 +139,71 @@ tokio = { version = "1", features = ["fs"] }    # must be explicit even though t
 
 **`vault_change_password`** re-encrypts all DEKs (not the data itself) — O(n notes + attachments), no atomic rollback (acceptable for now)
 
-### Next phase — Phase 3: UI layout + notebook tree
+### Phase 3 — UI (DONE)
+
+Components: `MainView` (3-column splitpanes), `NotebookTree`, `NotebookTreeItem`, `SidebarActions`, `NoteList`, `NoteListItem`, `NoteEditor`, `ImageNodeView`
+
+---
+
+## i18n
+
+- **Package:** `vue-i18n` v11 — registered in `src/main.ts` via `.use(i18n)`
+- **Instance:** `src/i18n/i18n.ts` — exports `i18n`; default locale `es`, persisted in `localStorage('lang')`
+- **Locales:** `src/locales/es.json` + `src/locales/en.json`
+- **Auto-import:** `'vue-i18n'` added to `AutoImport.imports` in `vite.config.ts` → `useI18n` available everywhere without explicit import
+- **`useLocale`** composable: `src/composables/useLocale.ts` — exposes `currentLocale`, `availableLocales`, `setLocale`
+- In templates use `$t('key')`, in script use `const { t } = useI18n()`
+
+### Locale key structure
+```
+validation.required / min / confirmed
+nav.notebooks / new_notebook / collapse_sidebar / notebook_placeholder / no_notebooks
+note.header / new / new_title / select_notebook / no_notes / loading_list / loading / select_hint / saving / characters / words / title_required
+editor.placeholder / spellcheck / read_aloud
+table.insert / add_col / del_col / add_row / del_row / delete
+color.none
+link.open / edit / remove
+date.today / yesterday / days_ago
+```
+
+---
+
+## vee-validate
+
+- Rules registered globally via **`src/composables/useValidation.ts`** (side-effect import in `main.ts`)
+- Uses `i18n.global.t` for messages — depends on i18n being initialized first
+- Available rules: `required`, `min`, `confirmed`
+- Use string rule name in `useField('field', 'required', ...)` — **never** inline validator functions
+
+---
+
+## Editor (NoteEditor.vue)
+
+### Spell check
+- Toggle button in toolbar (`IconTextSpellcheck`) + native NSMenu item (`CheckMenuItem`)
+- State: `spellcheck` ref, persisted in `localStorage('editor-spellcheck')`
+- Applied via `editor.view.dom.setAttribute('spellcheck', ...)` on mount and on toggle
+- Both toolbar button and context menu share the same ref (synced)
+
+### Context menu (`onEditorContextMenu`)
+- `e.preventDefault()` → `Menu.popup()` from `@tauri-apps/api/menu` (Enfoque E de MENU.md)
+- Items: `Cut`, `Copy`, `Paste` (PredefinedMenuItem) + separator + `CheckMenuItem` (spellcheck) + separator + `MenuItem` (read aloud via Web Speech API, disabled if no selection)
+- `core:default` capability covers the menu API — no extra permissions needed
+
+### Table styles
+- Use `.ProseMirror table` selector (NOT `.tiptap table` — unreliable in Tiptap v3)
+- Hardcoded colors (`#ced4da` border, `#f1f3f5` th bg) — CSS variables don't apply reliably to table elements
+- `overflow: hidden` ON the `<table>` element (NOT on `.tableWrapper`) — required for correct rendering
+- Dark mode: `[data-coreui-theme='dark']` block in `editor.scss`
+
+### Code block styles
+- Selector: `.tiptap pre code` — light theme GitHub (`#f6f8fa` bg), dark theme GitHub Dark (`#0d1117` bg)
+- All hljs token colors defined in `editor.scss`
+- Dark mode: `[data-coreui-theme='dark'] .tiptap pre code`
+
+---
+
+## Next phase — Phase 3: UI layout + notebook tree
 Vue components: `UnlockView`, `MainView` (3-column), `NotebookTree` (recursive), `NoteList`, stores Pinia
 See PLAN.md §3 for full component breakdown
 
