@@ -135,6 +135,9 @@
     },
     "tessl/npm-vue-tsc": {
       "version": "3.0.0"
+    },
+    "tessl-labs/tessl-skill-eval-scenarios": {
+      "version": "0.1.0"
     }
   }
 }
