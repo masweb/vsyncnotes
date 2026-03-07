@@ -10,6 +10,11 @@ body {
   // Bootstrap sobreescribe el background, !important necesario para que el
   // WebView sea transparente en las esquinas fuera del border-radius de #app.
   background: transparent !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
 }
 
 #app {
@@ -22,6 +27,23 @@ body {
 
 [data-coreui-theme='dark'] #app {
   background-color: #212631 !important;
+}
+
+[data-coreui-theme='dark'] {
+  --primary: #{$primary-dark}; // Usa interpolación de Sass para convertir $primary-dark a CSS
+
+  ::-webkit-scrollbar-track {
+    background: #2e3c50;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #aac3eb;
+  }
+
+  .card,
+  .modal-content {
+    box-shadow: 0px 0px 18px rgba(0, 0, 0, 0.5);
+  }
 }
 
 // ── Notebook tree ─────────────────────────────────────────────────────────────

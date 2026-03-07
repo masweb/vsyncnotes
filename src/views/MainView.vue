@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { Splitpanes, Pane } from 'splitpanes'
 import { IconLayoutSidebarLeftExpand } from '@tabler/icons-vue'
-import AppNavbar from '@/components/AppNavbar.vue'
 
 const { currentTheme } = useTheme()
 const splitClass = computed(() => currentTheme.value === 'dark' ? 'split-dark' : 'default-theme')
@@ -83,8 +82,6 @@ const rootClass = computed(() => [
 
 <template>
   <div class="d-flex flex-column h-100">
-    <AppNavbar />
-
     <Splitpanes
       ref="splitpanesEl"
       :class="rootClass"

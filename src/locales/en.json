@@ -70,5 +70,13 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "days_ago": "{n} days ago"
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "theme": "Appearance",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "language": "Language"
   }
 }

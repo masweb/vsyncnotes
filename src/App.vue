@@ -1,10 +1,17 @@
 <script lang="ts" setup>
 import UnlockView from '@/views/UnlockView.vue'
 import MainView from '@/views/MainView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 
 const appStore = useAppStore()
+
+const currentComponent = computed(() => {
+  if (appStore.currentView === 'main') return MainView
+  if (appStore.currentView === 'settings') return SettingsView
+  return UnlockView
+})
 </script>
 
 <template>
-  <component :is="appStore.currentView === 'main' ? MainView : UnlockView" class="h-100" />
+  <component :is="currentComponent" class="h-100" />
 </template>

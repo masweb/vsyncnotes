@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-type AppView = 'unlock' | 'main'
+type AppView = 'unlock' | 'main' | 'settings'
 
 export const useAppStore = defineStore('app', () => {
   const currentView = ref<AppView>('unlock')
