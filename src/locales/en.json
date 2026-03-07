@@ -47,6 +47,17 @@
     "del_row": "Delete row",
     "delete": "Delete table"
   },
+  "align": {
+    "left": "Left",
+    "center": "Center",
+    "right": "Right",
+    "justify": "Justify"
+  },
+  "list": {
+    "bullet": "Bullet list",
+    "ordered": "Numbered list",
+    "task": "Task list"
+  },
   "color": {
     "none": "No color"
   },

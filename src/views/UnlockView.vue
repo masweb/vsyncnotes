@@ -4,7 +4,7 @@ import { vaultCreate, vaultUnlock, vaultStatus, devSeed } from '@/services/tauri
 const appStore = useAppStore()
 
 const vaultExists = ref(false)
-const password = ref('')
+const password = ref('dev123')
 const confirmPassword = ref('')
 const errorMsg = ref('')
 const loading = ref(false)
@@ -83,11 +83,7 @@ const handleDevSeed = async () => {
       <p v-if="errorMsg" class="text-danger small mb-2">{{ errorMsg }}</p>
 
       <div class="d-flex gap-2">
-        <button
-          class="btn btn-sm btn-primary flex-grow-1"
-          :disabled="loading"
-          @click="handleSubmit"
-        >
+        <button class="btn btn-sm btn-primary flex-grow-1" :disabled="loading" @click="handleSubmit">
           {{ vaultExists ? 'Desbloquear' : 'Crear' }}
         </button>
         <button

@@ -47,6 +47,17 @@
     "del_row": "Eliminar fila",
     "delete": "Eliminar tabla"
   },
+  "align": {
+    "left": "Izquierda",
+    "center": "Centro",
+    "right": "Derecha",
+    "justify": "Justificado"
+  },
+  "list": {
+    "bullet": "Lista de viñetas",
+    "ordered": "Lista numerada",
+    "task": "Lista de tareas"
+  },
   "color": {
     "none": "Sin color"
   },
