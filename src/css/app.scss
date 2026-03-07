@@ -1,12 +1,27 @@
+$primary-dark: coral; // Color para el tema dark
+$primary: #4a78f9; //
 @import '@coreui/coreui/scss/coreui';
 @import './editor';
 
 html,
-body,
+body {
+  height: 100%;
+  margin: 0;
+  // Bootstrap sobreescribe el background, !important necesario para que el
+  // WebView sea transparente en las esquinas fuera del border-radius de #app.
+  background: transparent !important;
+}
+
 #app {
   height: 100%;
   overflow: hidden;
-  margin: 0;
+  border-radius: 10px;
+  background-color: #fff !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+[data-coreui-theme='dark'] #app {
+  background-color: #212631 !important;
 }
 
 // ── Notebook tree ─────────────────────────────────────────────────────────────

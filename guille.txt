@@ -1,0 +1,5 @@
+RESETEAR DATOS
+rm -rf "/Users/guille/Library/Application Support/es.guillermovalentin.vsyncnotes/vault/notebooks/"*
+rm -rf "/Users/guille/Library/Application Support/es.guillermovalentin.vsyncnotes/vault/notes/"*
+rm -rf "/Users/guille/Library/Application Support/es.guillermovalentin.vsyncnotes/vault/attachments/"*
+rm "/Users/guille/Library/Application Support/es.guillermovalentin.vsyncnotes/vault/vault.json"

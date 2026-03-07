@@ -47,6 +47,9 @@ import {
   IconH1,
   IconH2,
   IconH3,
+  IconH4,
+  IconH5,
+  IconH6,
   IconHeading,
   IconItalic,
   IconLink,
@@ -66,7 +69,7 @@ import {
   IconTableMinus,
   IconTablePlus,
   IconUnderline,
-  IconTextSpellcheck,
+  IconTextSpellcheck
 } from '@tabler/icons-vue'
 import { CheckMenuItem, Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -82,7 +85,7 @@ const VsyncImage = Image.extend({
       ...this.parent?.(),
       width: { default: null },
       height: { default: null },
-      vsyncFilename: { default: null },
+      vsyncFilename: { default: null }
     }
   },
   // Keep vsync:// src as-is in the serialized HTML so cut/paste preserves it.
@@ -90,7 +93,7 @@ const VsyncImage = Image.extend({
   // never renders an <img src="vsync://..."> — the console warning is harmless.
   addNodeView() {
     return VueNodeViewRenderer(ImageNodeView)
-  },
+  }
 })
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -110,7 +113,7 @@ const editingTitle = ref(false)
 const titleInput = ref<HTMLInputElement | null>(null)
 const { handleSubmit: handleTitleSubmit, resetForm: resetTitleForm } = useForm({ validateOnMount: false })
 const { value: titleValue, errorMessage: titleError } = useField<string>('title', 'required', {
-  validateOnValueUpdate: false,
+  validateOnValueUpdate: false
 })
 
 const startEditTitle = () => {
@@ -125,14 +128,14 @@ const cancelEditTitle = () => {
   resetTitleForm()
 }
 
-const submitTitle = handleTitleSubmit(async (values) => {
+const submitTitle = handleTitleSubmit(async values => {
   if (!note.value || values.title === note.value.title) {
     cancelEditTitle()
     return
   }
   note.value.title = values.title
   await api.noteUpdate(note.value)
-  const meta = noteStore.notes.find((n) => n.id === note.value!.id)
+  const meta = noteStore.notes.find(n => n.id === note.value!.id)
   if (meta) meta.title = values.title
   cancelEditTitle()
 })
@@ -151,7 +154,7 @@ const toggleHeadingDropdown = () => {
   headingOpen.value = !headingOpen.value
 }
 
-const pickHeading = (level: 1 | 2 | 3) => {
+const pickHeading = (level: 1 | 2 | 3 | 4 | 5 | 6) => {
   editor.chain().focus().toggleHeading({ level }).run()
   headingOpen.value = false
 }
@@ -170,21 +173,54 @@ const toggleTableDropdown = () => {
   tableOpen.value = !tableOpen.value
 }
 
+// ── Lists dropdown ────────────────────────────────────────────────────────────
+
+const listsOpen = ref(false)
+const listsBtn = ref<HTMLElement | null>(null)
+const listsMenuStyle = ref<Record<string, string>>({})
+
+const toggleListsDropdown = () => {
+  if (!listsOpen.value && listsBtn.value) {
+    const r = listsBtn.value.getBoundingClientRect()
+    listsMenuStyle.value = { position: 'fixed', top: `${r.bottom + 4}px`, left: `${r.left}px`, zIndex: '9999' }
+  }
+  listsOpen.value = !listsOpen.value
+}
+
+// ── Align dropdown ────────────────────────────────────────────────────────────
+
+const alignOpen = ref(false)
+const alignBtn = ref<HTMLElement | null>(null)
+const alignMenuStyle = ref<Record<string, string>>({})
+
+const toggleAlignDropdown = () => {
+  if (!alignOpen.value && alignBtn.value) {
+    const r = alignBtn.value.getBoundingClientRect()
+    alignMenuStyle.value = { position: 'fixed', top: `${r.bottom + 4}px`, left: `${r.left}px`, zIndex: '9999' }
+  }
+  alignOpen.value = !alignOpen.value
+}
+
+const pickAlign = (align: string) => {
+  editor.chain().focus().setTextAlign(align).run()
+  alignOpen.value = false
+}
+
 // ── Code block dropdown ───────────────────────────────────────────────────────
 
 const CODE_LANGUAGES = [
   { label: 'JavaScript', value: 'javascript' },
   { label: 'TypeScript', value: 'typescript' },
-  { label: 'Rust',       value: 'rust' },
-  { label: 'Python',     value: 'python' },
-  { label: 'Go',         value: 'go' },
-  { label: 'Bash',       value: 'bash' },
-  { label: 'SQL',        value: 'sql' },
-  { label: 'HTML',       value: 'html' },
-  { label: 'CSS',        value: 'css' },
-  { label: 'SCSS',       value: 'scss' },
-  { label: 'JSON',       value: 'json' },
-  { label: 'YAML',       value: 'yaml' },
+  { label: 'Rust', value: 'rust' },
+  { label: 'Python', value: 'python' },
+  { label: 'Go', value: 'go' },
+  { label: 'Bash', value: 'bash' },
+  { label: 'SQL', value: 'sql' },
+  { label: 'HTML', value: 'html' },
+  { label: 'CSS', value: 'css' },
+  { label: 'SCSS', value: 'scss' },
+  { label: 'JSON', value: 'json' },
+  { label: 'YAML', value: 'yaml' }
 ]
 
 const codeOpen = ref(false)
@@ -207,10 +243,26 @@ const pickCodeLang = (lang: string) => {
 // ── Color picker ──────────────────────────────────────────────────────────────
 
 const COLORS = [
-  '#000000', '#374151', '#6b7280', '#9ca3af', '#ffffff',
-  '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6',
-  '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16',
-  '#dc2626', '#ea580c', '#ca8a04', '#16a34a', '#2563eb',
+  '#000000',
+  '#374151',
+  '#6b7280',
+  '#9ca3af',
+  '#ffffff',
+  '#ef4444',
+  '#f97316',
+  '#eab308',
+  '#22c55e',
+  '#3b82f6',
+  '#8b5cf6',
+  '#ec4899',
+  '#06b6d4',
+  '#14b8a6',
+  '#84cc16',
+  '#dc2626',
+  '#ea580c',
+  '#ca8a04',
+  '#16a34a',
+  '#2563eb'
 ]
 
 const colorOpen = ref(false)
@@ -254,7 +306,10 @@ const openLinkModal = () => {
     linkMenuStyle.value = { position: 'fixed', top: `${r.bottom + 4}px`, left: `${r.left}px`, zIndex: '9999' }
   }
   linkOpen.value = true
-  nextTick(() => { linkInput.value?.focus(); linkInput.value?.select() })
+  nextTick(() => {
+    linkInput.value?.focus()
+    linkInput.value?.select()
+  })
 }
 
 const applyLink = () => {
@@ -284,6 +339,8 @@ const openLinkHref = () => {
 const onDocClick = (e: MouseEvent) => {
   const t = e.target as Node
   if (!headingBtn.value?.contains(t)) headingOpen.value = false
+  if (!listsBtn.value?.contains(t)) listsOpen.value = false
+  if (!alignBtn.value?.contains(t)) alignOpen.value = false
   if (!tableBtn.value?.contains(t)) tableOpen.value = false
   if (!codeBtn.value?.contains(t)) codeOpen.value = false
   if (!colorBtn.value?.contains(t)) colorOpen.value = false
@@ -312,7 +369,7 @@ const onEditorContextMenu = async (e: MouseEvent) => {
       await CheckMenuItem.new({
         text: t('editor.spellcheck'),
         checked: spellcheck.value,
-        action: toggleSpellcheck,
+        action: toggleSpellcheck
       }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
@@ -321,9 +378,9 @@ const onEditorContextMenu = async (e: MouseEvent) => {
         action: () => {
           const utterance = new SpeechSynthesisUtterance(selection)
           speechSynthesis.speak(utterance)
-        },
-      }),
-    ],
+        }
+      })
+    ]
   })
   await menu.popup()
 }
@@ -341,10 +398,14 @@ const insertImage = () => {
     const buffer = await file.arrayBuffer()
     const bytes = Array.from(new Uint8Array(buffer))
     const att = await api.attachmentSave(note.value.id, file.name, file.type, bytes)
-    editor.chain().focus().setImage({
-      src: `vsync://attachment/${att.id}`,
-      vsyncFilename: file.name,
-    }).run()
+    editor
+      .chain()
+      .focus()
+      .setImage({
+        src: `vsync://attachment/${att.id}`,
+        vsyncFilename: file.name
+      })
+      .run()
   }
   input.click()
 }
@@ -386,7 +447,7 @@ const scheduleSave = () => {
       const updated = { ...note.value, body: newBody, updated_at: new Date().toISOString() }
       await api.noteUpdate(updated)
       note.value = updated
-      const meta = noteStore.notes.find((n) => n.id === updated.id)
+      const meta = noteStore.notes.find(n => n.id === updated.id)
       if (meta) meta.updated_at = updated.updated_at
     } finally {
       saving.value = false
@@ -417,7 +478,7 @@ const editor = new Editor({
     Color,
     Document,
     HardBreak,
-    Heading.configure({ levels: [1, 2, 3] }),
+    Heading.configure({ levels: [1, 2, 3, 4, 5, 6] }),
     Highlight,
     History,
     HorizontalRule,
@@ -438,15 +499,18 @@ const editor = new Editor({
     TaskList,
     TaskItem.configure({ nested: true }),
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
-    TextStyle,
+    TextStyle
   ],
-  onUpdate: scheduleSave,
+  onUpdate: scheduleSave
 })
 
 // ── Load note ─────────────────────────────────────────────────────────────────
 
 const loadNote = async (id: string) => {
-  if (saveTimer.value) { clearTimeout(saveTimer.value); saveTimer.value = null }
+  if (saveTimer.value) {
+    clearTimeout(saveTimer.value)
+    saveTimer.value = null
+  }
   await flushPendingDeletions()
   loading.value = true
   try {
@@ -458,10 +522,17 @@ const loadNote = async (id: string) => {
   }
 }
 
-watch(() => appStore.selectedNoteId, (id) => {
-  if (id) loadNote(id)
-  else { note.value = null; editor.commands.clearContent() }
-}, { immediate: true })
+watch(
+  () => appStore.selectedNoteId,
+  id => {
+    if (id) loadNote(id)
+    else {
+      note.value = null
+      editor.commands.clearContent()
+    }
+  },
+  { immediate: true }
+)
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
@@ -480,110 +551,317 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="note-editor h-100 d-flex flex-column">
-
     <!-- Toolbar -->
-    <div class="editor-toolbar border-bottom d-flex align-items-center flex-wrap gap-1 px-2 py-1 flex-shrink-0">
-
+    <div
+      class="editor-toolbar d-flex align-items-center border-bottom flex-wrap gap-0 flex-shrink-0"
+      style="height: 38px"
+    >
       <!-- Historial -->
       <div class="d-flex">
-        <button type="button" class="btn btn-sm" :disabled="!editor.can().undo()" @click="editor.chain().focus().undo().run()">
-          <IconArrowBackUp :size="20" stroke-width="1.2" />
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :disabled="!editor.can().undo()"
+          @click="editor.chain().focus().undo().run()"
+        >
+          <IconArrowBackUp :size="16" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm" :disabled="!editor.can().redo()" @click="editor.chain().focus().redo().run()">
-          <IconArrowForwardUp :size="20" stroke-width="1.2" />
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :disabled="!editor.can().redo()"
+          @click="editor.chain().focus().redo().run()"
+        >
+          <IconArrowForwardUp :size="16" stroke-width="1.2" />
         </button>
       </div>
-
-      <div class="vr mx-1 opacity-25"></div>
 
       <!-- Formato inline -->
       <div class="d-flex">
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('bold') }" @click="editor.chain().focus().toggleBold().run()">
-          <IconBold :size="20" stroke-width="1.2" />
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('bold') }"
+          @click="editor.chain().focus().toggleBold().run()"
+        >
+          <IconBold :size="16" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('italic') }" @click="editor.chain().focus().toggleItalic().run()">
-          <IconItalic :size="20" stroke-width="1.2" />
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('italic') }"
+          @click="editor.chain().focus().toggleItalic().run()"
+        >
+          <IconItalic :size="16" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('strike') }" @click="editor.chain().focus().toggleStrike().run()">
-          <IconStrikethrough :size="20" stroke-width="1.2" />
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('strike') }"
+          @click="editor.chain().focus().toggleStrike().run()"
+        >
+          <IconStrikethrough :size="16" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('underline') }" @click="editor.chain().focus().toggleUnderline().run()">
-          <IconUnderline :size="20" stroke-width="1.2" />
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('underline') }"
+          @click="editor.chain().focus().toggleUnderline().run()"
+        >
+          <IconUnderline :size="16" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('code') }" @click="editor.chain().focus().toggleCode().run()">
-          <IconCode :size="20" stroke-width="1.2" />
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('code') }"
+          @click="editor.chain().focus().toggleCode().run()"
+        >
+          <IconCode :size="16" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('highlight') }" @click="editor.chain().focus().toggleHighlight().run()">
-          <span style="background:#fef08a; padding: 1px 4px; border-radius: 2px; font-size: 0.7rem; font-weight: 700">AB</span>
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('highlight') }"
+          @click="editor.chain().focus().toggleHighlight().run()"
+        >
+          <span style="background: #fef08a; padding: 1px 4px; border-radius: 2px; font-size: 0.7rem; font-weight: 700"
+            >AB</span
+          >
         </button>
       </div>
 
-      <div class="vr mx-1 opacity-25"></div>
-
       <!-- Encabezados -->
       <div class="d-flex">
-        <button ref="headingBtn" type="button" class="btn btn-sm" :class="{ active: editor.isActive('heading') }" @click.stop="toggleHeadingDropdown">
-          <IconHeading :size="20" stroke-width="1.2" /><span style="font-size:8px; margin-left:1px">▾</span>
+        <button
+          ref="headingBtn"
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('heading') }"
+          @click.stop="toggleHeadingDropdown"
+        >
+          <IconHeading :size="16" stroke-width="1.2" /><span style="font-size: 8px; margin-left: 1px">▾</span>
         </button>
       </div>
       <Teleport to="body">
         <div v-if="headingOpen" :style="headingMenuStyle" class="border rounded shadow-sm bg-body p-1">
-          <button type="button" class="btn btn-sm w-100 text-start" :class="{ active: editor.isActive('heading', { level: 1 }) }" @click="pickHeading(1)"><IconH1 :size="18" stroke-width="1.2" /></button>
-          <button type="button" class="btn btn-sm w-100 text-start" :class="{ active: editor.isActive('heading', { level: 2 }) }" @click="pickHeading(2)"><IconH2 :size="18" stroke-width="1.2" /></button>
-          <button type="button" class="btn btn-sm w-100 text-start" :class="{ active: editor.isActive('heading', { level: 3 }) }" @click="pickHeading(3)"><IconH3 :size="18" stroke-width="1.2" /></button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start"
+            :class="{ active: editor.isActive('heading', { level: 1 }) }"
+            @click="pickHeading(1)"
+          >
+            <IconH1 :size="18" stroke-width="1.2" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start"
+            :class="{ active: editor.isActive('heading', { level: 2 }) }"
+            @click="pickHeading(2)"
+          >
+            <IconH2 :size="18" stroke-width="1.2" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start"
+            :class="{ active: editor.isActive('heading', { level: 3 }) }"
+            @click="pickHeading(3)"
+          >
+            <IconH3 :size="18" stroke-width="1.2" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start"
+            :class="{ active: editor.isActive('heading', { level: 4 }) }"
+            @click="pickHeading(4)"
+          >
+            <IconH4 :size="18" stroke-width="1.2" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start"
+            :class="{ active: editor.isActive('heading', { level: 5 }) }"
+            @click="pickHeading(5)"
+          >
+            <IconH5 :size="18" stroke-width="1.2" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start"
+            :class="{ active: editor.isActive('heading', { level: 6 }) }"
+            @click="pickHeading(6)"
+          >
+            <IconH6 :size="18" stroke-width="1.2" />
+          </button>
         </div>
       </Teleport>
 
-      <div class="vr mx-1 opacity-25"></div>
-
-      <!-- Alineación -->
+      <!-- Alineación (dropdown) -->
       <div class="d-flex">
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive({ textAlign: 'left' }) }" @click="editor.chain().focus().setTextAlign('left').run()">
-          <IconAlignLeft :size="20" stroke-width="1.2" />
-        </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive({ textAlign: 'center' }) }" @click="editor.chain().focus().setTextAlign('center').run()">
-          <IconAlignCenter :size="20" stroke-width="1.2" />
-        </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive({ textAlign: 'right' }) }" @click="editor.chain().focus().setTextAlign('right').run()">
-          <IconAlignRight :size="20" stroke-width="1.2" />
-        </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive({ textAlign: 'justify' }) }" @click="editor.chain().focus().setTextAlign('justify').run()">
-          <IconAlignJustified :size="20" stroke-width="1.2" />
-        </button>
-      </div>
-
-      <div class="vr mx-1 opacity-25"></div>
-
-      <!-- Listas y bloques -->
-      <div class="d-flex">
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('bulletList') }" @click="editor.chain().focus().toggleBulletList().run()">
-          <IconList :size="20" stroke-width="1.2" />
-        </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('orderedList') }" @click="editor.chain().focus().toggleOrderedList().run()">
-          <IconListNumbers :size="20" stroke-width="1.2" />
-        </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('taskList') }" @click="editor.chain().focus().toggleTaskList().run()">
-          <IconListCheck :size="20" stroke-width="1.2" />
-        </button>
-        <button type="button" class="btn btn-sm" :class="{ active: editor.isActive('blockquote') }" @click="editor.chain().focus().toggleBlockquote().run()">
-          <IconBlockquote :size="20" stroke-width="1.2" />
-        </button>
-        <button type="button" class="btn btn-sm" @click="editor.chain().focus().setHorizontalRule().run()">
-          <IconMinus :size="20" stroke-width="1.2" />
-        </button>
-      </div>
-
-      <div class="vr mx-1 opacity-25"></div>
-
-      <!-- Code block -->
-      <div class="d-flex">
-        <button ref="codeBtn" type="button" class="btn btn-sm" :class="{ active: editor.isActive('codeBlock') }" @click.stop="toggleCodeDropdown">
-          <span style="font-family: monospace; font-size: 0.75rem; font-weight: 700">{/}</span><span style="font-size:8px; margin-left:1px">▾</span>
+        <button
+          ref="alignBtn"
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{
+            active:
+              editor.isActive({ textAlign: 'center' }) ||
+              editor.isActive({ textAlign: 'right' }) ||
+              editor.isActive({ textAlign: 'justify' })
+          }"
+          @click.stop="toggleAlignDropdown"
+        >
+          <component
+            :is="
+              editor.isActive({ textAlign: 'center' })
+                ? IconAlignCenter
+                : editor.isActive({ textAlign: 'right' })
+                  ? IconAlignRight
+                  : editor.isActive({ textAlign: 'justify' })
+                    ? IconAlignJustified
+                    : IconAlignLeft
+            "
+            :size="16"
+            stroke-width="1.2"
+          />
+          <span style="font-size: 8px; margin-left: 1px">▾</span>
         </button>
       </div>
       <Teleport to="body">
-        <div v-if="codeOpen" :style="codeMenuStyle" class="border rounded shadow-sm bg-body p-1" style="min-width:150px; max-height:280px; overflow-y:auto">
-          <button v-for="lang in CODE_LANGUAGES" :key="lang.value" type="button" class="btn btn-sm w-100 text-start" :class="{ active: editor.isActive('codeBlock', { language: lang.value }) }" @click="pickCodeLang(lang.value)">
+        <div v-if="alignOpen" :style="alignMenuStyle" class="border rounded shadow-sm bg-body p-1">
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :class="{ active: editor.isActive({ textAlign: 'left' }) }"
+            @click="pickAlign('left')"
+          >
+            <IconAlignLeft :size="18" stroke-width="1.2" /> {{ $t('align.left') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :class="{ active: editor.isActive({ textAlign: 'center' }) }"
+            @click="pickAlign('center')"
+          >
+            <IconAlignCenter :size="18" stroke-width="1.2" /> {{ $t('align.center') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :class="{ active: editor.isActive({ textAlign: 'right' }) }"
+            @click="pickAlign('right')"
+          >
+            <IconAlignRight :size="18" stroke-width="1.2" /> {{ $t('align.right') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :class="{ active: editor.isActive({ textAlign: 'justify' }) }"
+            @click="pickAlign('justify')"
+          >
+            <IconAlignJustified :size="18" stroke-width="1.2" /> {{ $t('align.justify') }}
+          </button>
+        </div>
+      </Teleport>
+
+      <!-- Listas (dropdown) -->
+      <div class="d-flex">
+        <button
+          ref="listsBtn"
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{
+            active: editor.isActive('bulletList') || editor.isActive('orderedList') || editor.isActive('taskList')
+          }"
+          @click.stop="toggleListsDropdown"
+        >
+          <component
+            :is="
+              editor.isActive('orderedList') ? IconListNumbers : editor.isActive('taskList') ? IconListCheck : IconList
+            "
+            :size="16"
+            stroke-width="1.2"
+          />
+          <span style="font-size: 8px; margin-left: 1px">▾</span>
+        </button>
+      </div>
+      <Teleport to="body">
+        <div
+          v-if="listsOpen"
+          :style="listsMenuStyle"
+          class="border rounded shadow-sm bg-body p-1"
+          style="min-width: 160px"
+        >
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :class="{ active: editor.isActive('bulletList') }"
+            @click="(editor.chain().focus().toggleBulletList().run(), (listsOpen = false))"
+          >
+            <IconList :size="16" stroke-width="1.2" /> {{ $t('list.bullet') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :class="{ active: editor.isActive('orderedList') }"
+            @click="(editor.chain().focus().toggleOrderedList().run(), (listsOpen = false))"
+          >
+            <IconListNumbers :size="16" stroke-width="1.2" /> {{ $t('list.ordered') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :class="{ active: editor.isActive('taskList') }"
+            @click="(editor.chain().focus().toggleTaskList().run(), (listsOpen = false))"
+          >
+            <IconListCheck :size="16" stroke-width="1.2" /> {{ $t('list.task') }}
+          </button>
+        </div>
+      </Teleport>
+      <button type="button" class="btn btn-sm btn-link" @click="editor.chain().focus().setHorizontalRule().run()">
+        <IconMinus :size="16" stroke-width="1.2" />
+      </button>
+      <!-- Bloques sueltos -->
+      <!-- <div class="d-flex">
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('blockquote') }"
+          @click="editor.chain().focus().toggleBlockquote().run()"
+        >
+          <IconBlockquote :size="16" stroke-width="1.2" />
+        </button>
+        <button type="button" class="btn btn-sm btn-link" @click="editor.chain().focus().setHorizontalRule().run()">
+          <IconMinus :size="16" stroke-width="1.2" />
+        </button>
+      </div> -->
+
+      <!-- Code block -->
+      <div class="d-flex">
+        <button
+          ref="codeBtn"
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('codeBlock') }"
+          @click.stop="toggleCodeDropdown"
+        >
+          <span style="font-family: monospace; font-size: 0.75rem; font-weight: 700">{/}</span
+          ><span style="font-size: 8px; margin-left: 1px">▾</span>
+        </button>
+      </div>
+      <Teleport to="body">
+        <div
+          v-if="codeOpen"
+          :style="codeMenuStyle"
+          class="border rounded shadow-sm bg-body p-1"
+          style="min-width: 150px; max-height: 280px; overflow-y: auto"
+        >
+          <button
+            v-for="lang in CODE_LANGUAGES"
+            :key="lang.value"
+            type="button"
+            class="btn btn-sm w-100 text-start"
+            :class="{ active: editor.isActive('codeBlock', { language: lang.value }) }"
+            @click="pickCodeLang(lang.value)"
+          >
             {{ lang.label }}
           </button>
         </div>
@@ -591,87 +869,160 @@ onBeforeUnmount(() => {
 
       <!-- Tabla -->
       <div class="d-flex">
-        <button ref="tableBtn" type="button" class="btn btn-sm" :class="{ active: editor.isActive('table') }" @click.stop="toggleTableDropdown">
-          <IconTable :size="20" stroke-width="1.2" /><span style="font-size:8px; margin-left:1px">▾</span>
+        <button
+          ref="tableBtn"
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('table') }"
+          @click.stop="toggleTableDropdown"
+        >
+          <IconTable :size="16" stroke-width="1.2" /><span style="font-size: 8px; margin-left: 1px">▾</span>
         </button>
       </div>
       <Teleport to="body">
-        <div v-if="tableOpen" :style="tableMenuStyle" class="border rounded shadow-sm bg-body p-1" style="min-width:190px">
-          <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" @click="editor.chain().focus().insertTable({ rows:3, cols:3, withHeaderRow:true }).run(); tableOpen=false">
+        <div
+          v-if="tableOpen"
+          :style="tableMenuStyle"
+          class="border rounded shadow-sm bg-body p-1"
+          style="min-width: 190px"
+        >
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            @click="
+              (editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(), (tableOpen = false))
+            "
+          >
             <IconTablePlus :size="16" stroke-width="1.2" /> {{ $t('table.insert') }}
           </button>
           <hr class="my-1" />
-          <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().addColumnAfter().run(); tableOpen=false">
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :disabled="!editor.isActive('table')"
+            @click="(editor.chain().focus().addColumnAfter().run(), (tableOpen = false))"
+          >
             <IconColumnInsertRight :size="16" stroke-width="1.2" /> {{ $t('table.add_col') }}
           </button>
-          <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().deleteColumn().run(); tableOpen=false">
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :disabled="!editor.isActive('table')"
+            @click="(editor.chain().focus().deleteColumn().run(), (tableOpen = false))"
+          >
             <IconColumnRemove :size="16" stroke-width="1.2" /> {{ $t('table.del_col') }}
           </button>
-          <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().addRowAfter().run(); tableOpen=false">
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :disabled="!editor.isActive('table')"
+            @click="(editor.chain().focus().addRowAfter().run(), (tableOpen = false))"
+          >
             <IconRowInsertBottom :size="16" stroke-width="1.2" /> {{ $t('table.add_row') }}
           </button>
-          <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2" :disabled="!editor.isActive('table')" @click="editor.chain().focus().deleteRow().run(); tableOpen=false">
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2"
+            :disabled="!editor.isActive('table')"
+            @click="(editor.chain().focus().deleteRow().run(), (tableOpen = false))"
+          >
             <IconRowRemove :size="16" stroke-width="1.2" /> {{ $t('table.del_row') }}
           </button>
           <hr class="my-1" />
-          <button type="button" class="btn btn-sm w-100 text-start d-flex align-items-center gap-2 text-danger" :disabled="!editor.isActive('table')" @click="editor.chain().focus().deleteTable().run(); tableOpen=false">
+          <button
+            type="button"
+            class="btn btn-sm w-100 text-start d-flex align-items-center gap-2 text-danger"
+            :disabled="!editor.isActive('table')"
+            @click="(editor.chain().focus().deleteTable().run(), (tableOpen = false))"
+          >
             <IconTableMinus :size="16" stroke-width="1.2" /> {{ $t('table.delete') }}
           </button>
         </div>
       </Teleport>
 
-      <div class="vr mx-1 opacity-25"></div>
-
       <!-- Link -->
       <div class="d-flex">
-        <button ref="linkBtn" type="button" class="btn btn-sm" :class="{ active: editor.isActive('link') }" @click.stop="openLinkModal">
-          <IconLink :size="20" stroke-width="1.2" />
+        <button
+          ref="linkBtn"
+          type="button"
+          class="btn btn-sm btn-link"
+          :class="{ active: editor.isActive('link') }"
+          @click.stop="openLinkModal"
+        >
+          <IconLink :size="16" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm" :disabled="!editor.isActive('link')" @click="removeLink">
-          <IconLinkOff :size="20" stroke-width="1.2" />
+        <button type="button" class="btn btn-sm btn-link" :disabled="!editor.isActive('link')" @click="removeLink">
+          <IconLinkOff :size="16" stroke-width="1.2" />
         </button>
       </div>
 
       <!-- Color -->
-      <button ref="colorBtn" type="button" class="btn btn-sm" :class="{ active: !!editor.getAttributes('textStyle').color }" @click.stop="toggleColorPicker">
-        <IconPalette :size="20" stroke-width="1.2" :style="{ color: editor.getAttributes('textStyle').color }" />
+      <button
+        ref="colorBtn"
+        type="button"
+        class="btn btn-sm btn-link"
+        :class="{ active: !!editor.getAttributes('textStyle').color }"
+        @click.stop="toggleColorPicker"
+      >
+        <IconPalette :size="16" stroke-width="1.2" :style="{ color: editor.getAttributes('textStyle').color }" />
       </button>
 
       <!-- Imagen -->
-      <button type="button" class="btn btn-sm" :disabled="!note" @click="insertImage">
-        <IconPhoto :size="20" stroke-width="1.2" />
+      <button type="button" class="btn btn-sm btn-link" :disabled="!note" @click="insertImage">
+        <IconPhoto :size="16" stroke-width="1.2" />
       </button>
 
-      <div class="vr mx-1 opacity-25"></div>
+      <!--  -->
 
       <!-- Spell check -->
-      <button
+      <!-- <button
         type="button"
-        class="btn btn-sm"
+        class="btn btn-sm btn-link"
         :class="{ active: spellcheck }"
         :title="spellcheck ? $t('editor.spellcheck_on') : $t('editor.spellcheck_off')"
         @click="toggleSpellcheck"
       >
-        <IconTextSpellcheck :size="20" stroke-width="1.2" />
-      </button>
-
+        <IconTextSpellcheck :size="16" stroke-width="1.2" />
+      </button> -->
     </div>
 
     <!-- Teleports de popovers -->
     <Teleport to="body">
       <div v-if="linkOpen" ref="linkPopover" :style="linkMenuStyle" class="border rounded shadow-sm bg-body p-2">
         <form class="d-flex gap-1" @submit.prevent="applyLink">
-          <input ref="linkInput" v-model="linkUrl" type="text" class="form-control form-control-sm" placeholder="https://..." style="min-width:220px" />
+          <input
+            ref="linkInput"
+            v-model="linkUrl"
+            type="text"
+            class="form-control form-control-sm"
+            placeholder="https://..."
+            style="min-width: 220px"
+          />
           <button type="submit" class="btn btn-sm btn-primary">OK</button>
         </form>
       </div>
     </Teleport>
     <Teleport to="body">
       <div v-if="colorOpen" :style="colorMenuStyle" class="border rounded shadow-sm bg-body p-2">
-        <div class="d-flex flex-wrap gap-1" style="width:134px">
-          <button v-for="c in COLORS" :key="c" type="button" class="color-swatch" :style="{ background: c, outline: editor.getAttributes('textStyle').color === c ? '2px solid var(--bs-primary)' : '1px solid var(--bs-border-color)' }" @click="pickColor(c)" />
+        <div class="d-flex flex-wrap gap-1" style="width: 134px">
+          <button
+            v-for="c in COLORS"
+            :key="c"
+            type="button"
+            class="color-swatch"
+            :style="{
+              background: c,
+              outline:
+                editor.getAttributes('textStyle').color === c
+                  ? '2px solid var(--bs-primary)'
+                  : '1px solid var(--bs-border-color)'
+            }"
+            @click="pickColor(c)"
+          />
         </div>
-        <button type="button" class="btn btn-sm btn-link px-0 mt-1 text-secondary small" @click="clearColor">{{ $t('color.none') }}</button>
+        <button type="button" class="btn btn-sm btn-link px-0 mt-1 text-secondary small" @click="clearColor">
+          {{ $t('color.none') }}
+        </button>
       </div>
     </Teleport>
 
@@ -695,13 +1046,7 @@ onBeforeUnmount(() => {
         />
         <div v-if="titleError" class="invalid-feedback">{{ titleError }}</div>
       </form>
-      <h5
-        v-else
-        class="mb-0 text-truncate"
-        style="cursor: pointer"
-        title="Clic para renombrar"
-        @click="startEditTitle"
-      >
+      <h5 v-else class="mb-0 text-truncate" style="cursor: pointer" title="Clic para renombrar" @click="startEditTitle">
         {{ note.title }}
       </h5>
     </div>
@@ -723,7 +1068,7 @@ onBeforeUnmount(() => {
         :should-show="() => editor.isActive('link')"
         class="link-bubble border rounded shadow-sm bg-body px-2 py-1 d-flex align-items-center gap-2"
       >
-        <span class="text-truncate small" style="max-width:200px">{{ editor.getAttributes('link').href }}</span>
+        <span class="text-truncate small" style="max-width: 200px">{{ editor.getAttributes('link').href }}</span>
         <button type="button" class="btn btn-sm p-0 text-primary" title="Abrir enlace" @click.prevent="openLinkHref">
           <IconExternalLink :size="14" stroke-width="1.5" />
         </button>
@@ -741,6 +1086,5 @@ onBeforeUnmount(() => {
       <span class="me-3">{{ editor.storage.characterCount?.characters() ?? 0 }} {{ $t('note.characters') }}</span>
       <span>{{ editor.storage.characterCount?.words() ?? 0 }} {{ $t('note.words') }}</span>
     </div>
-
   </div>
 </template>
