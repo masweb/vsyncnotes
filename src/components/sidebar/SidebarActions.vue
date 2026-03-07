@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { IconPlus, IconLayoutSidebarLeftCollapse } from '@tabler/icons-vue'
+import { IconPlus, IconLayoutSidebarLeftCollapse, IconSettings } from '@tabler/icons-vue'
 
 const emit = defineEmits<{ (e: 'collapse'): void }>()
 
@@ -41,6 +41,13 @@ const cancelCreate = () => {
         @click="startCreate"
       >
         <IconPlus :size="14" stroke-width="2" />
+      </button>
+      <button
+        class="btn btn-sm p-0 lh-1 me-1 text-muted"
+        :title="$t('settings.title')"
+        @click="appStore.setView('settings')"
+      >
+        <IconSettings :size="15" stroke-width="1.5" />
       </button>
       <button
         class="btn btn-sm p-0 lh-1 text-muted"
