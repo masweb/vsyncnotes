@@ -5,6 +5,32 @@
   outline: none !important;
 }
 
+// ── Editor toolbar ─────────────────────────────────────────────────────────────
+
+.editor-toolbar {
+  height: 41px !important;
+  min-height: 41px !important;
+  overflow: hidden;
+
+  .btn {
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: flex-end;
+    gap: 1px;
+  }
+}
+
+[data-coreui-theme='dark'] .editor-toolbar .highlight-btn-label {
+  background: #854d0e !important;
+  color: #fef9c3;
+}
+
+.toolbar-caret {
+  font-size: 7px;
+  line-height: 2.2;
+  opacity: 0.6;
+}
+
 // ── Image NodeView ─────────────────────────────────────────────────────────────
 
 // inline: true → span, flows with text; small images sit side-by-side
@@ -192,6 +218,11 @@
   background-color: #fef08a;
   border-radius: 2px;
   padding: 0 2px;
+}
+
+[data-coreui-theme='dark'] .tiptap mark {
+  background-color: #854d0e;
+  color: #fef9c3;
 }
 
 // Task list
