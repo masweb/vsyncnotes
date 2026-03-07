@@ -35,6 +35,8 @@
   "editor": {
     "placeholder": "Escribe algo...",
     "spellcheck": "Revisar ortografía al escribir",
+    "spellcheck_on": "Desactivar corrección ortográfica",
+    "spellcheck_off": "Activar corrección ortográfica",
     "read_aloud": "Leer en voz alta"
   },
   "table": {
