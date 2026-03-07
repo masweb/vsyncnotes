@@ -95,6 +95,10 @@
 .tiptap ul,
 .tiptap ol {
   padding-left: 1.4em;
+
+  li > p {
+    margin: 0;
+  }
 }
 
 .tiptap blockquote {
@@ -191,23 +195,65 @@
 }
 
 // Task list
-.tiptap ul[data-type='taskList'] {
+.ProseMirror ul[data-type='taskList'] {
   list-style: none;
-  padding-left: 0.25em;
+  padding-left: 0.25rem;
+}
 
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5em;
+.ProseMirror ul[data-type='taskList'] > li {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
 
-    > label {
-      flex-shrink: 0;
-      margin-top: 3px;
-    }
+.ProseMirror ul[data-type='taskList'] > li > label {
+  flex-shrink: 0;
+  display: flex !important;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
 
-    > div {
-      flex-grow: 1;
-    }
+.ProseMirror ul[data-type='taskList'] > li > label input[type='checkbox'] {
+  cursor: pointer;
+  width: 1.2em;
+  height: 1.2em;
+  min-width: 1.2em;
+  margin: 0;
+  accent-color: #4a78f9;
+  appearance: auto;
+  -webkit-appearance: auto;
+}
+
+.ProseMirror ul[data-type='taskList'] > li > label span {
+  display: none;
+}
+
+.ProseMirror ul[data-type='taskList'] > li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.ProseMirror ul[data-type='taskList'] > li > div > p {
+  margin: 0;
+}
+
+.ProseMirror ul[data-type='taskList'] > li[data-checked='true'] > div {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.ProseMirror ul[data-type='taskList'] ul[data-type='taskList'] {
+  margin-top: 0.25rem;
+  padding-left: 1.25rem;
+}
+
+[data-coreui-theme='dark'] {
+  .ProseMirror ul[data-type='taskList'] > li > label input[type='checkbox'] {
+    accent-color: coral;
   }
 }
 
