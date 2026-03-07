@@ -132,12 +132,12 @@ const onContextMenu = async (e: MouseEvent) => {
     >
       <span
         class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
-        style="width: 12px"
+        style="width: 14px"
         @click.stop="toggleExpanded"
       >
         <IconChevronRight
           v-if="hasChildren || showInput"
-          :size="12"
+          :size="14"
           stroke-width="2"
           class="text-muted"
           :style="{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }"
@@ -146,13 +146,13 @@ const onContextMenu = async (e: MouseEvent) => {
 
       <IconFolderOpen
         v-if="isSelected"
-        :size="14"
+        :size="17"
         stroke-width="1.5"
         class="flex-shrink-0 text-primary"
       />
       <IconFolder
         v-else
-        :size="14"
+        :size="17"
         stroke-width="1.5"
         class="flex-shrink-0 text-muted"
       />

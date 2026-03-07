@@ -564,7 +564,7 @@ onBeforeUnmount(() => {
           :disabled="!editor.can().undo()"
           @click="editor.chain().focus().undo().run()"
         >
-          <IconArrowBackUp :size="16" stroke-width="1.2" />
+          <IconArrowBackUp :size="22" stroke-width="1.2" />
         </button>
         <button
           type="button"
@@ -572,7 +572,7 @@ onBeforeUnmount(() => {
           :disabled="!editor.can().redo()"
           @click="editor.chain().focus().redo().run()"
         >
-          <IconArrowForwardUp :size="16" stroke-width="1.2" />
+          <IconArrowForwardUp :size="22" stroke-width="1.2" />
         </button>
       </div>
 
@@ -584,7 +584,7 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('bold') }"
           @click="editor.chain().focus().toggleBold().run()"
         >
-          <IconBold :size="16" stroke-width="1.2" />
+          <IconBold :size="22" stroke-width="1.2" />
         </button>
         <button
           type="button"
@@ -592,7 +592,7 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('italic') }"
           @click="editor.chain().focus().toggleItalic().run()"
         >
-          <IconItalic :size="16" stroke-width="1.2" />
+          <IconItalic :size="22" stroke-width="1.2" />
         </button>
         <button
           type="button"
@@ -600,7 +600,7 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('strike') }"
           @click="editor.chain().focus().toggleStrike().run()"
         >
-          <IconStrikethrough :size="16" stroke-width="1.2" />
+          <IconStrikethrough :size="22" stroke-width="1.2" />
         </button>
         <button
           type="button"
@@ -608,7 +608,7 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('underline') }"
           @click="editor.chain().focus().toggleUnderline().run()"
         >
-          <IconUnderline :size="16" stroke-width="1.2" />
+          <IconUnderline :size="22" stroke-width="1.2" />
         </button>
         <button
           type="button"
@@ -616,17 +616,7 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('code') }"
           @click="editor.chain().focus().toggleCode().run()"
         >
-          <IconCode :size="16" stroke-width="1.2" />
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-link"
-          :class="{ active: editor.isActive('highlight') }"
-          @click="editor.chain().focus().toggleHighlight().run()"
-        >
-          <span style="background: #fef08a; padding: 1px 4px; border-radius: 2px; font-size: 0.7rem; font-weight: 700"
-            >AB</span
-          >
+          <IconCode :size="22" stroke-width="1.2" />
         </button>
       </div>
 
@@ -639,7 +629,7 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('heading') }"
           @click.stop="toggleHeadingDropdown"
         >
-          <IconHeading :size="16" stroke-width="1.2" /><span style="font-size: 8px; margin-left: 1px">▾</span>
+          <IconHeading :size="22" stroke-width="1.2" /><span class="toolbar-caret">▼</span>
         </button>
       </div>
       <Teleport to="body">
@@ -650,7 +640,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('heading', { level: 1 }) }"
             @click="pickHeading(1)"
           >
-            <IconH1 :size="18" stroke-width="1.2" />
+            <IconH1 :size="22" stroke-width="1.2" />
           </button>
           <button
             type="button"
@@ -658,7 +648,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('heading', { level: 2 }) }"
             @click="pickHeading(2)"
           >
-            <IconH2 :size="18" stroke-width="1.2" />
+            <IconH2 :size="22" stroke-width="1.2" />
           </button>
           <button
             type="button"
@@ -666,7 +656,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('heading', { level: 3 }) }"
             @click="pickHeading(3)"
           >
-            <IconH3 :size="18" stroke-width="1.2" />
+            <IconH3 :size="22" stroke-width="1.2" />
           </button>
           <button
             type="button"
@@ -674,7 +664,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('heading', { level: 4 }) }"
             @click="pickHeading(4)"
           >
-            <IconH4 :size="18" stroke-width="1.2" />
+            <IconH4 :size="22" stroke-width="1.2" />
           </button>
           <button
             type="button"
@@ -682,7 +672,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('heading', { level: 5 }) }"
             @click="pickHeading(5)"
           >
-            <IconH5 :size="18" stroke-width="1.2" />
+            <IconH5 :size="22" stroke-width="1.2" />
           </button>
           <button
             type="button"
@@ -690,7 +680,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('heading', { level: 6 }) }"
             @click="pickHeading(6)"
           >
-            <IconH6 :size="18" stroke-width="1.2" />
+            <IconH6 :size="22" stroke-width="1.2" />
           </button>
         </div>
       </Teleport>
@@ -719,10 +709,10 @@ onBeforeUnmount(() => {
                     ? IconAlignJustified
                     : IconAlignLeft
             "
-            :size="16"
+            :size="22"
             stroke-width="1.2"
           />
-          <span style="font-size: 8px; margin-left: 1px">▾</span>
+          <span class="toolbar-caret">▼</span>
         </button>
       </div>
       <Teleport to="body">
@@ -733,7 +723,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive({ textAlign: 'left' }) }"
             @click="pickAlign('left')"
           >
-            <IconAlignLeft :size="18" stroke-width="1.2" /> {{ $t('align.left') }}
+            <IconAlignLeft :size="22" stroke-width="1.2" /> {{ $t('align.left') }}
           </button>
           <button
             type="button"
@@ -741,7 +731,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive({ textAlign: 'center' }) }"
             @click="pickAlign('center')"
           >
-            <IconAlignCenter :size="18" stroke-width="1.2" /> {{ $t('align.center') }}
+            <IconAlignCenter :size="22" stroke-width="1.2" /> {{ $t('align.center') }}
           </button>
           <button
             type="button"
@@ -749,7 +739,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive({ textAlign: 'right' }) }"
             @click="pickAlign('right')"
           >
-            <IconAlignRight :size="18" stroke-width="1.2" /> {{ $t('align.right') }}
+            <IconAlignRight :size="22" stroke-width="1.2" /> {{ $t('align.right') }}
           </button>
           <button
             type="button"
@@ -757,7 +747,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive({ textAlign: 'justify' }) }"
             @click="pickAlign('justify')"
           >
-            <IconAlignJustified :size="18" stroke-width="1.2" /> {{ $t('align.justify') }}
+            <IconAlignJustified :size="22" stroke-width="1.2" /> {{ $t('align.justify') }}
           </button>
         </div>
       </Teleport>
@@ -777,10 +767,10 @@ onBeforeUnmount(() => {
             :is="
               editor.isActive('orderedList') ? IconListNumbers : editor.isActive('taskList') ? IconListCheck : IconList
             "
-            :size="16"
+            :size="22"
             stroke-width="1.2"
           />
-          <span style="font-size: 8px; margin-left: 1px">▾</span>
+          <span class="toolbar-caret">▼</span>
         </button>
       </div>
       <Teleport to="body">
@@ -796,7 +786,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('bulletList') }"
             @click="(editor.chain().focus().toggleBulletList().run(), (listsOpen = false))"
           >
-            <IconList :size="16" stroke-width="1.2" /> {{ $t('list.bullet') }}
+            <IconList :size="22" stroke-width="1.2" /> {{ $t('list.bullet') }}
           </button>
           <button
             type="button"
@@ -804,7 +794,7 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('orderedList') }"
             @click="(editor.chain().focus().toggleOrderedList().run(), (listsOpen = false))"
           >
-            <IconListNumbers :size="16" stroke-width="1.2" /> {{ $t('list.ordered') }}
+            <IconListNumbers :size="22" stroke-width="1.2" /> {{ $t('list.ordered') }}
           </button>
           <button
             type="button"
@@ -812,13 +802,10 @@ onBeforeUnmount(() => {
             :class="{ active: editor.isActive('taskList') }"
             @click="(editor.chain().focus().toggleTaskList().run(), (listsOpen = false))"
           >
-            <IconListCheck :size="16" stroke-width="1.2" /> {{ $t('list.task') }}
+            <IconListCheck :size="22" stroke-width="1.2" /> {{ $t('list.task') }}
           </button>
         </div>
       </Teleport>
-      <button type="button" class="btn btn-sm btn-link" @click="editor.chain().focus().setHorizontalRule().run()">
-        <IconMinus :size="16" stroke-width="1.2" />
-      </button>
       <!-- Bloques sueltos -->
       <!-- <div class="d-flex">
         <button
@@ -827,10 +814,10 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('blockquote') }"
           @click="editor.chain().focus().toggleBlockquote().run()"
         >
-          <IconBlockquote :size="16" stroke-width="1.2" />
+          <IconBlockquote :size="22" stroke-width="1.2" />
         </button>
         <button type="button" class="btn btn-sm btn-link" @click="editor.chain().focus().setHorizontalRule().run()">
-          <IconMinus :size="16" stroke-width="1.2" />
+          <IconMinus :size="22" stroke-width="1.2" />
         </button>
       </div> -->
 
@@ -844,7 +831,7 @@ onBeforeUnmount(() => {
           @click.stop="toggleCodeDropdown"
         >
           <span style="font-family: monospace; font-size: 0.75rem; font-weight: 700">{/}</span
-          ><span style="font-size: 8px; margin-left: 1px">▾</span>
+          ><span class="toolbar-caret">▼</span>
         </button>
       </div>
       <Teleport to="body">
@@ -876,7 +863,7 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('table') }"
           @click.stop="toggleTableDropdown"
         >
-          <IconTable :size="16" stroke-width="1.2" /><span style="font-size: 8px; margin-left: 1px">▾</span>
+          <IconTable :size="22" stroke-width="1.2" /><span class="toolbar-caret">▼</span>
         </button>
       </div>
       <Teleport to="body">
@@ -893,7 +880,7 @@ onBeforeUnmount(() => {
               (editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(), (tableOpen = false))
             "
           >
-            <IconTablePlus :size="16" stroke-width="1.2" /> {{ $t('table.insert') }}
+            <IconTablePlus :size="22" stroke-width="1.2" /> {{ $t('table.insert') }}
           </button>
           <hr class="my-1" />
           <button
@@ -902,7 +889,7 @@ onBeforeUnmount(() => {
             :disabled="!editor.isActive('table')"
             @click="(editor.chain().focus().addColumnAfter().run(), (tableOpen = false))"
           >
-            <IconColumnInsertRight :size="16" stroke-width="1.2" /> {{ $t('table.add_col') }}
+            <IconColumnInsertRight :size="22" stroke-width="1.2" /> {{ $t('table.add_col') }}
           </button>
           <button
             type="button"
@@ -910,7 +897,7 @@ onBeforeUnmount(() => {
             :disabled="!editor.isActive('table')"
             @click="(editor.chain().focus().deleteColumn().run(), (tableOpen = false))"
           >
-            <IconColumnRemove :size="16" stroke-width="1.2" /> {{ $t('table.del_col') }}
+            <IconColumnRemove :size="22" stroke-width="1.2" /> {{ $t('table.del_col') }}
           </button>
           <button
             type="button"
@@ -918,7 +905,7 @@ onBeforeUnmount(() => {
             :disabled="!editor.isActive('table')"
             @click="(editor.chain().focus().addRowAfter().run(), (tableOpen = false))"
           >
-            <IconRowInsertBottom :size="16" stroke-width="1.2" /> {{ $t('table.add_row') }}
+            <IconRowInsertBottom :size="22" stroke-width="1.2" /> {{ $t('table.add_row') }}
           </button>
           <button
             type="button"
@@ -926,7 +913,7 @@ onBeforeUnmount(() => {
             :disabled="!editor.isActive('table')"
             @click="(editor.chain().focus().deleteRow().run(), (tableOpen = false))"
           >
-            <IconRowRemove :size="16" stroke-width="1.2" /> {{ $t('table.del_row') }}
+            <IconRowRemove :size="22" stroke-width="1.2" /> {{ $t('table.del_row') }}
           </button>
           <hr class="my-1" />
           <button
@@ -935,10 +922,27 @@ onBeforeUnmount(() => {
             :disabled="!editor.isActive('table')"
             @click="(editor.chain().focus().deleteTable().run(), (tableOpen = false))"
           >
-            <IconTableMinus :size="16" stroke-width="1.2" /> {{ $t('table.delete') }}
+            <IconTableMinus :size="22" stroke-width="1.2" /> {{ $t('table.delete') }}
           </button>
         </div>
       </Teleport>
+
+      <!-- Highlight (AB) -->
+      <button
+        type="button"
+        class="btn btn-sm btn-link"
+        :class="{ active: editor.isActive('highlight') }"
+        @click="editor.chain().focus().toggleHighlight().run()"
+      >
+        <span class="highlight-btn-label" style="background: #fef08a; padding: 1px 4px; border-radius: 2px; font-size: 0.7rem; font-weight: 700"
+          >AB</span
+        >
+      </button>
+
+      <!-- HR -->
+      <button type="button" class="btn btn-sm btn-link" @click="editor.chain().focus().setHorizontalRule().run()">
+        <IconMinus :size="22" stroke-width="1.2" />
+      </button>
 
       <!-- Link -->
       <div class="d-flex">
@@ -949,10 +953,10 @@ onBeforeUnmount(() => {
           :class="{ active: editor.isActive('link') }"
           @click.stop="openLinkModal"
         >
-          <IconLink :size="16" stroke-width="1.2" />
+          <IconLink :size="22" stroke-width="1.2" />
         </button>
         <button type="button" class="btn btn-sm btn-link" :disabled="!editor.isActive('link')" @click="removeLink">
-          <IconLinkOff :size="16" stroke-width="1.2" />
+          <IconLinkOff :size="22" stroke-width="1.2" />
         </button>
       </div>
 
@@ -964,12 +968,12 @@ onBeforeUnmount(() => {
         :class="{ active: !!editor.getAttributes('textStyle').color }"
         @click.stop="toggleColorPicker"
       >
-        <IconPalette :size="16" stroke-width="1.2" :style="{ color: editor.getAttributes('textStyle').color }" />
+        <IconPalette :size="22" stroke-width="1.2" :style="{ color: editor.getAttributes('textStyle').color }" />
       </button>
 
       <!-- Imagen -->
       <button type="button" class="btn btn-sm btn-link" :disabled="!note" @click="insertImage">
-        <IconPhoto :size="16" stroke-width="1.2" />
+        <IconPhoto :size="22" stroke-width="1.2" />
       </button>
 
       <!--  -->
@@ -982,7 +986,7 @@ onBeforeUnmount(() => {
         :title="spellcheck ? $t('editor.spellcheck_on') : $t('editor.spellcheck_off')"
         @click="toggleSpellcheck"
       >
-        <IconTextSpellcheck :size="16" stroke-width="1.2" />
+        <IconTextSpellcheck :size="22" stroke-width="1.2" />
       </button> -->
     </div>
 
