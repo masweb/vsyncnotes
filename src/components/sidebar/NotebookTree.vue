@@ -7,7 +7,7 @@ onMounted(notebookStore.loadNotebooks)
 </script>
 
 <template>
-  <div class="h-100 d-flex flex-column">
+  <div class="panel-tree h-100 d-flex flex-column">
     <SidebarActions @collapse="emit('collapse')" />
 
     <div class="flex-grow-1 overflow-auto py-1">

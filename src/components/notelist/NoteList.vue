@@ -40,7 +40,7 @@ const onBodyContextMenu = async (e: MouseEvent) => {
 </script>
 
 <template>
-  <div class="d-flex flex-column h-100">
+  <div class="panel-notes d-flex flex-column h-100">
 
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom flex-shrink-0">
