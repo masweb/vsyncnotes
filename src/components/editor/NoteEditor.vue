@@ -561,6 +561,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.undo')"
           :disabled="!editor.can().undo()"
           @click="editor.chain().focus().undo().run()"
         >
@@ -569,6 +570,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.redo')"
           :disabled="!editor.can().redo()"
           @click="editor.chain().focus().redo().run()"
         >
@@ -581,6 +583,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.bold')"
           :class="{ active: editor.isActive('bold') }"
           @click="editor.chain().focus().toggleBold().run()"
         >
@@ -589,6 +592,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.italic')"
           :class="{ active: editor.isActive('italic') }"
           @click="editor.chain().focus().toggleItalic().run()"
         >
@@ -597,6 +601,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.strike')"
           :class="{ active: editor.isActive('strike') }"
           @click="editor.chain().focus().toggleStrike().run()"
         >
@@ -605,6 +610,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.underline')"
           :class="{ active: editor.isActive('underline') }"
           @click="editor.chain().focus().toggleUnderline().run()"
         >
@@ -613,6 +619,7 @@ onBeforeUnmount(() => {
         <button
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.code')"
           :class="{ active: editor.isActive('code') }"
           @click="editor.chain().focus().toggleCode().run()"
         >
@@ -626,6 +633,7 @@ onBeforeUnmount(() => {
           ref="headingBtn"
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.heading')"
           :class="{ active: editor.isActive('heading') }"
           @click.stop="toggleHeadingDropdown"
         >
@@ -691,6 +699,7 @@ onBeforeUnmount(() => {
           ref="alignBtn"
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.align')"
           :class="{
             active:
               editor.isActive({ textAlign: 'center' }) ||
@@ -758,6 +767,7 @@ onBeforeUnmount(() => {
           ref="listsBtn"
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.lists')"
           :class="{
             active: editor.isActive('bulletList') || editor.isActive('orderedList') || editor.isActive('taskList')
           }"
@@ -827,6 +837,7 @@ onBeforeUnmount(() => {
           ref="codeBtn"
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.code_block')"
           :class="{ active: editor.isActive('codeBlock') }"
           @click.stop="toggleCodeDropdown"
         >
@@ -860,6 +871,7 @@ onBeforeUnmount(() => {
           ref="tableBtn"
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.table')"
           :class="{ active: editor.isActive('table') }"
           @click.stop="toggleTableDropdown"
         >
@@ -931,6 +943,7 @@ onBeforeUnmount(() => {
       <button
         type="button"
         class="btn btn-sm btn-link"
+        :title="$t('editor.toolbar.highlight')"
         :class="{ active: editor.isActive('highlight') }"
         @click="editor.chain().focus().toggleHighlight().run()"
       >
@@ -940,7 +953,7 @@ onBeforeUnmount(() => {
       </button>
 
       <!-- HR -->
-      <button type="button" class="btn btn-sm btn-link" @click="editor.chain().focus().setHorizontalRule().run()">
+      <button type="button" class="btn btn-sm btn-link" :title="$t('editor.toolbar.hr')" @click="editor.chain().focus().setHorizontalRule().run()">
         <IconMinus :size="22" stroke-width="1.2" />
       </button>
 
@@ -950,12 +963,13 @@ onBeforeUnmount(() => {
           ref="linkBtn"
           type="button"
           class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.link')"
           :class="{ active: editor.isActive('link') }"
           @click.stop="openLinkModal"
         >
           <IconLink :size="22" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm btn-link" :disabled="!editor.isActive('link')" @click="removeLink">
+        <button type="button" class="btn btn-sm btn-link" :title="$t('editor.toolbar.unlink')" :disabled="!editor.isActive('link')" @click="removeLink">
           <IconLinkOff :size="22" stroke-width="1.2" />
         </button>
       </div>
@@ -965,6 +979,7 @@ onBeforeUnmount(() => {
         ref="colorBtn"
         type="button"
         class="btn btn-sm btn-link"
+        :title="$t('editor.toolbar.color')"
         :class="{ active: !!editor.getAttributes('textStyle').color }"
         @click.stop="toggleColorPicker"
       >
@@ -972,7 +987,7 @@ onBeforeUnmount(() => {
       </button>
 
       <!-- Imagen -->
-      <button type="button" class="btn btn-sm btn-link" :disabled="!note" @click="insertImage">
+      <button type="button" class="btn btn-sm btn-link" :title="$t('editor.toolbar.image')" :disabled="!note" @click="insertImage">
         <IconPhoto :size="22" stroke-width="1.2" />
       </button>
 

@@ -37,7 +37,27 @@
     "spellcheck": "Revisar ortografía al escribir",
     "spellcheck_on": "Desactivar corrección ortográfica",
     "spellcheck_off": "Activar corrección ortográfica",
-    "read_aloud": "Leer en voz alta"
+    "read_aloud": "Leer en voz alta",
+    "toolbar": {
+      "undo": "Deshacer",
+      "redo": "Rehacer",
+      "bold": "Negrita",
+      "italic": "Cursiva",
+      "strike": "Tachado",
+      "underline": "Subrayado",
+      "code": "Código inline",
+      "heading": "Encabezados",
+      "align": "Alineación",
+      "lists": "Listas",
+      "code_block": "Bloque de código",
+      "table": "Tabla",
+      "highlight": "Resaltado",
+      "hr": "Línea horizontal",
+      "link": "Insertar enlace",
+      "unlink": "Quitar enlace",
+      "color": "Color de texto",
+      "image": "Insertar imagen"
+    }
   },
   "table": {
     "insert": "Insertar tabla",
