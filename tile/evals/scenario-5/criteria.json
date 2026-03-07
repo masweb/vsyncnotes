@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates correct use of the optional parent_id parameter in notebook_create to build nested notebook hierarchies, and correct tree assembly from the flat notebooks_list result. Tests that parent-child relationships are handled through parent_id UUIDs.",
+  "type": "weighted_checklist",
+  "capability_tested": "Nested Notebook Hierarchy",
+  "checklist": [
+    {
+      "name": "parent_id argument in notebook_create",
+      "description": "When creating a child notebook, the solution passes the parent notebook's UUID as the second argument to `notebook_create(title, parentId)`.",
+      "max_score": 35
+    },
+    {
+      "name": "notebooks_list for tree data",
+      "description": "The solution calls `notebooks_list` to fetch all notebooks (the flat list containing parent_id fields) as the data source for tree assembly.",
+      "max_score": 20
+    },
+    {
+      "name": "Tree assembly logic",
+      "description": "The solution correctly builds a hierarchical tree by grouping notebooks by parent_id, assigning each notebook a `children` array, and returning root-level notebooks (parent_id null) at the top level.",
+      "max_score": 30
+    },
+    {
+      "name": "Top-level notebook parent_id",
+      "description": "A notebook created without a parentId has `parent_id: null` in the returned object, and appears at the root of the tree.",
+      "max_score": 15
+    }
+  ]
+}

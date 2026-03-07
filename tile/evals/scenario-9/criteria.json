@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates the solution's correct use of both notes_list (returns NoteMeta without body) and note_get (returns full Note with body) commands, and its understanding that list operations omit the body for efficiency while individual retrieval includes the decrypted body.",
+  "type": "weighted_checklist",
+  "capability_tested": "Note Metadata vs Full Note",
+  "checklist": [
+    {
+      "name": "notes_list for metadata-only list",
+      "description": "The solution calls `notes_list(notebookId)` to obtain the lightweight `NoteMeta[]` array and does not attempt to access a `body` field on the result.",
+      "max_score": 30
+    },
+    {
+      "name": "note_get for full note with body",
+      "description": "The solution calls `note_get(id)` to retrieve the complete `Note` object and correctly reads the `body` field (Tiptap JSON) and `body_format` field.",
+      "max_score": 30
+    },
+    {
+      "name": "body_format value",
+      "description": "The solution correctly identifies or verifies that the `body_format` field equals `\"tiptap-json\"` for notes retrieved via `note_get`.",
+      "max_score": 20
+    },
+    {
+      "name": "Type discrimination",
+      "description": "The solution implements a type guard or check (e.g., `'body' in note`) to distinguish between `NoteMeta` and full `Note` objects.",
+      "max_score": 20
+    }
+  ]
+}

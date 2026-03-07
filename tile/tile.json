@@ -1,0 +1,7 @@
+{
+  "name": "gville/vsyncnotes",
+  "version": "0.1.0",
+  "docs": "docs/index.md",
+  "summary": "Offline-first encrypted desktop notes application built with Tauri 2 (Rust) and Vue 3 (TypeScript) featuring AES-256-GCM end-to-end encryption, a Tiptap WYSIWYG editor, and Tauri IPC commands for notebook/note/attachment management.",
+  "private": true
+}

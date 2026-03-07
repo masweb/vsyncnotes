@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates the correct use of the vault_status Tauri command to inspect vault state. Tests that the solution correctly reads both the `exists` and `locked` fields and exposes them via well-structured helper functions.",
+  "type": "weighted_checklist",
+  "capability_tested": "Vault Status Check",
+  "checklist": [
+    {
+      "name": "vault_status invocation",
+      "description": "The solution calls `vault_status` (no arguments) and reads the returned `VaultStatus` object.",
+      "max_score": 40
+    },
+    {
+      "name": "exists field usage",
+      "description": "The solution reads and correctly returns the `exists` boolean field from the vault status result.",
+      "max_score": 25
+    },
+    {
+      "name": "locked field usage",
+      "description": "The solution reads and correctly returns the `locked` boolean field from the vault status result.",
+      "max_score": 25
+    },
+    {
+      "name": "Async correctness",
+      "description": "All calls to `vault_status` are properly awaited and the async return type is correctly declared.",
+      "max_score": 10
+    }
+  ]
+}

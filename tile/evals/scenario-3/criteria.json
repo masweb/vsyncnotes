@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates the correct use of the vault_change_password Tauri command to rotate the vault password. Tests that the solution passes both the old and new passwords and handles incorrect old-password errors.",
+  "type": "weighted_checklist",
+  "capability_tested": "Vault Password Change",
+  "checklist": [
+    {
+      "name": "vault_change_password invocation",
+      "description": "The solution calls `vault_change_password` with two arguments: the current (old) password and the desired new password, in the correct order.",
+      "max_score": 45
+    },
+    {
+      "name": "Old password verification error",
+      "description": "When called with an incorrect old password, the error from `vault_change_password` is propagated to the caller rather than suppressed.",
+      "max_score": 25
+    },
+    {
+      "name": "Data remains accessible",
+      "description": "After password change, the solution demonstrates that notes are accessible by unlocking with the new password (calls `vault_unlock` with new password and then retrieves a note).",
+      "max_score": 20
+    },
+    {
+      "name": "Old password rejected",
+      "description": "After changing the password, attempting to unlock with the old password produces an error.",
+      "max_score": 10
+    }
+  ]
+}

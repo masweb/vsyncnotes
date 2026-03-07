@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates the correct use of vault unlock and lock Tauri commands. Tests that the solution distinguishes between unlocking (providing password) and locking (no arguments) and that it handles incorrect passwords appropriately.",
+  "type": "weighted_checklist",
+  "capability_tested": "Vault Unlock and Lock",
+  "checklist": [
+    {
+      "name": "vault_unlock invocation",
+      "description": "The solution calls `vault_unlock` with the password string argument to authenticate and load the master key into memory.",
+      "max_score": 35
+    },
+    {
+      "name": "vault_lock invocation",
+      "description": "The solution calls `vault_lock` (with no arguments) to zero the master key from memory.",
+      "max_score": 30
+    },
+    {
+      "name": "Wrong password error handling",
+      "description": "When `vault_unlock` is called with an incorrect password, the resulting error is caught and re-thrown or handled, not silently ignored.",
+      "max_score": 20
+    },
+    {
+      "name": "vault_status verification",
+      "description": "The solution uses `vault_status` to confirm the vault is locked after calling `vault_lock`.",
+      "max_score": 15
+    }
+  ]
+}

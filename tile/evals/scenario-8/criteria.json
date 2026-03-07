@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates correct use of the three attachment Tauri commands: attachment_save, attachment_get, and attachment_delete. Tests that binary data is passed correctly to attachment_save, that the returned metadata includes hash_sha256, and that attachment_get returns the original bytes.",
+  "type": "weighted_checklist",
+  "capability_tested": "Attachment Save and Retrieval",
+  "checklist": [
+    {
+      "name": "attachment_save invocation",
+      "description": "The solution calls `attachment_save` with four arguments: `note_id` (UUID string), `filename` (string), `mime` (string), and `data` (byte array / Uint8Array / number[]).",
+      "max_score": 30
+    },
+    {
+      "name": "Attachment metadata fields",
+      "description": "The solution reads the returned `Attachment` object and accesses `id`, `filename`, `mime`, `size_bytes`, and `hash_sha256` fields.",
+      "max_score": 20
+    },
+    {
+      "name": "attachment_get invocation",
+      "description": "The solution calls `attachment_get` with the attachment UUID and receives the decrypted binary data (byte array matching the original input).",
+      "max_score": 30
+    },
+    {
+      "name": "attachment_delete invocation",
+      "description": "The solution calls `attachment_delete` with the attachment UUID to remove the attachment.",
+      "max_score": 20
+    }
+  ]
+}

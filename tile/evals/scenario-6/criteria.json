@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates correct use of all five note Tauri commands: note_create, notes_list, note_get, note_update, and note_delete. Tests the full CRUD lifecycle for notes, including correct notebook_id usage and body handling.",
+  "type": "weighted_checklist",
+  "capability_tested": "Note CRUD Operations",
+  "checklist": [
+    {
+      "name": "note_create usage",
+      "description": "The solution calls `note_create` with `notebook_id` (UUID string) and `title` (string), and returns the full `Note` object including `body` and `body_format` fields.",
+      "max_score": 25
+    },
+    {
+      "name": "notes_list usage",
+      "description": "The solution calls `notes_list` with a `notebook_id` UUID string and returns `NoteMeta[]` (objects without a body field).",
+      "max_score": 20
+    },
+    {
+      "name": "note_get usage",
+      "description": "The solution calls `note_get` with a note UUID string and returns the full `Note` object including the decrypted `body` field.",
+      "max_score": 20
+    },
+    {
+      "name": "note_update usage",
+      "description": "The solution calls `note_update` with a complete `Note` object (including `body` and `body_format` fields) to persist title and body changes.",
+      "max_score": 20
+    },
+    {
+      "name": "note_delete usage",
+      "description": "The solution calls `note_delete` with a note UUID string to remove the note.",
+      "max_score": 15
+    }
+  ]
+}

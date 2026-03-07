@@ -1,0 +1,32 @@
+{
+  "context": "Evaluates correct use of all five notebook Tauri commands: notebook_create, notebooks_list, notebook_get, notebook_update, and notebook_delete. Tests the full CRUD lifecycle including correct argument types and return value handling.",
+  "type": "weighted_checklist",
+  "capability_tested": "Notebook CRUD Operations",
+  "checklist": [
+    {
+      "name": "notebook_create usage",
+      "description": "The solution calls `notebook_create` with a title string and returns the resulting `Notebook` object (which includes `id`, `title`, `parent_id`, `sort_order`, `created_at`, `updated_at`).",
+      "max_score": 25
+    },
+    {
+      "name": "notebooks_list usage",
+      "description": "The solution calls `notebooks_list` (no arguments) and returns the `Notebook[]` array.",
+      "max_score": 20
+    },
+    {
+      "name": "notebook_get usage",
+      "description": "The solution calls `notebook_get` with a UUID string and returns the single `Notebook` object.",
+      "max_score": 20
+    },
+    {
+      "name": "notebook_update usage",
+      "description": "The solution calls `notebook_update` with a full `Notebook` object (not just the id and title).",
+      "max_score": 20
+    },
+    {
+      "name": "notebook_delete usage",
+      "description": "The solution calls `notebook_delete` with a UUID string to remove the notebook.",
+      "max_score": 15
+    }
+  ]
+}

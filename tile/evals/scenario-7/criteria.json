@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates correct use of the is_pinned field on notes and the note_update command to persist pin state. Tests that the solution modifies the is_pinned boolean on a retrieved Note object and calls note_update, and verifies the resulting sort order from notes_list.",
+  "type": "weighted_checklist",
+  "capability_tested": "Note Pinning and Sorting",
+  "checklist": [
+    {
+      "name": "is_pinned field modification",
+      "description": "The solution sets `note.is_pinned = true` (or false) on a retrieved `Note` object before saving, rather than constructing a new object or only changing the title.",
+      "max_score": 30
+    },
+    {
+      "name": "note_update to persist pin state",
+      "description": "After modifying `is_pinned`, the solution calls `note_update` with the full note object to persist the change.",
+      "max_score": 30
+    },
+    {
+      "name": "Pinned notes appear first in list",
+      "description": "The solution calls `notes_list` after pinning and verifies (or demonstrates) that pinned notes have lower indices than unpinned notes in the returned array.",
+      "max_score": 25
+    },
+    {
+      "name": "Unpin restores order",
+      "description": "After unpinning, the solution calls `note_update` with `is_pinned: false` and notes return to chronological sort order.",
+      "max_score": 15
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "context": "Evaluates the correct use of the vault creation Tauri command to initialize an encrypted vault. Tests that the solution calls the correct command with the password argument and that it also queries vault status using the status command.",
+  "type": "weighted_checklist",
+  "capability_tested": "Vault Creation",
+  "checklist": [
+    {
+      "name": "vault_create invocation",
+      "description": "The solution calls `vault_create` (via tauriApi or invoke) with the password string argument to create the vault.",
+      "max_score": 35
+    },
+    {
+      "name": "vault_status invocation",
+      "description": "The solution calls `vault_status` to retrieve the vault state object containing `exists` and `locked` fields.",
+      "max_score": 30
+    },
+    {
+      "name": "Correct status fields returned",
+      "description": "After creation, the returned status has `exists: true` and `locked: true` (vault is created but not yet unlocked).",
+      "max_score": 20
+    },
+    {
+      "name": "Error propagation",
+      "description": "Errors thrown by `vault_create` (e.g., vault already exists) are propagated to the caller rather than silently swallowed.",
+      "max_score": 15
+    }
+  ]
+}
