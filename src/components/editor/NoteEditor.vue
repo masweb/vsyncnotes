@@ -351,13 +351,39 @@ const insertImage = () => {
 
 // ── Auto-save ─────────────────────────────────────────────────────────────────
 
+const extractAttachmentIds = (body: unknown): Set<string> => {
+  const ids = new Set<string>()
+  const walk = (node: unknown) => {
+    if (!node || typeof node !== 'object') return
+    const n = node as Record<string, unknown>
+    if (n.type === 'image') {
+      const src = (n.attrs as Record<string, unknown>)?.src as string | undefined
+      if (src?.startsWith('vsync://attachment/')) ids.add(src.slice(19))
+    }
+    if (Array.isArray(n.content)) n.content.forEach(walk)
+  }
+  walk(body)
+  return ids
+}
+
+// IDs que podrían ser huérfanos — se confirman al cambiar de nota (cuando el undo ya no aplica)
+const pendingDeletions = new Set<string>()
+
 const scheduleSave = () => {
   if (saveTimer.value) clearTimeout(saveTimer.value)
   saveTimer.value = setTimeout(async () => {
     if (!note.value) return
     saving.value = true
     try {
-      const updated = { ...note.value, body: editor.getJSON(), updated_at: new Date().toISOString() }
+      const newBody = editor.getJSON()
+      const oldIds = extractAttachmentIds(note.value.body)
+      const newIds = extractAttachmentIds(newBody)
+      // Marcar como posibles huérfanos — no borrar aún (el usuario podría hacer undo)
+      for (const id of oldIds) if (!newIds.has(id)) pendingDeletions.add(id)
+      // Si una imagen volvió (undo), ya no es huérfana
+      for (const id of newIds) pendingDeletions.delete(id)
+
+      const updated = { ...note.value, body: newBody, updated_at: new Date().toISOString() }
       await api.noteUpdate(updated)
       note.value = updated
       const meta = noteStore.notes.find((n) => n.id === updated.id)
@@ -366,6 +392,15 @@ const scheduleSave = () => {
       saving.value = false
     }
   }, 1500)
+}
+
+// Ejecutar borrado real cuando el historial de undo ya no aplica (cambio de nota / cierre)
+const flushPendingDeletions = async () => {
+  if (!pendingDeletions.size) return
+  const currentIds = extractAttachmentIds(note.value?.body)
+  const toDelete = [...pendingDeletions].filter(id => !currentIds.has(id))
+  pendingDeletions.clear()
+  await Promise.allSettled(toDelete.map(id => api.attachmentDelete(id)))
 }
 
 // ── Editor instance ───────────────────────────────────────────────────────────
@@ -412,6 +447,7 @@ const editor = new Editor({
 
 const loadNote = async (id: string) => {
   if (saveTimer.value) { clearTimeout(saveTimer.value); saveTimer.value = null }
+  await flushPendingDeletions()
   loading.value = true
   try {
     note.value = await api.noteGet(id)
@@ -437,6 +473,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocClick)
   if (saveTimer.value) clearTimeout(saveTimer.value)
+  flushPendingDeletions()
   editor.destroy()
 })
 </script>
