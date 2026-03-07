@@ -37,7 +37,27 @@
     "spellcheck": "Check Spelling While Typing",
     "spellcheck_on": "Disable spell check",
     "spellcheck_off": "Enable spell check",
-    "read_aloud": "Read Aloud"
+    "read_aloud": "Read Aloud",
+    "toolbar": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "bold": "Bold",
+      "italic": "Italic",
+      "strike": "Strikethrough",
+      "underline": "Underline",
+      "code": "Inline code",
+      "heading": "Headings",
+      "align": "Alignment",
+      "lists": "Lists",
+      "code_block": "Code block",
+      "table": "Table",
+      "highlight": "Highlight",
+      "hr": "Horizontal rule",
+      "link": "Insert link",
+      "unlink": "Remove link",
+      "color": "Text color",
+      "image": "Insert image"
+    }
   },
   "table": {
     "insert": "Insert table",
