@@ -156,10 +156,6 @@ const pickHeading = (level: 1 | 2 | 3) => {
   headingOpen.value = false
 }
 
-const onDocClickHeading = (e: MouseEvent) => {
-  if (headingBtn.value && !headingBtn.value.contains(e.target as Node)) headingOpen.value = false
-}
-
 // ── Table dropdown ────────────────────────────────────────────────────────────
 
 const tableOpen = ref(false)
@@ -172,10 +168,6 @@ const toggleTableDropdown = () => {
     tableMenuStyle.value = { position: 'fixed', top: `${r.bottom + 4}px`, left: `${r.left}px`, zIndex: '9999' }
   }
   tableOpen.value = !tableOpen.value
-}
-
-const onDocClickTable = (e: MouseEvent) => {
-  if (tableBtn.value && !tableBtn.value.contains(e.target as Node)) tableOpen.value = false
 }
 
 // ── Code block dropdown ───────────────────────────────────────────────────────
@@ -205,10 +197,6 @@ const toggleCodeDropdown = () => {
     codeMenuStyle.value = { position: 'fixed', top: `${r.bottom + 4}px`, left: `${r.left}px`, zIndex: '9999' }
   }
   codeOpen.value = !codeOpen.value
-}
-
-const onDocClickCode = (e: MouseEvent) => {
-  if (codeBtn.value && !codeBtn.value.contains(e.target as Node)) codeOpen.value = false
 }
 
 const pickCodeLang = (lang: string) => {
@@ -245,10 +233,6 @@ const pickColor = (color: string) => {
 const clearColor = () => {
   editor.chain().focus().unsetColor().run()
   colorOpen.value = false
-}
-
-const onDocClickColor = (e: MouseEvent) => {
-  if (colorBtn.value && !colorBtn.value.contains(e.target as Node)) colorOpen.value = false
 }
 
 // ── Link popover ──────────────────────────────────────────────────────────────
@@ -295,10 +279,15 @@ const openLinkHref = () => {
   if (href) openUrl(href)
 }
 
-const onDocClickLink = (e: MouseEvent) => {
+// ── Dropdown close on outside click ──────────────────────────────────────────
+
+const onDocClick = (e: MouseEvent) => {
   const t = e.target as Node
-  if (linkBtn.value?.contains(t) || linkPopover.value?.contains(t)) return
-  linkOpen.value = false
+  if (!headingBtn.value?.contains(t)) headingOpen.value = false
+  if (!tableBtn.value?.contains(t)) tableOpen.value = false
+  if (!codeBtn.value?.contains(t)) codeOpen.value = false
+  if (!colorBtn.value?.contains(t)) colorOpen.value = false
+  if (!linkBtn.value?.contains(t) && !linkPopover.value?.contains(t)) linkOpen.value = false
 }
 
 // ── Spell check ───────────────────────────────────────────────────────────────
@@ -360,6 +349,25 @@ const insertImage = () => {
   input.click()
 }
 
+// ── Auto-save ─────────────────────────────────────────────────────────────────
+
+const scheduleSave = () => {
+  if (saveTimer.value) clearTimeout(saveTimer.value)
+  saveTimer.value = setTimeout(async () => {
+    if (!note.value) return
+    saving.value = true
+    try {
+      const updated = { ...note.value, body: editor.getJSON(), updated_at: new Date().toISOString() }
+      await api.noteUpdate(updated)
+      note.value = updated
+      const meta = noteStore.notes.find((n) => n.id === updated.id)
+      if (meta) meta.updated_at = updated.updated_at
+    } finally {
+      saving.value = false
+    }
+  }, 1500)
+}
+
 // ── Editor instance ───────────────────────────────────────────────────────────
 
 const editor = new Editor({
@@ -400,25 +408,6 @@ const editor = new Editor({
   onUpdate: scheduleSave,
 })
 
-// ── Auto-save ─────────────────────────────────────────────────────────────────
-
-function scheduleSave() {
-  if (saveTimer.value) clearTimeout(saveTimer.value)
-  saveTimer.value = setTimeout(async () => {
-    if (!note.value) return
-    saving.value = true
-    try {
-      const updated = { ...note.value, body: editor.getJSON(), updated_at: new Date().toISOString() }
-      await api.noteUpdate(updated)
-      note.value = updated
-      const meta = noteStore.notes.find((n) => n.id === updated.id)
-      if (meta) meta.updated_at = updated.updated_at
-    } finally {
-      saving.value = false
-    }
-  }, 1500)
-}
-
 // ── Load note ─────────────────────────────────────────────────────────────────
 
 const loadNote = async (id: string) => {
@@ -442,19 +431,11 @@ watch(() => appStore.selectedNoteId, (id) => {
 
 onMounted(() => {
   editor.view.dom.setAttribute('spellcheck', spellcheck.value ? 'true' : 'false')
-  document.addEventListener('click', onDocClickColor)
-  document.addEventListener('click', onDocClickLink)
-  document.addEventListener('click', onDocClickHeading)
-  document.addEventListener('click', onDocClickTable)
-  document.addEventListener('click', onDocClickCode)
+  document.addEventListener('click', onDocClick)
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', onDocClickColor)
-  document.removeEventListener('click', onDocClickLink)
-  document.removeEventListener('click', onDocClickHeading)
-  document.removeEventListener('click', onDocClickTable)
-  document.removeEventListener('click', onDocClickCode)
+  document.removeEventListener('click', onDocClick)
   if (saveTimer.value) clearTimeout(saveTimer.value)
   editor.destroy()
 })
@@ -631,7 +612,7 @@ onBeforeUnmount(() => {
         type="button"
         class="btn btn-sm"
         :class="{ active: spellcheck }"
-        :title="spellcheck ? 'Desactivar corrección ortográfica' : 'Activar corrección ortográfica'"
+        :title="spellcheck ? $t('editor.spellcheck_on') : $t('editor.spellcheck_off')"
         @click="toggleSpellcheck"
       >
         <IconTextSpellcheck :size="20" stroke-width="1.2" />

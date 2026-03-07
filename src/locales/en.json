@@ -35,6 +35,8 @@
   "editor": {
     "placeholder": "Write something...",
     "spellcheck": "Check Spelling While Typing",
+    "spellcheck_on": "Disable spell check",
+    "spellcheck_off": "Enable spell check",
     "read_aloud": "Read Aloud"
   },
   "table": {
