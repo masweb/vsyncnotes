@@ -348,7 +348,10 @@ const onDocClick = (e: MouseEvent) => {
 
 // ── Spell check ───────────────────────────────────────────────────────────────
 
-const searchShortcut = /mac/i.test(navigator.platform) ? '⌘F' : 'Ctrl+F'
+const isMac = /mac/i.test(navigator.platform)
+const searchShortcut = isMac ? '⌘F' : 'Ctrl+F'
+const newNoteShortcut = isMac ? '⌘N' : 'Ctrl+N'
+const newNotebookShortcut = isMac ? '⌘NN' : 'Ctrl+NN'
 
 const spellcheck = ref(localStorage.getItem('editor-spellcheck') !== 'false')
 
@@ -1107,12 +1110,19 @@ onBeforeUnmount(() => {
       @contextmenu="onEditorContextMenu"
     >
       <div v-if="loading" class="text-secondary small mt-3">{{ $t('note.loading') }}</div>
-      <div v-else-if="!note" class="d-flex flex-column align-items-center justify-content-center h-100 gap-2 text-muted small">
+      <div v-else-if="!note" class="d-flex flex-column align-items-center justify-content-center h-100 text-muted small">
         <span>{{ $t('note.select_hint') }}</span>
-        <span class="d-flex align-items-center gap-1" style="font-size: 0.7rem; opacity: 0.6">
-          <kbd>{{ searchShortcut }}</kbd>
-          {{ $t('search.shortcut_hint') }}
-        </span>
+        <div class="d-flex flex-column gap-1 mt-3" style="opacity: 0.6">
+          <span class="d-flex align-items-center gap-1">
+            <kbd>{{ searchShortcut }}</kbd> {{ $t('search.shortcut_hint') }}
+          </span>
+          <span class="d-flex align-items-center gap-1">
+            <kbd>{{ newNoteShortcut }}</kbd> {{ $t('search.new_note_hint') }}
+          </span>
+          <span class="d-flex align-items-center gap-1">
+            <kbd>{{ newNotebookShortcut }}</kbd> {{ $t('search.new_notebook_hint') }}
+          </span>
+        </div>
       </div>
       <EditorContent v-else :editor="editor" />
 

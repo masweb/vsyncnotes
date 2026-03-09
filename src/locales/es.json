@@ -13,8 +13,13 @@
     "new_child_notebook": "Nueva libreta aquí",
     "new_note_here": "Nueva nota aquí",
     "new_root_notebook": "Nuevo notebook en raíz",
-"rename_notebook": "Renombrar",
-    "delete_notebook": "Eliminar"
+    "new_note_in": "Nueva nota en {title}",
+    "new_notebook_in": "Nuevo notebook en {title}",
+    "select_notebook_for_note": "Selecciona un notebook para crear una nota",
+    "note_title_placeholder": "Título de la nota...",
+    "rename_notebook": "Renombrar",
+    "delete_notebook": "Eliminar",
+    "create": "Crear"
   },
   "note": {
     "header": "Notas",
@@ -97,7 +102,9 @@
     "placeholder": "Buscar notas...",
     "no_results": "Sin resultados",
     "title": "Buscar",
-    "shortcut_hint": "para buscar notas"
+    "shortcut_hint": "para buscar notas",
+    "new_note_hint": "nueva nota",
+    "new_notebook_hint": "nuevo notebook"
   },
   "settings": {
     "title": "Ajustes",
