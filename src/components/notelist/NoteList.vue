@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import Sortable, { type SortableEvent } from 'sortablejs'
 import { IconPlus, IconNote } from '@tabler/icons-vue'
 import { Menu, MenuItem } from '@tauri-apps/api/menu'
 
@@ -37,6 +38,29 @@ const onBodyContextMenu = async (e: MouseEvent) => {
   })
   await menu.popup()
 }
+
+// ── Drag & drop ────────────────────────────────────────────────────────────────
+
+const noteListEl = ref<HTMLElement | null>(null)
+let sortableInstance: Sortable | null = null
+
+watch(noteListEl, (el) => {
+  sortableInstance?.destroy()
+  sortableInstance = null
+  if (!el) return
+  sortableInstance = Sortable.create(el, {
+    handle: '.note-drag-handle',
+    animation: 150,
+    ghostClass: 'notebook-ghost',
+    forceFallback: true,
+    onEnd(evt: SortableEvent) {
+      const { oldIndex, newIndex } = evt
+      if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return
+      const id = (evt.item as HTMLElement).dataset.noteId!
+      setTimeout(() => noteStore.reorderNote(id, newIndex), 0)
+    },
+  })
+})
 </script>
 
 <template>
@@ -98,11 +122,12 @@ const onBodyContextMenu = async (e: MouseEvent) => {
       </div>
 
       <!-- Lista -->
-      <div v-else class="list-group list-group-flush">
+      <div v-else ref="noteListEl" class="list-group list-group-flush">
         <NoteListItem
           v-for="note in noteStore.sortedNotes"
           :key="note.id"
           :note="note"
+          :data-note-id="note.id"
         />
       </div>
 

@@ -111,7 +111,10 @@ pub async fn note_create(
     notebook_id: Uuid,
     title: String,
 ) -> Result<Note, String> {
-    let note = Note::new(notebook_id, title);
+    let siblings = repo.list_notes(notebook_id).await.map_err(|e| e.to_string())?;
+    let next_order = siblings.iter().map(|n| n.sort_order).max().unwrap_or(-1) + 1;
+    let mut note = Note::new(notebook_id, title);
+    note.sort_order = next_order;
     repo.save_note(&note).await.map_err(|e| e.to_string())?;
     Ok(note)
 }
@@ -119,6 +122,17 @@ pub async fn note_create(
 #[tauri::command]
 pub async fn note_update(repo: State<'_, FsRepo>, note: Note) -> Result<(), String> {
     repo.save_note(&note).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn note_set_sort_order(
+    repo: State<'_, FsRepo>,
+    id: Uuid,
+    sort_order: i32,
+) -> Result<(), String> {
+    repo.set_note_sort_order(id, sort_order)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]

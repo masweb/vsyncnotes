@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { IconPin } from '@tabler/icons-vue'
+import { IconPin, IconGripVertical } from '@tabler/icons-vue'
 import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
 import type { NoteMeta } from '@/types/models'
 
@@ -85,6 +85,9 @@ const onContextMenu = async (e: MouseEvent) => {
     </div>
     <template v-else>
       <div class="d-flex align-items-center gap-1 mb-1">
+        <span class="note-drag-handle d-inline-flex align-items-center flex-shrink-0 text-muted">
+          <IconGripVertical :size="14" stroke-width="1.5" />
+        </span>
         <span class="small fw-medium text-truncate flex-grow-1">{{ note.title }}</span>
         <IconPin
           v-if="note.is_pinned"
@@ -93,7 +96,7 @@ const onContextMenu = async (e: MouseEvent) => {
           class="flex-shrink-0 opacity-75"
         />
       </div>
-      <div class="small opacity-50">{{ formattedDate }}</div>
+      <div class="small opacity-50" style="padding-left: 18px">{{ formattedDate }}</div>
     </template>
   </div>
 </template>

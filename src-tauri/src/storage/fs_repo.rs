@@ -321,6 +321,16 @@ impl FsRepo {
         Ok(())
     }
 
+    pub async fn set_note_sort_order(&self, id: Uuid, sort_order: i32) -> Result<()> {
+        let path = self.note_path(id);
+        let content = tokio::fs::read_to_string(&path).await?;
+        let mut json: serde_json::Value = serde_json::from_str(&content)?;
+        json["sort_order"] = serde_json::Value::Number(sort_order.into());
+        json["updated_at"] = serde_json::Value::String(Utc::now().to_rfc3339());
+        tokio::fs::write(&path, serde_json::to_string_pretty(&json)?).await?;
+        Ok(())
+    }
+
 }
 
 // ── StorageRepo impl ──────────────────────────────────────────────────────────
@@ -391,7 +401,7 @@ impl StorageRepo for FsRepo {
         notes.sort_by(|a, b| {
             b.is_pinned
                 .cmp(&a.is_pinned)
-                .then_with(|| b.updated_at.cmp(&a.updated_at))
+                .then_with(|| a.sort_order.cmp(&b.sort_order))
         });
         Ok(notes)
     }

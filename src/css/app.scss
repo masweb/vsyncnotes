@@ -135,6 +135,20 @@ body {
   opacity: 0.4;
 }
 
+.note-drag-handle {
+  width: 14px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+
+  &:active { cursor: grabbing; }
+}
+
+.note-list-item:hover .note-drag-handle {
+  opacity: 0.4;
+}
+
 .notebook-sortable-container {
   min-height: 2px; // drop zone even when empty
 }
