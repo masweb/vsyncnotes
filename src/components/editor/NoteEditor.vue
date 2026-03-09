@@ -556,6 +556,7 @@ onBeforeUnmount(() => {
   <div class="note-editor h-100 d-flex flex-column">
     <!-- Toolbar -->
     <div
+      v-if="appStore.selectedNoteId"
       class="editor-toolbar d-flex align-items-center border-bottom flex-wrap gap-0 flex-shrink-0"
       style="height: 38px"
     >
