@@ -9,8 +9,10 @@ if (savedLang == null) {
 }
 
 export const i18n = createI18n({
+  legacy: false, // you must set `false`, to use Composition API
+
   globalInjection: true,
   locale: savedLang,
   fallbackLocale: 'en',
-  messages: { es, en },
+  messages: { es, en }
 })
