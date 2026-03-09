@@ -39,9 +39,10 @@ export const useNoteStore = defineStore('notes', () => {
 
   const renameNote = async (id: string, title: string) => {
     const note = await api.noteGet(id)
-    await api.noteUpdate({ ...note, title })
+    const updated_at = new Date().toISOString()
+    await api.noteUpdate({ ...note, title, updated_at })
     const meta = notes.value.find(n => n.id === id)
-    if (meta) meta.title = title
+    if (meta) { meta.title = title; meta.updated_at = updated_at }
   }
 
   const reorderNote = async (id: string, newIndex: number) => {

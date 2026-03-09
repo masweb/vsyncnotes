@@ -18,6 +18,7 @@ pub struct SyncResult {
     pub pulled: u32,
     pub skipped: u32,
     pub errors: Vec<String>,
+    pub vault_updated: bool,
 }
 
 pub struct SyncEngine {
@@ -74,6 +75,7 @@ impl SyncEngine {
 
         let target = PathBuf::from(&config.target_path);
         for dir in &["notebooks", "notes", "attachments"] {
+            fs::create_dir_all(self.vault_path.join(dir)).await?;
             fs::create_dir_all(target.join(dir)).await?;
         }
 
@@ -82,9 +84,9 @@ impl SyncEngine {
             pulled: 0,
             skipped: 0,
             errors: vec![],
+            vault_updated: false,
         };
 
-        // Sync vault.json (uses mtime, not updated_at)
         if let Err(e) = self.sync_vault_json(&target, &mut result).await {
             result.errors.push(format!("vault.json: {e}"));
         }
@@ -108,26 +110,23 @@ impl SyncEngine {
                 result.pushed += 1;
             }
             (false, true) => {
-                // Bootstrap: new device has no vault yet → pull remote vault
                 fs::create_dir_all(&self.vault_path).await?;
                 fs::copy(&remote, &local).await?;
                 result.pulled += 1;
+                result.vault_updated = true;
             }
             (true, true) => {
-                // Compare mtime; remote wins if newer (vault_change_password propagation)
-                let local_mtime = mtime(&local).await?;
-                let remote_mtime = mtime(&remote).await?;
-                if remote_mtime > local_mtime {
+                let local_bytes = fs::read(&local).await?;
+                let remote_bytes = fs::read(&remote).await?;
+                if local_bytes != remote_bytes {
                     fs::copy(&remote, &local).await?;
                     result.pulled += 1;
-                } else if local_mtime > remote_mtime {
-                    fs::copy(&local, &remote).await?;
-                    result.pushed += 1;
+                    result.vault_updated = true;
                 } else {
                     result.skipped += 1;
                 }
             }
-            (false, false) => {} // nothing to do
+            (false, false) => {}
         }
         Ok(())
     }
@@ -149,13 +148,13 @@ impl SyncEngine {
         while let Some(entry) = local_rd.next_entry().await? {
             let path = entry.path();
             let fname = path.file_name().unwrap().to_string_lossy().to_string();
-            if fname.ends_with(".bin") {
-                continue; // handled as sidecar of .json
+            if !fname.ends_with(".json") {
+                continue; // ignorar .DS_Store, .bin, .tmp, etc.
             }
             let remote_path = remote_dir.join(&fname);
             match compare_timestamps(&path, &remote_path).await {
                 TimestampCmp::LocalNewer | TimestampCmp::RemoteMissing => {
-                    if let Err(e) = fs::copy(&path, &remote_path).await {
+                    if let Err(e) = copy_atomic(&path, &remote_path).await {
                         result.errors.push(format!("push {fname}: {e}"));
                     } else {
                         result.pushed += 1;
@@ -163,7 +162,7 @@ impl SyncEngine {
                     }
                 }
                 TimestampCmp::RemoteNewer => {
-                    if let Err(e) = fs::copy(&remote_path, &path).await {
+                    if let Err(e) = copy_atomic(&remote_path, &path).await {
                         result.errors.push(format!("pull {fname}: {e}"));
                     } else {
                         result.pulled += 1;
@@ -187,12 +186,12 @@ impl SyncEngine {
         while let Some(entry) = remote_rd.next_entry().await? {
             let path = entry.path();
             let fname = path.file_name().unwrap().to_string_lossy().to_string();
-            if fname.ends_with(".bin") {
+            if !fname.ends_with(".json") {
                 continue;
             }
             let local_path = local_dir.join(&fname);
             if !local_path.exists() {
-                if let Err(e) = fs::copy(&path, &local_path).await {
+                if let Err(e) = copy_atomic(&path, &local_path).await {
                     result.errors.push(format!("pull-new {fname}: {e}"));
                 } else {
                     result.pulled += 1;
@@ -213,9 +212,6 @@ enum Direction {
 }
 
 async fn sync_bin_sidecar(local_dir: &Path, remote_dir: &Path, json_fname: &str, dir: Direction) {
-    if !json_fname.ends_with(".json") {
-        return;
-    }
     let bin_name = json_fname.replace(".json", ".bin");
     let (src, dst) = match dir {
         Direction::Push => (local_dir.join(&bin_name), remote_dir.join(&bin_name)),
@@ -238,23 +234,22 @@ async fn compare_timestamps(local: &Path, remote: &Path) -> TimestampCmp {
     if !remote.exists() {
         return TimestampCmp::RemoteMissing;
     }
-    match (read_updated_at(local).await, read_updated_at(remote).await) {
-        (Ok(l), Ok(r)) => {
-            if l > r {
-                TimestampCmp::LocalNewer
-            } else if r > l {
-                TimestampCmp::RemoteNewer
-            } else {
-                TimestampCmp::Equal
-            }
-        }
-        (Err(e), _) | (_, Err(e)) => TimestampCmp::Error(e.to_string()),
+    let l = match read_updated_at(local).await {
+        Ok(t) => t,
+        Err(e) => return TimestampCmp::Error(e.to_string()),
+    };
+    // Si el remoto está vacío o corrupto, tratarlo como ausente → push local
+    let r = match read_updated_at(remote).await {
+        Ok(t) => t,
+        Err(_) => return TimestampCmp::RemoteMissing,
+    };
+    if l > r {
+        TimestampCmp::LocalNewer
+    } else if r > l {
+        TimestampCmp::RemoteNewer
+    } else {
+        TimestampCmp::Equal
     }
-}
-
-async fn mtime(path: &Path) -> Result<std::time::SystemTime> {
-    let meta = fs::metadata(path).await?;
-    Ok(meta.modified()?)
 }
 
 async fn read_updated_at(path: &Path) -> Result<DateTime<Utc>> {
@@ -264,4 +259,17 @@ async fn read_updated_at(path: &Path) -> Result<DateTime<Utc>> {
         .as_str()
         .ok_or_else(|| anyhow!("missing updated_at in {}", path.display()))?;
     Ok(ts_str.parse::<DateTime<Utc>>()?)
+}
+
+/// Copia src → dst de forma atómica: lee todo en memoria, escribe a .tmp, renombra.
+/// Esto evita que un fallo a mitad deje el destino vacío (0 bytes).
+async fn copy_atomic(src: &Path, dst: &Path) -> Result<()> {
+    let bytes = fs::read(src).await?;
+    if bytes.is_empty() {
+        return Err(anyhow!("source file is empty: {}", src.display()));
+    }
+    let tmp = dst.with_extension("tmp");
+    fs::write(&tmp, &bytes).await?;
+    fs::rename(&tmp, dst).await?;
+    Ok(())
 }

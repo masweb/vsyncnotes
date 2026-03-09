@@ -132,7 +132,10 @@ const clearSyncConfig = async () => {
         </div>
         <div v-if="syncStore.lastError" class="small text-danger mt-1">{{ syncStore.lastError }}</div>
         <div v-if="syncStore.lastResult" class="small text-muted mt-1">
-          {{ $t('sync.result', { pushed: syncStore.lastResult.pushed, pulled: syncStore.lastResult.pulled }) }}
+          {{ $t('sync.result', { pushed: syncStore.lastResult.pushed, pulled: syncStore.lastResult.pulled, skipped: syncStore.lastResult.skipped }) }}
+        </div>
+        <div v-if="syncStore.lastResult?.errors?.length" class="small text-danger mt-1">
+          <div v-for="err in syncStore.lastResult.errors" :key="err">{{ err }}</div>
         </div>
       </div>
 

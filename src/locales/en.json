@@ -123,6 +123,6 @@
     "interval_label": "Auto-sync interval",
     "save": "Save",
     "clear": "Remove sync",
-    "result": "↑ {pushed} pushed · ↓ {pulled} pulled"
+    "result": "↑ {pushed} pushed · ↓ {pulled} pulled · = {skipped} unchanged"
   }
 }

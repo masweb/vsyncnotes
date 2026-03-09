@@ -123,6 +123,6 @@
     "interval_label": "Intervalo de auto-sync",
     "save": "Guardar",
     "clear": "Quitar sync",
-    "result": "↑ {pushed} enviadas · ↓ {pulled} recibidas"
+    "result": "↑ {pushed} enviadas · ↓ {pulled} recibidas · = {skipped} sin cambios"
   }
 }
