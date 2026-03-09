@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import Bold from '@tiptap/extension-bold'
-import Blockquote from '@tiptap/extension-blockquote'
 import BulletList from '@tiptap/extension-bullet-list'
 import CharacterCount from '@tiptap/extension-character-count'
 import Code from '@tiptap/extension-code'
@@ -40,7 +39,6 @@ import {
   IconAlignRight,
   IconArrowBackUp,
   IconArrowForwardUp,
-  IconBlockquote,
   IconBold,
   IconCode,
   IconExternalLink,
@@ -69,7 +67,8 @@ import {
   IconTableMinus,
   IconTablePlus,
   IconUnderline,
-  IconTextSpellcheck
+  IconTextSpellcheck,
+  IconX
 } from '@tabler/icons-vue'
 import { CheckMenuItem, Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -470,7 +469,6 @@ const editor = new Editor({
   content: '',
   extensions: [
     Bold,
-    Blockquote,
     BulletList,
     CharacterCount,
     Code,
@@ -947,13 +945,20 @@ onBeforeUnmount(() => {
         :class="{ active: editor.isActive('highlight') }"
         @click="editor.chain().focus().toggleHighlight().run()"
       >
-        <span class="highlight-btn-label" style="background: #fef08a; padding: 1px 4px; border-radius: 2px; font-size: 0.7rem; font-weight: 700"
+        <span
+          class="highlight-btn-label"
+          style="background: #fef08a; padding: 1px 4px; border-radius: 2px; font-size: 0.7rem; font-weight: 700"
           >AB</span
         >
       </button>
 
       <!-- HR -->
-      <button type="button" class="btn btn-sm btn-link" :title="$t('editor.toolbar.hr')" @click="editor.chain().focus().setHorizontalRule().run()">
+      <button
+        type="button"
+        class="btn btn-sm btn-link"
+        :title="$t('editor.toolbar.hr')"
+        @click="editor.chain().focus().setHorizontalRule().run()"
+      >
         <IconMinus :size="22" stroke-width="1.2" />
       </button>
 
@@ -969,7 +974,13 @@ onBeforeUnmount(() => {
         >
           <IconLink :size="22" stroke-width="1.2" />
         </button>
-        <button type="button" class="btn btn-sm btn-link" :title="$t('editor.toolbar.unlink')" :disabled="!editor.isActive('link')" @click="removeLink">
+        <button
+          type="button"
+          class="btn btn-sm btn-link"
+          :title="$t('editor.toolbar.unlink')"
+          :disabled="!editor.isActive('link')"
+          @click="removeLink"
+        >
           <IconLinkOff :size="22" stroke-width="1.2" />
         </button>
       </div>
@@ -987,7 +998,13 @@ onBeforeUnmount(() => {
       </button>
 
       <!-- Imagen -->
-      <button type="button" class="btn btn-sm btn-link" :title="$t('editor.toolbar.image')" :disabled="!note" @click="insertImage">
+      <button
+        type="button"
+        class="btn btn-sm btn-link"
+        :title="$t('editor.toolbar.image')"
+        :disabled="!note"
+        @click="insertImage"
+      >
         <IconPhoto :size="22" stroke-width="1.2" />
       </button>
 
@@ -1003,6 +1020,17 @@ onBeforeUnmount(() => {
       >
         <IconTextSpellcheck :size="22" stroke-width="1.2" />
       </button> -->
+
+      <!-- Cerrar nota -->
+      <button
+        v-if="appStore.selectedNoteId"
+        type="button"
+        class="btn btn-sm btn-link ms-auto"
+        :title="$t('note.close_note')"
+        @click="appStore.selectNote(null)"
+      >
+        <IconX :size="18" stroke-width="1.5" />
+      </button>
     </div>
 
     <!-- Teleports de popovers -->

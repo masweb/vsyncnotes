@@ -59,7 +59,7 @@ const onBodyContextMenu = async (e: MouseEvent) => {
     </div>
 
     <!-- Body -->
-    <div class="flex-grow-1 overflow-y-auto" @contextmenu="onBodyContextMenu">
+    <div class="flex-grow-1 overflow-y-auto" @contextmenu="onBodyContextMenu" @click.self="appStore.selectNote(null)">
 
       <!-- Sin notebook seleccionado -->
       <div
