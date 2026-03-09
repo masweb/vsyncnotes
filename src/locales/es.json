@@ -12,7 +12,8 @@
     "no_notebooks": "Sin notebooks",
     "new_child_notebook": "Nueva libreta aquí",
     "new_note_here": "Nueva nota aquí",
-    "rename_notebook": "Renombrar",
+    "new_root_notebook": "Nuevo notebook en raíz",
+"rename_notebook": "Renombrar",
     "delete_notebook": "Eliminar"
   },
   "note": {

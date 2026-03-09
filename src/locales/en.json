@@ -12,7 +12,8 @@
     "no_notebooks": "No notebooks",
     "new_child_notebook": "New notebook here",
     "new_note_here": "New note here",
-    "rename_notebook": "Rename",
+    "new_root_notebook": "New root notebook",
+"rename_notebook": "Rename",
     "delete_notebook": "Delete"
   },
   "note": {
