@@ -96,7 +96,8 @@
   "search": {
     "placeholder": "Buscar notas...",
     "no_results": "Sin resultados",
-    "title": "Buscar"
+    "title": "Buscar",
+    "shortcut_hint": "para buscar notas"
   },
   "settings": {
     "title": "Ajustes",
