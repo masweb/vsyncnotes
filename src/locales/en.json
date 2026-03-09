@@ -13,8 +13,13 @@
     "new_child_notebook": "New notebook here",
     "new_note_here": "New note here",
     "new_root_notebook": "New root notebook",
-"rename_notebook": "Rename",
-    "delete_notebook": "Delete"
+    "new_note_in": "New note in {title}",
+    "new_notebook_in": "New notebook in {title}",
+    "select_notebook_for_note": "Select a notebook to create a note",
+    "note_title_placeholder": "Note title...",
+    "rename_notebook": "Rename",
+    "delete_notebook": "Delete",
+    "create": "Create"
   },
   "note": {
     "header": "Notes",
@@ -97,7 +102,9 @@
     "placeholder": "Search notes...",
     "no_results": "No results",
     "title": "Search",
-    "shortcut_hint": "to search notes"
+    "shortcut_hint": "to search notes",
+    "new_note_hint": "new note",
+    "new_notebook_hint": "new notebook"
   },
   "settings": {
     "title": "Settings",

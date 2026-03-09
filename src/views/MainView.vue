@@ -83,10 +83,72 @@ const rootClass = computed(() => [
 
 const searchOpen = ref(false)
 
+// ── Quick create modal ─────────────────────────────────────────────────────────
+
+const appStore = useAppStore()
+const notebookStore = useNotebookStore()
+const noteStore = useNoteStore()
+const { expand: expandTreeNode } = useTreeExpanded()
+
+const createOpen = ref(false)
+const createMode = ref<'note' | 'notebook' | 'note-warning'>('note')
+const createParentTitle = ref('')
+
+const openCreateNote = () => {
+  if (!appStore.selectedNotebookId) {
+    createMode.value = 'note-warning'
+  } else {
+    createMode.value = 'note'
+    createParentTitle.value = notebookStore.notebooks.find(n => n.id === appStore.selectedNotebookId)?.title ?? ''
+  }
+  createOpen.value = true
+}
+
+const openCreateNotebook = () => {
+  createMode.value = 'notebook'
+  createParentTitle.value = appStore.selectedNotebookId
+    ? notebookStore.notebooks.find(n => n.id === appStore.selectedNotebookId)?.title ?? ''
+    : ''
+  createOpen.value = true
+}
+
+const onCreateConfirm = async (title: string) => {
+  createOpen.value = false
+  if (createMode.value === 'note') {
+    const note = await noteStore.createNote(appStore.selectedNotebookId!, title)
+    appStore.selectNote(note.id)
+  } else if (createMode.value === 'notebook') {
+    const parentId = appStore.selectedNotebookId
+    if (parentId) expandTreeNode(parentId)
+    const nb = await notebookStore.createNotebook(title, parentId)
+    appStore.selectNotebook(nb.id)
+  }
+}
+
+// ── Global keyboard shortcuts ──────────────────────────────────────────────────
+
+// Cmd+N        → nueva nota  (o aviso si no hay notebook)
+// Cmd+N+N      → nuevo notebook  (doble Cmd+N en < 350ms)
+let createNoteTimer: ReturnType<typeof setTimeout> | null = null
+
 const onGlobalKeydown = (e: KeyboardEvent) => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+  const mod = e.metaKey || e.ctrlKey
+  if (!mod) return
+  if (e.key === 'f') {
     e.preventDefault()
     searchOpen.value = true
+  } else if (e.key === 'n') {
+    e.preventDefault()
+    if (createNoteTimer) {
+      clearTimeout(createNoteTimer)
+      createNoteTimer = null
+      openCreateNotebook()
+    } else {
+      createNoteTimer = setTimeout(() => {
+        createNoteTimer = null
+        openCreateNote()
+      }, 350)
+    }
   }
 }
 
@@ -97,6 +159,13 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 <template>
   <div class="d-flex flex-column h-100">
     <SearchModal :open="searchOpen" @close="searchOpen = false" />
+    <QuickCreateModal
+      :open="createOpen"
+      :mode="createMode"
+      :parent-title="createParentTitle"
+      @close="createOpen = false"
+      @confirm="onCreateConfirm"
+    />
 
     <Splitpanes
       ref="splitpanesEl"

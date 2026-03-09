@@ -12,27 +12,11 @@ const { t } = useI18n()
 const appStore = useAppStore()
 const notebookStore = useNotebookStore()
 const noteStore = useNoteStore()
+const { isExpanded, expand, collapse, toggle } = useTreeExpanded()
 
-const EXPANDED_KEY = 'vsyncnotes:tree-expanded'
-const getExpandedSet = (): Set<string> => {
-  try {
-    const raw = localStorage.getItem(EXPANDED_KEY)
-    return raw ? new Set(JSON.parse(raw)) : new Set()
-  } catch { return new Set() }
-}
-const saveExpandedSet = (set: Set<string>) => {
-  localStorage.setItem(EXPANDED_KEY, JSON.stringify([...set]))
-}
+const expanded = computed(() => isExpanded(props.node.id))
 
-const expanded = ref(getExpandedSet().has(props.node.id))
-
-const toggleExpanded = () => {
-  expanded.value = !expanded.value
-  const set = getExpandedSet()
-  if (expanded.value) set.add(props.node.id)
-  else set.delete(props.node.id)
-  saveExpandedSet(set)
-}
+const toggleExpanded = () => toggle(props.node.id)
 const isSelected = computed(() => appStore.selectedNotebookId === props.node.id)
 const hasChildren = computed(() => props.node.children.length > 0)
 
@@ -43,12 +27,7 @@ const newTitle = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 
 const startCreate = async () => {
-  if (!expanded.value) {
-    expanded.value = true
-    const set = getExpandedSet()
-    set.add(props.node.id)
-    saveExpandedSet(set)
-  }
+  expand(props.node.id)
   showInput.value = true
   await nextTick()
   inputRef.value?.focus()
