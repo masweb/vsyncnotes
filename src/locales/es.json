@@ -17,6 +17,7 @@
     "new_notebook_in": "Nuevo notebook en {title}",
     "select_notebook_for_note": "Selecciona un notebook para crear una nota",
     "note_title_placeholder": "Título de la nota...",
+    "lock": "Bloquear",
     "rename_notebook": "Renombrar",
     "delete_notebook": "Eliminar",
     "create": "Crear"
