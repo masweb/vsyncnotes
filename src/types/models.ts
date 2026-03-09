@@ -55,3 +55,15 @@ export interface SeedResult {
   notebooks: number
   notes: number
 }
+
+export interface SyncConfig {
+  target_path: string
+  auto_sync_interval_secs: number
+}
+
+export interface SyncResult {
+  pushed: number
+  pulled: number
+  skipped: number
+  errors: string[]
+}

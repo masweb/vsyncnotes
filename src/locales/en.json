@@ -114,5 +114,15 @@
     "theme_light": "Light",
     "theme_dark": "Dark",
     "language": "Language"
+  },
+  "sync": {
+    "title": "Sync",
+    "run": "Sync now",
+    "path_placeholder": "Target folder path...",
+    "pick_folder": "Pick folder",
+    "interval_label": "Auto-sync interval",
+    "save": "Save",
+    "clear": "Remove sync",
+    "result": "↑ {pushed} pushed · ↓ {pulled} pulled"
   }
 }

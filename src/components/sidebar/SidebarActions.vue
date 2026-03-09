@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { IconPlus, IconLayoutSidebarLeftCollapse, IconSettings, IconPower } from '@tabler/icons-vue'
+import { IconPlus, IconLayoutSidebarLeftCollapse, IconSettings, IconPower, IconRefresh } from '@tabler/icons-vue'
 import * as api from '@/services/tauriApi'
 
 const emit = defineEmits<{ (e: 'collapse'): void }>()
 
 const notebookStore = useNotebookStore()
 const appStore = useAppStore()
+const syncStore = useSyncStore()
 
 const showInput = ref(false)
 const newTitle = ref('')
@@ -64,6 +65,15 @@ defineExpose({ startCreate })
         <IconSettings :size="15" stroke-width="1.5" :title="$t('settings.title')" />
       </button>
       <span class="flex-grow-1" />
+      <button
+        v-if="syncStore.config"
+        class="btn btn-sm p-0 lh-1 me-2 text-muted"
+        :title="$t('sync.run')"
+        :disabled="syncStore.syncing"
+        @click="syncStore.runSync()"
+      >
+        <IconRefresh :size="14" stroke-width="1.5" :class="{ spin: syncStore.syncing }" :title="$t('sync.run')" />
+      </button>
       <button
         class="btn btn-sm p-0 lh-1 text-muted"
         :title="$t('nav.lock')"

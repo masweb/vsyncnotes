@@ -98,6 +98,7 @@ declare global {
   const useSlots: typeof import('vue').useSlots
   const useSubmitCount: typeof import('vee-validate').useSubmitCount
   const useSubmitForm: typeof import('vee-validate').useSubmitForm
+  const useSyncStore: typeof import('./stores/syncStore').useSyncStore
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useTheme: typeof import('./composables/useTheme').useTheme
   const useTreeExpanded: typeof import('./composables/useTreeExpanded').useTreeExpanded

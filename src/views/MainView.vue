@@ -5,6 +5,9 @@ import { IconLayoutSidebarLeftExpand } from '@tabler/icons-vue'
 const { currentTheme } = useTheme()
 const splitClass = computed(() => currentTheme.value === 'dark' ? 'split-dark' : 'default-theme')
 
+const syncStore = useSyncStore()
+onMounted(() => syncStore.loadConfig())
+
 // min-size for Panel 1 in % (equivalent to 200px)
 const splitpanesEl = ref<HTMLElement | null>(null)
 const containerWidth = ref(800)
