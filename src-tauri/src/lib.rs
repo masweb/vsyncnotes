@@ -2,8 +2,10 @@ mod commands;
 mod crypto;
 mod models;
 mod storage;
+mod sync;
 
 use storage::fs_repo::FsRepo;
+use sync::engine::SyncEngine;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -11,10 +13,14 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let vault_path = app.path().app_data_dir()?.join("vault");
-            let repo = FsRepo::new(vault_path)?;
+            let app_data = app.path().app_data_dir()?;
+            let vault_path = app_data.join("vault");
+            let repo = FsRepo::new(vault_path.clone())?;
             app.manage(repo);
+            let sync_engine = SyncEngine::new(vault_path, app_data.join("sync_config.json"));
+            app.manage(sync_engine);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -42,6 +48,11 @@ pub fn run() {
             commands::attachment_save,
             commands::attachment_get,
             commands::attachment_delete,
+            // Sync
+            commands::sync_configure,
+            commands::sync_get_config,
+            commands::sync_clear_config,
+            commands::sync_run,
             // Dev
             commands::seed::dev_seed,
         ])

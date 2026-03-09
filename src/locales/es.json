@@ -114,5 +114,15 @@
     "theme_light": "Claro",
     "theme_dark": "Oscuro",
     "language": "Idioma"
+  },
+  "sync": {
+    "title": "Sincronización",
+    "run": "Sincronizar ahora",
+    "path_placeholder": "Ruta de la carpeta destino...",
+    "pick_folder": "Seleccionar carpeta",
+    "interval_label": "Intervalo de auto-sync",
+    "save": "Guardar",
+    "clear": "Quitar sync",
+    "result": "↑ {pushed} enviadas · ↓ {pulled} recibidas"
   }
 }

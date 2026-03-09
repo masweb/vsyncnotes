@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { Attachment, Notebook, Note, NoteMeta, NoteSearchResult, VaultStatus, SeedResult } from '@/types/models'
+import type { Attachment, Notebook, Note, NoteMeta, NoteSearchResult, VaultStatus, SeedResult, SyncConfig, SyncResult } from '@/types/models'
 
 // ── Vault ─────────────────────────────────────────────────────────────────────
 
@@ -65,3 +65,17 @@ export const attachmentGet = (id: string) =>
 
 export const attachmentDelete = (id: string) =>
   invoke<void>('attachment_delete', { id })
+
+// ── Sync ──────────────────────────────────────────────────────────────────────
+
+export const syncConfigure = (targetPath: string, autoSyncIntervalSecs?: number) =>
+  invoke<void>('sync_configure', { targetPath, autoSyncIntervalSecs: autoSyncIntervalSecs ?? null })
+
+export const syncGetConfig = () =>
+  invoke<SyncConfig | null>('sync_get_config')
+
+export const syncClearConfig = () =>
+  invoke<void>('sync_clear_config')
+
+export const syncRun = () =>
+  invoke<SyncResult>('sync_run')

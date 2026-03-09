@@ -10,6 +10,7 @@ use crate::models::{
     notebook::Notebook,
 };
 use crate::storage::{fs_repo::FsRepo, repo::StorageRepo};
+use crate::sync::engine::{SyncConfig, SyncEngine, SyncResult};
 
 // ── Vault ─────────────────────────────────────────────────────────────────────
 
@@ -174,4 +175,36 @@ pub async fn attachment_get(repo: State<'_, FsRepo>, id: Uuid) -> Result<Vec<u8>
 #[tauri::command]
 pub async fn attachment_delete(repo: State<'_, FsRepo>, id: Uuid) -> Result<(), String> {
     repo.delete_attachment(id).await.map_err(|e| e.to_string())
+}
+
+// ── Sync ──────────────────────────────────────────────────────────────────────
+
+#[tauri::command]
+pub async fn sync_configure(
+    engine: State<'_, SyncEngine>,
+    target_path: String,
+    auto_sync_interval_secs: Option<u64>,
+) -> Result<(), String> {
+    let config = SyncConfig {
+        target_path,
+        auto_sync_interval_secs: auto_sync_interval_secs.unwrap_or(300),
+    };
+    engine.save_config(&config).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn sync_get_config(
+    engine: State<'_, SyncEngine>,
+) -> Result<Option<SyncConfig>, String> {
+    Ok(engine.load_config().await)
+}
+
+#[tauri::command]
+pub async fn sync_clear_config(engine: State<'_, SyncEngine>) -> Result<(), String> {
+    engine.clear_config().await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn sync_run(engine: State<'_, SyncEngine>) -> Result<SyncResult, String> {
+    engine.run().await.map_err(|e| e.to_string())
 }
