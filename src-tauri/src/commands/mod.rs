@@ -66,7 +66,16 @@ pub async fn notebook_create(
     title: String,
     parent_id: Option<Uuid>,
 ) -> Result<Notebook, String> {
-    let nb = Notebook::new(title, parent_id);
+    let all = repo.list_notebooks().await.map_err(|e| e.to_string())?;
+    let next_order = all
+        .iter()
+        .filter(|nb| nb.parent_id == parent_id)
+        .map(|nb| nb.sort_order)
+        .max()
+        .unwrap_or(-1)
+        + 1;
+    let mut nb = Notebook::new(title, parent_id);
+    nb.sort_order = next_order;
     repo.save_notebook(&nb).await.map_err(|e| e.to_string())?;
     Ok(nb)
 }

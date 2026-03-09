@@ -121,6 +121,28 @@ body {
   }
 }
 
+.notebook-drag-handle {
+  width: 16px;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+
+  &:active { cursor: grabbing; }
+}
+
+.notebook-item:hover .notebook-drag-handle {
+  opacity: 0.4;
+}
+
+.notebook-sortable-container {
+  min-height: 2px; // drop zone even when empty
+}
+
+.notebook-ghost {
+  opacity: 0.4;
+}
+
 [data-coreui-theme='dark'] .notebook-item:hover {
   background-color: rgba(255, 255, 255, 0.08);
 }
