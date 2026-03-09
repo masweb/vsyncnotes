@@ -19,6 +19,7 @@ declare module 'vue' {
     NoteEditor: typeof import('./src/components/editor/NoteEditor.vue')['default']
     NoteList: typeof import('./src/components/notelist/NoteList.vue')['default']
     NoteListItem: typeof import('./src/components/notelist/NoteListItem.vue')['default']
+    SearchModal: typeof import('./src/components/search/SearchModal.vue')['default']
     SettingsView: typeof import('./src/views/SettingsView.vue')['default']
     SidebarActions: typeof import('./src/components/sidebar/SidebarActions.vue')['default']
     UnlockView: typeof import('./src/views/UnlockView.vue')['default']

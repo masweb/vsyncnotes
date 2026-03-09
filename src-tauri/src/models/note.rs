@@ -28,6 +28,15 @@ pub struct NoteMeta {
     pub updated_at: DateTime<Utc>,
 }
 
+/// Resultado de búsqueda por título (sin body).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NoteSearchResult {
+    pub id: Uuid,
+    pub notebook_id: Uuid,
+    pub title: String,
+    pub updated_at: DateTime<Utc>,
+}
+
 impl Note {
     pub fn new(notebook_id: Uuid, title: String) -> Self {
         let now = Utc::now();

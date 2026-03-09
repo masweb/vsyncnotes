@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::models::{
     attachment::Attachment,
-    note::{Note, NoteMeta},
+    note::{Note, NoteMeta, NoteSearchResult},
     notebook::Notebook,
 };
 use crate::storage::{fs_repo::FsRepo, repo::StorageRepo};
@@ -115,6 +115,14 @@ pub async fn note_update(repo: State<'_, FsRepo>, note: Note) -> Result<(), Stri
 #[tauri::command]
 pub async fn note_delete(repo: State<'_, FsRepo>, id: Uuid) -> Result<(), String> {
     repo.delete_note(id).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn search_notes(
+    repo: State<'_, FsRepo>,
+    query: String,
+) -> Result<Vec<NoteSearchResult>, String> {
+    repo.search_notes(&query).await.map_err(|e| e.to_string())
 }
 
 // ── Attachments ───────────────────────────────────────────────────────────────

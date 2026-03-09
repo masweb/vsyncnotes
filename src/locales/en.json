@@ -93,6 +93,11 @@
     "yesterday": "Yesterday",
     "days_ago": "{n} days ago"
   },
+  "search": {
+    "placeholder": "Search notes...",
+    "no_results": "No results",
+    "title": "Search"
+  },
   "settings": {
     "title": "Settings",
     "close": "Close",

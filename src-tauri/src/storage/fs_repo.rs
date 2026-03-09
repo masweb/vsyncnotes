@@ -4,6 +4,7 @@ use base64::{engine::general_purpose::STANDARD as B64, Engine};
 use chrono::{DateTime, Utc};
 use rand::{rngs::OsRng, RngCore};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -14,7 +15,7 @@ use crate::crypto::envelope::{
 };
 use crate::models::{
     attachment::Attachment,
-    note::{Note, NoteMeta},
+    note::{Note, NoteMeta, NoteSearchResult},
     notebook::Notebook,
     vault::VaultMeta,
 };
@@ -122,6 +123,7 @@ fn decrypt_note_meta(enc: &EncryptedNote, master_key: &[u8; 32]) -> Result<NoteM
 pub struct FsRepo {
     vault_path: PathBuf,
     master_key: Mutex<Option<Zeroizing<[u8; 32]>>>,
+    search_index: Mutex<HashMap<Uuid, NoteSearchResult>>,
 }
 
 impl FsRepo {
@@ -132,6 +134,7 @@ impl FsRepo {
         Ok(Self {
             vault_path,
             master_key: Mutex::new(None),
+            search_index: Mutex::new(HashMap::new()),
         })
     }
 
@@ -196,12 +199,13 @@ impl FsRepo {
             return Err(anyhow!("Wrong password"));
         }
         *self.master_key.lock().await = Some(candidate_key);
+        let _ = self.build_search_index().await;
         Ok(())
     }
 
     pub async fn vault_lock(&self) {
         *self.master_key.lock().await = None;
-        // Zeroizing drops and zeroes the key bytes automatically
+        self.search_index.lock().await.clear();
     }
 
     pub async fn vault_change_password(
@@ -286,6 +290,37 @@ impl FsRepo {
     pub async fn vault_exists(&self) -> bool {
         self.vault_meta_path().exists()
     }
+
+    // ── Search index ──────────────────────────────────────────────────────────
+
+    async fn build_search_index(&self) -> Result<()> {
+        let master_key = self.get_master_key().await?;
+        let dir = self.vault_path.join("notes");
+        let mut entries = tokio::fs::read_dir(&dir)
+            .await
+            .context("Failed to read notes directory")?;
+        let mut index = self.search_index.lock().await;
+        index.clear();
+        while let Some(entry) = entries.next_entry().await? {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("json") {
+                if let Ok(content) = tokio::fs::read_to_string(&path).await {
+                    if let Ok(enc) = serde_json::from_str::<EncryptedNote>(&content) {
+                        if let Ok(meta) = decrypt_note_meta(&enc, &master_key) {
+                            index.insert(meta.id, NoteSearchResult {
+                                id: meta.id,
+                                notebook_id: meta.notebook_id,
+                                title: meta.title,
+                                updated_at: meta.updated_at,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
 }
 
 // ── StorageRepo impl ──────────────────────────────────────────────────────────
@@ -374,6 +409,12 @@ impl StorageRepo for FsRepo {
         let master_key = self.get_master_key().await?;
         let enc = encrypt_note(note, &master_key)?;
         tokio::fs::write(self.note_path(note.id), serde_json::to_string_pretty(&enc)?).await?;
+        self.search_index.lock().await.insert(note.id, NoteSearchResult {
+            id: note.id,
+            notebook_id: note.notebook_id,
+            title: note.title.clone(),
+            updated_at: note.updated_at,
+        });
         Ok(())
     }
 
@@ -381,7 +422,21 @@ impl StorageRepo for FsRepo {
         tokio::fs::remove_file(self.note_path(id))
             .await
             .with_context(|| format!("Note {id} not found"))?;
+        self.search_index.lock().await.remove(&id);
         Ok(())
+    }
+
+    async fn search_notes(&self, query: &str) -> Result<Vec<NoteSearchResult>> {
+        let query_lower = query.to_lowercase();
+        let index = self.search_index.lock().await;
+        let mut results: Vec<NoteSearchResult> = index
+            .values()
+            .filter(|r| r.title.to_lowercase().contains(&query_lower))
+            .cloned()
+            .collect();
+        results.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+        results.truncate(20);
+        Ok(results)
     }
 
     // ── Attachments (binary data encrypted) ───────────────────────────────────

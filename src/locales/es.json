@@ -93,6 +93,11 @@
     "yesterday": "Ayer",
     "days_ago": "Hace {n} días"
   },
+  "search": {
+    "placeholder": "Buscar notas...",
+    "no_results": "Sin resultados",
+    "title": "Buscar"
+  },
   "settings": {
     "title": "Ajustes",
     "close": "Cerrar",

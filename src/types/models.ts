@@ -37,6 +37,13 @@ export interface Attachment {
   updated_at: string
 }
 
+export interface NoteSearchResult {
+  id: string
+  notebook_id: string
+  title: string
+  updated_at: string
+}
+
 export interface VaultStatus {
   exists: boolean
   locked: boolean
