@@ -29,6 +29,8 @@ const cancelCreate = () => {
   showInput.value = false
   newTitle.value = ''
 }
+
+defineExpose({ startCreate })
 </script>
 
 <template>
