@@ -14,6 +14,7 @@ const query = ref('')
 const results = ref<NoteSearchResult[]>([])
 const loading = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
+const selectedIndex = ref(-1)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -22,6 +23,7 @@ const doSearch = async (q: string) => {
   loading.value = true
   try {
     results.value = await api.searchNotes(q.trim())
+    selectedIndex.value = -1
   } finally {
     loading.value = false
   }
@@ -47,6 +49,7 @@ watch(
     if (val) {
       query.value = ''
       results.value = []
+      selectedIndex.value = -1
       nextTick(() => inputRef.value?.focus())
     } else {
       if (debounceTimer) clearTimeout(debounceTimer)
@@ -54,8 +57,20 @@ watch(
   }
 )
 
-const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') emit('close')
+const onInputKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    emit('close')
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    selectedIndex.value = Math.min(selectedIndex.value + 1, results.value.length - 1)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    selectedIndex.value = Math.max(selectedIndex.value - 1, -1)
+    if (selectedIndex.value === -1) inputRef.value?.focus()
+  } else if (e.key === 'Enter' && selectedIndex.value >= 0) {
+    e.preventDefault()
+    selectResult(results.value[selectedIndex.value])
+  }
 }
 </script>
 
@@ -66,7 +81,6 @@ const onKeydown = (e: KeyboardEvent) => {
         v-if="open"
         class="search-overlay"
         @mousedown.self="emit('close')"
-        @keydown="onKeydown"
       >
         <div class="search-box border rounded shadow-lg bg-body">
           <!-- Input -->
@@ -79,7 +93,7 @@ const onKeydown = (e: KeyboardEvent) => {
               class="form-control form-control-sm border-0 shadow-none p-0 flex-grow-1"
               :placeholder="$t('search.placeholder')"
               @input="onInput"
-              @keydown.esc="emit('close')"
+              @keydown="onInputKeydown"
             />
           </div>
 
@@ -100,11 +114,13 @@ const onKeydown = (e: KeyboardEvent) => {
             </div>
 
             <button
-              v-for="r in results"
+              v-for="(r, i) in results"
               :key="r.id"
               type="button"
               class="search-result-item d-flex flex-column align-items-start w-100 px-3 py-2 border-0 text-start"
+              :class="{ 'search-result-active': i === selectedIndex }"
               @click="selectResult(r)"
+              @mouseenter="selectedIndex = i"
             >
               <span class="small fw-medium text-truncate w-100">{{ r.title }}</span>
               <span class="search-result-notebook text-muted" style="font-size: 0.7rem">{{ notebookTitle(r.notebook_id) }}</span>

@@ -96,7 +96,8 @@
   "search": {
     "placeholder": "Search notes...",
     "no_results": "No results",
-    "title": "Search"
+    "title": "Search",
+    "shortcut_hint": "to search notes"
   },
   "settings": {
     "title": "Settings",
