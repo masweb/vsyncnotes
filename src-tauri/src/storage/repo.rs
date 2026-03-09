@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::models::{
     attachment::Attachment,
-    note::{Note, NoteMeta},
+    note::{Note, NoteMeta, NoteSearchResult},
     notebook::Notebook,
 };
 
@@ -21,6 +21,7 @@ pub trait StorageRepo: Send + Sync {
     async fn get_note(&self, id: Uuid) -> Result<Note>;
     async fn save_note(&self, note: &Note) -> Result<()>;
     async fn delete_note(&self, id: Uuid) -> Result<()>;
+    async fn search_notes(&self, query: &str) -> Result<Vec<NoteSearchResult>>;
 
     // Attachments
     async fn save_attachment(&self, att: &Attachment, data: &[u8]) -> Result<()>;

@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { Attachment, Notebook, Note, NoteMeta, VaultStatus, SeedResult } from '@/types/models'
+import type { Attachment, Notebook, Note, NoteMeta, NoteSearchResult, VaultStatus, SeedResult } from '@/types/models'
 
 // ── Vault ─────────────────────────────────────────────────────────────────────
 
@@ -48,6 +48,9 @@ export const noteUpdate = (note: Note) =>
 
 export const noteDelete = (id: string) =>
   invoke<void>('note_delete', { id })
+
+export const searchNotes = (query: string) =>
+  invoke<NoteSearchResult[]>('search_notes', { query })
 
 // ── Attachments ───────────────────────────────────────────────────────────────
 

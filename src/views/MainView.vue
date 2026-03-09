@@ -78,10 +78,26 @@ const rootClass = computed(() => [
   splitClass.value,
   { 'sidebar-collapsed': !sidebarOpen.value },
 ])
+
+// ── Search modal ──────────────────────────────────────────────────────────────
+
+const searchOpen = ref(false)
+
+const onGlobalKeydown = (e: KeyboardEvent) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+    e.preventDefault()
+    searchOpen.value = true
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', onGlobalKeydown))
+onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 </script>
 
 <template>
   <div class="d-flex flex-column h-100">
+    <SearchModal :open="searchOpen" @close="searchOpen = false" />
+
     <Splitpanes
       ref="splitpanesEl"
       :class="rootClass"
