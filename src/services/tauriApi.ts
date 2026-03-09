@@ -46,6 +46,9 @@ export const noteGet = (id: string) =>
 export const noteUpdate = (note: Note) =>
   invoke<void>('note_update', { note })
 
+export const noteSetSortOrder = (id: string, sortOrder: number) =>
+  invoke<void>('note_set_sort_order', { id, sortOrder })
+
 export const noteDelete = (id: string) =>
   invoke<void>('note_delete', { id })
 

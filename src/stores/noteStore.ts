@@ -44,9 +44,28 @@ export const useNoteStore = defineStore('notes', () => {
     if (meta) meta.title = title
   }
 
+  const reorderNote = async (id: string, newIndex: number) => {
+    const list = [...sortedNotes.value]
+    const oldIndex = list.findIndex(n => n.id === id)
+    if (oldIndex === -1 || oldIndex === newIndex) return
+    const [moved] = list.splice(oldIndex, 1)
+    list.splice(newIndex, 0, moved)
+
+    list.forEach((note, i) => {
+      const idx = notes.value.findIndex(n => n.id === note.id)
+      if (idx >= 0) notes.value[idx] = { ...notes.value[idx], sort_order: i }
+    })
+
+    try {
+      await Promise.all(list.map((note, i) => api.noteSetSortOrder(note.id, i)))
+    } catch (e) {
+      console.error('reorderNote failed:', e)
+    }
+  }
+
   const clear = () => {
     notes.value = []
   }
 
-  return { notes, sortedNotes, loading, error, loadNotes, createNote, deleteNote, renameNote, clear }
+  return { notes, sortedNotes, loading, error, loadNotes, createNote, deleteNote, renameNote, reorderNote, clear }
 })
