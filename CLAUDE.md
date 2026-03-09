@@ -10,6 +10,7 @@ All conventions are in `.claude/rules/`:
 - @.claude/rules/frontend.md — Vue/TS, CoreUI, Bootstrap, vee-validate, i18n
 - @.claude/rules/editor.md — NoteEditor: spellcheck, context menu, table/code styles
 - @.claude/rules/rust-backend.md — Crate layout, vault structure, encryption, gotchas
+- @.claude/rules/sync.md — Sync engine, algoritmo, bugs resueltos, pendientes
 - @.claude/rules/git.md — Commit message format
 
 ## Skills

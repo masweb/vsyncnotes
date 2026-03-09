@@ -11,8 +11,9 @@ paths:
 models/   notebook.rs, note.rs (+ NoteMeta), attachment.rs, vault.rs
 storage/  repo.rs (trait StorageRepo), fs_repo.rs (impl JSON filesystem)
 crypto/   envelope.rs (AES-256-GCM + Argon2id E2EE)
+sync/     mod.rs, engine.rs (SyncEngine — ver @.claude/rules/sync.md)
 commands/ mod.rs (all #[tauri::command] functions)
-lib.rs    setup: FsRepo::new(app_data_dir/vault), manage(repo)
+lib.rs    setup: FsRepo + SyncEngine managed as Tauri state
 ```
 
 ## Vault directory (`$APP_DATA/vault/`)

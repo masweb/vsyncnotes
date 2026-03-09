@@ -132,10 +132,11 @@ const submitTitle = handleTitleSubmit(async values => {
     cancelEditTitle()
     return
   }
-  note.value.title = values.title
-  await api.noteUpdate(note.value)
-  const meta = noteStore.notes.find(n => n.id === note.value!.id)
-  if (meta) meta.title = values.title
+  const updated = { ...note.value, title: values.title, updated_at: new Date().toISOString() }
+  await api.noteUpdate(updated)
+  note.value = updated
+  const meta = noteStore.notes.find(n => n.id === updated.id)
+  if (meta) { meta.title = values.title; meta.updated_at = updated.updated_at }
   cancelEditTitle()
 })
 
@@ -434,28 +435,29 @@ const extractAttachmentIds = (body: unknown): Set<string> => {
 // IDs que podrían ser huérfanos — se confirman al cambiar de nota (cuando el undo ya no aplica)
 const pendingDeletions = new Set<string>()
 
+const flushSave = async () => {
+  if (!note.value) return
+  saving.value = true
+  try {
+    const newBody = editor.getJSON()
+    const oldIds = extractAttachmentIds(note.value.body)
+    const newIds = extractAttachmentIds(newBody)
+    for (const id of oldIds) if (!newIds.has(id)) pendingDeletions.add(id)
+    for (const id of newIds) pendingDeletions.delete(id)
+    const updated = { ...note.value, body: newBody, updated_at: new Date().toISOString() }
+    await api.noteUpdate(updated)
+    note.value = updated
+    const meta = noteStore.notes.find(n => n.id === updated.id)
+    if (meta) meta.updated_at = updated.updated_at
+  } finally {
+    saving.value = false
+  }
+}
+
 const scheduleSave = () => {
   if (saveTimer.value) clearTimeout(saveTimer.value)
   saveTimer.value = setTimeout(async () => {
-    if (!note.value) return
-    saving.value = true
-    try {
-      const newBody = editor.getJSON()
-      const oldIds = extractAttachmentIds(note.value.body)
-      const newIds = extractAttachmentIds(newBody)
-      // Marcar como posibles huérfanos — no borrar aún (el usuario podría hacer undo)
-      for (const id of oldIds) if (!newIds.has(id)) pendingDeletions.add(id)
-      // Si una imagen volvió (undo), ya no es huérfana
-      for (const id of newIds) pendingDeletions.delete(id)
-
-      const updated = { ...note.value, body: newBody, updated_at: new Date().toISOString() }
-      await api.noteUpdate(updated)
-      note.value = updated
-      const meta = noteStore.notes.find(n => n.id === updated.id)
-      if (meta) meta.updated_at = updated.updated_at
-    } finally {
-      saving.value = false
-    }
+    await flushSave()
   }, 1500)
 }
 
@@ -513,6 +515,7 @@ const loadNote = async (id: string) => {
   if (saveTimer.value) {
     clearTimeout(saveTimer.value)
     saveTimer.value = null
+    await flushSave()
   }
   await flushPendingDeletions()
   loading.value = true
@@ -539,14 +542,28 @@ watch(
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
+const syncStore = useSyncStore()
+
 onMounted(() => {
   editor.view.dom.setAttribute('spellcheck', spellcheck.value ? 'true' : 'false')
   document.addEventListener('click', onDocClick)
+  syncStore.registerBeforeSyncHook(async () => {
+    if (saveTimer.value) {
+      clearTimeout(saveTimer.value)
+      saveTimer.value = null
+      await flushSave()
+    }
+  })
 })
 
 onBeforeUnmount(() => {
+  syncStore.registerBeforeSyncHook(null)
   document.removeEventListener('click', onDocClick)
-  if (saveTimer.value) clearTimeout(saveTimer.value)
+  if (saveTimer.value) {
+    clearTimeout(saveTimer.value)
+    saveTimer.value = null
+    flushSave()
+  }
   flushPendingDeletions()
   editor.destroy()
 })

@@ -8,6 +8,11 @@ export const useSyncStore = defineStore('sync', () => {
   const lastError = ref<string | null>(null)
 
   let autoSyncTimer: ReturnType<typeof setInterval> | null = null
+  let beforeSyncHook: (() => Promise<void>) | null = null
+
+  const registerBeforeSyncHook = (fn: (() => Promise<void>) | null) => {
+    beforeSyncHook = fn
+  }
 
   const loadConfig = async () => {
     config.value = await api.syncGetConfig()
@@ -28,10 +33,28 @@ export const useSyncStore = defineStore('sync', () => {
 
   const runSync = async () => {
     if (syncing.value) return
+    if (beforeSyncHook) await beforeSyncHook()
     syncing.value = true
     lastError.value = null
     try {
       lastResult.value = await api.syncRun()
+      if (lastResult.value) {
+        if (lastResult.value.vault_updated) {
+          // vault.json changed on disk → master key in memory is stale → force re-lock
+          await api.vaultLock()
+          const appStore = useAppStore()
+          appStore.setView('unlock')
+        } else if (lastResult.value.pulled > 0) {
+          // Reload in-memory data so UI reflects pulled files
+          const notebookStore = useNotebookStore()
+          const appStore = useAppStore()
+          const noteStore = useNoteStore()
+          await notebookStore.loadNotebooks()
+          if (appStore.selectedNotebookId) {
+            await noteStore.loadNotes(appStore.selectedNotebookId)
+          }
+        }
+      }
     } catch (e) {
       lastError.value = String(e)
     } finally {
@@ -53,5 +76,5 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
-  return { config, syncing, lastResult, lastError, loadConfig, configure, clearConfig, runSync }
+  return { config, syncing, lastResult, lastError, loadConfig, configure, clearConfig, runSync, registerBeforeSyncHook }
 })
