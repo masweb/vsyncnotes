@@ -136,16 +136,18 @@ body {
 }
 
 .note-drag-handle {
-  width: 14px;
+  width: 20px;
   cursor: grab;
-  opacity: 0;
-  transition: opacity 0.1s;
-  flex-shrink: 0;
 
   &:active { cursor: grabbing; }
+
+  .note-drag-handle-icon {
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
 }
 
-.note-list-item:hover .note-drag-handle {
+.note-list-item:hover .note-drag-handle-icon {
   opacity: 0.4;
 }
 

@@ -85,8 +85,8 @@ const onContextMenu = async (e: MouseEvent) => {
     </div>
     <template v-else>
       <div class="d-flex align-items-center gap-1 mb-1">
-        <span class="note-drag-handle d-inline-flex align-items-center flex-shrink-0 text-muted">
-          <IconGripVertical :size="14" stroke-width="1.5" />
+        <span class="note-drag-handle d-inline-flex align-items-center justify-content-center flex-shrink-0 align-self-stretch text-muted">
+          <IconGripVertical :size="14" stroke-width="1.5" class="note-drag-handle-icon" />
         </span>
         <span class="small fw-medium text-truncate flex-grow-1">{{ note.title }}</span>
         <IconPin

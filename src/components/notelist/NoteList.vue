@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import Sortable, { type SortableEvent } from 'sortablejs'
+import Sortable, { type SortableEvent, type MoveEvent } from 'sortablejs'
 import { IconPlus, IconNote } from '@tabler/icons-vue'
 import { Menu, MenuItem } from '@tauri-apps/api/menu'
 
@@ -53,6 +53,11 @@ watch(noteListEl, (el) => {
     animation: 150,
     ghostClass: 'notebook-ghost',
     forceFallback: true,
+    onMove(evt: MoveEvent) {
+      const dragged = (evt.dragged as HTMLElement).dataset.pinned === 'true'
+      const related = (evt.related as HTMLElement).dataset.pinned === 'true'
+      return dragged === related
+    },
     onEnd(evt: SortableEvent) {
       const { oldIndex, newIndex } = evt
       if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return
@@ -128,6 +133,7 @@ watch(noteListEl, (el) => {
           :key="note.id"
           :note="note"
           :data-note-id="note.id"
+          :data-pinned="note.is_pinned"
         />
       </div>
 
