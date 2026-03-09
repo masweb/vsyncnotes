@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import Sortable, { type SortableEvent } from 'sortablejs'
 import { Menu, MenuItem } from '@tauri-apps/api/menu'
 import SidebarActions from './SidebarActions.vue'
 
@@ -27,6 +28,26 @@ const onPanelContextMenu = async (e: MouseEvent) => {
   })
   await menu.popup()
 }
+
+// ── Drag & drop ────────────────────────────────────────────────────────────────
+
+const rootContainerEl = ref<HTMLElement | null>(null)
+
+onMounted(() => {
+  if (!rootContainerEl.value) return
+  Sortable.create(rootContainerEl.value, {
+    handle: '.notebook-drag-handle',
+    animation: 150,
+    ghostClass: 'notebook-ghost',
+    forceFallback: true,
+    onEnd(evt: SortableEvent) {
+      const { oldIndex, newIndex } = evt
+      if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return
+      const id = (evt.item as HTMLElement).dataset.notebookId!
+      setTimeout(() => notebookStore.reorderNotebook(id, null, newIndex), 0)
+    },
+  })
+})
 </script>
 
 <template>
@@ -38,12 +59,15 @@ const onPanelContextMenu = async (e: MouseEvent) => {
       @click.self="onPanelClick"
       @contextmenu.self="onPanelContextMenu"
     >
-      <NotebookTreeItem
-        v-for="node in notebookStore.tree"
-        :key="node.id"
-        :node="node"
-        :depth="0"
-      />
+      <div ref="rootContainerEl" class="notebook-sortable-container">
+        <NotebookTreeItem
+          v-for="node in notebookStore.tree"
+          :key="node.id"
+          :node="node"
+          :depth="0"
+          :data-notebook-id="node.id"
+        />
+      </div>
       <div
         v-if="!notebookStore.loading && notebookStore.tree.length === 0"
         class="text-muted small px-3 py-2"

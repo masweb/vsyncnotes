@@ -16,6 +16,12 @@ const buildTree = (notebooks: Notebook[]): NotebookNode[] => {
     }
   })
 
+  const sort = (nodes: NotebookNode[]) => {
+    nodes.sort((a, b) => a.sort_order - b.sort_order)
+    nodes.forEach(n => sort(n.children))
+  }
+  sort(roots)
+
   return roots
 }
 
@@ -54,5 +60,34 @@ export const useNotebookStore = defineStore('notebooks', () => {
     notebooks.value = notebooks.value.filter(n => n.id !== id)
   }
 
-  return { notebooks, tree, loading, error, loadNotebooks, createNotebook, updateNotebook, deleteNotebook }
+  const reorderNotebook = async (id: string, newParentId: string | null, newIndex: number) => {
+    const dragged = notebooks.value.find(n => n.id === id)
+    if (!dragged) return
+
+    const oldParentId = dragged.parent_id
+    const toUpdate: Notebook[] = []
+
+    // Build new order in target parent
+    const targetSiblings = notebooks.value
+      .filter(n => n.id !== id && n.parent_id === newParentId)
+      .sort((a, b) => a.sort_order - b.sort_order)
+    const movedItem = { ...dragged, parent_id: newParentId }
+    targetSiblings.splice(newIndex, 0, movedItem)
+    targetSiblings.forEach((nb, i) => toUpdate.push({ ...nb, sort_order: i }))
+
+    // Reorder old parent siblings if reparented
+    if (oldParentId !== newParentId) {
+      const oldSiblings = notebooks.value
+        .filter(n => n.id !== id && n.parent_id === oldParentId)
+        .sort((a, b) => a.sort_order - b.sort_order)
+      oldSiblings.forEach((nb, i) => toUpdate.push({ ...nb, sort_order: i }))
+    }
+
+    // Apply to store
+    notebooks.value = notebooks.value.map(nb => toUpdate.find(u => u.id === nb.id) ?? nb)
+
+    await Promise.all(toUpdate.map(nb => api.notebookUpdate(nb)))
+  }
+
+  return { notebooks, tree, loading, error, loadNotebooks, createNotebook, updateNotebook, deleteNotebook, reorderNotebook }
 })

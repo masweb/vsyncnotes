@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { IconChevronRight, IconFolder, IconFolderOpen } from '@tabler/icons-vue'
+import Sortable, { type SortableEvent } from 'sortablejs'
+import { IconChevronRight, IconFolder, IconFolderOpen, IconGripVertical } from '@tabler/icons-vue'
 import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
 import type { NotebookNode } from '@/types/models'
 
@@ -97,6 +98,33 @@ const onContextMenu = async (e: MouseEvent) => {
   })
   await menu.popup()
 }
+
+// ── Drag & drop (children container) ─────────────────────────────────────────
+
+const childrenEl = ref<HTMLElement | null>(null)
+let sortableInstance: Sortable | null = null
+
+watch(childrenEl, (el) => {
+  sortableInstance?.destroy()
+  sortableInstance = null
+  if (!el) return
+  sortableInstance = Sortable.create(el, {
+    handle: '.notebook-drag-handle',
+    animation: 150,
+    ghostClass: 'notebook-ghost',
+    forceFallback: true,
+    onEnd(evt: SortableEvent) {
+      const { oldIndex, newIndex } = evt
+      if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return
+      const id = (evt.item as HTMLElement).dataset.notebookId!
+      setTimeout(() => notebookStore.reorderNotebook(id, props.node.id, newIndex), 0)
+    },
+  })
+})
+
+onUnmounted(() => {
+  sortableInstance?.destroy()
+})
 </script>
 
 <template>
@@ -109,6 +137,10 @@ const onContextMenu = async (e: MouseEvent) => {
       @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
       @contextmenu="onContextMenu"
     >
+      <span class="notebook-drag-handle d-inline-flex align-items-center justify-content-center flex-shrink-0 text-muted">
+        <IconGripVertical :size="16" stroke-width="1.5" />
+      </span>
+
       <span
         class="d-inline-flex align-items-center justify-content-center flex-shrink-0"
         style="width: 14px"
@@ -149,28 +181,30 @@ const onContextMenu = async (e: MouseEvent) => {
       <span v-else class="small flex-grow-1 text-truncate">{{ node.title }}</span>
     </div>
 
-    <template v-if="expanded">
+    <div v-if="expanded" ref="childrenEl" class="notebook-sortable-container">
       <NotebookTreeItem
         v-for="child in node.children"
         :key="child.id"
         :node="child"
         :depth="depth + 1"
+        :data-notebook-id="child.id"
       />
-      <div
-        v-if="showInput"
-        class="pe-2 py-1"
-        :style="{ paddingLeft: `${(depth + 1) * 12 + 38}px` }"
-      >
-        <input
-          ref="inputRef"
-          v-model="newTitle"
-          class="form-control form-control-sm"
-          :placeholder="t('nav.notebook_placeholder')"
-          @keyup.enter="confirmCreate"
-          @keyup.escape="cancelCreate"
-          @blur="confirmCreate"
-        />
-      </div>
-    </template>
+    </div>
+
+    <div
+      v-if="expanded && showInput"
+      class="pe-2 py-1"
+      :style="{ paddingLeft: `${(depth + 1) * 12 + 38}px` }"
+    >
+      <input
+        ref="inputRef"
+        v-model="newTitle"
+        class="form-control form-control-sm"
+        :placeholder="t('nav.notebook_placeholder')"
+        @keyup.enter="confirmCreate"
+        @keyup.escape="cancelCreate"
+        @blur="confirmCreate"
+      />
+    </div>
   </div>
 </template>
