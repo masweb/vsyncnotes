@@ -59,3 +59,10 @@ paths:
 - Selector: `.tiptap pre code` — light theme GitHub (`#f6f8fa` bg), dark theme GitHub Dark (`#0d1117` bg)
 - All hljs token colors defined in `editor.scss`
 - Dark mode: `[data-coreui-theme='dark'] .tiptap pre code`
+
+## Note list ordering (NoteList / noteStore)
+- `sortedNotes` computed: `is_pinned DESC, sort_order ASC` — pinned notes always first, independent sort_order within each group
+- Drag-and-drop: SortableJS with `forceFallback: true` (mandatory for WebKit/Tauri), `handle: '.note-drag-handle'`
+- `note_set_sort_order` Tauri command updates `sort_order` in the JSON file **without decryption** (reads raw JSON as `serde_json::Value`, patches field, writes back) — fast path, no crypto needed
+- `reorderNote` in noteStore: reorders within the same `is_pinned` group; assigns independent sort_orders 0,1,2… per group; persists all with `Promise.all`
+- Debugging lesson: if `sortedNotes` order doesn't match expectations, check `is_pinned` — a pinned note will always stay above non-pinned regardless of `sort_order`
