@@ -105,6 +105,7 @@
   "search": {
     "placeholder": "Buscar notas...",
     "no_results": "Sin resultados",
+    "notebook_label": "Cuaderno",
     "title": "Buscar",
     "shortcut_hint": "para buscar notas",
     "new_note_hint": "nueva nota",

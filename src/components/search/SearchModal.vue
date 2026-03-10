@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { IconSearch } from '@tabler/icons-vue'
+import { IconSearch, IconFolder, IconNote } from '@tabler/icons-vue'
 import * as api from '@/services/tauriApi'
 import type { NoteSearchResult } from '@/types/models'
 
@@ -10,19 +10,37 @@ const { t } = useI18n()
 const appStore = useAppStore()
 const notebookStore = useNotebookStore()
 
+type CombinedResult =
+  | { kind: 'note'; data: NoteSearchResult }
+  | { kind: 'notebook'; id: string; title: string }
+
 const query = ref('')
-const results = ref<NoteSearchResult[]>([])
+const noteResults = ref<NoteSearchResult[]>([])
 const loading = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 const selectedIndex = ref(-1)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
+const notebookResults = computed<CombinedResult[]>(() => {
+  const q = query.value.trim().toLowerCase()
+  if (!q) return []
+  return notebookStore.notebooks
+    .filter(n => n.title.toLowerCase().includes(q))
+    .slice(0, 5)
+    .map(n => ({ kind: 'notebook' as const, id: n.id, title: n.title }))
+})
+
+const results = computed<CombinedResult[]>(() => [
+  ...notebookResults.value,
+  ...noteResults.value.map(r => ({ kind: 'note' as const, data: r })),
+])
+
 const doSearch = async (q: string) => {
-  if (!q.trim()) { results.value = []; return }
+  if (!q.trim()) { noteResults.value = []; return }
   loading.value = true
   try {
-    results.value = await api.searchNotes(q.trim())
+    noteResults.value = await api.searchNotes(q.trim())
     selectedIndex.value = -1
   } finally {
     loading.value = false
@@ -30,13 +48,18 @@ const doSearch = async (q: string) => {
 }
 
 const onInput = () => {
+  selectedIndex.value = -1
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => doSearch(query.value), 200)
 }
 
-const selectResult = (r: NoteSearchResult) => {
-  appStore.selectNotebook(r.notebook_id)
-  appStore.selectNote(r.id)
+const selectResult = (r: CombinedResult) => {
+  if (r.kind === 'notebook') {
+    appStore.selectNotebook(r.id)
+  } else {
+    appStore.selectNotebook(r.data.notebook_id)
+    appStore.selectNote(r.data.id)
+  }
   emit('close')
 }
 
@@ -48,7 +71,7 @@ watch(
   (val) => {
     if (val) {
       query.value = ''
-      results.value = []
+      noteResults.value = []
       selectedIndex.value = -1
       nextTick(() => inputRef.value?.focus())
     } else {
@@ -115,15 +138,30 @@ const onInputKeydown = (e: KeyboardEvent) => {
 
             <button
               v-for="(r, i) in results"
-              :key="r.id"
+              :key="r.kind === 'notebook' ? r.id : r.data.id"
               type="button"
-              class="search-result-item d-flex flex-column align-items-start w-100 px-3 py-2 border-0 text-start"
+              class="search-result-item d-flex align-items-center gap-2 w-100 px-3 py-2 border-0 text-start"
               :class="{ 'search-result-active': i === selectedIndex }"
               @click="selectResult(r)"
               @mouseenter="selectedIndex = i"
             >
-              <span class="small fw-medium text-truncate w-100">{{ r.title }}</span>
-              <span class="search-result-notebook text-muted" style="font-size: 0.7rem">{{ notebookTitle(r.notebook_id) }}</span>
+              <component
+                :is="r.kind === 'notebook' ? IconFolder : IconNote"
+                :size="14"
+                stroke-width="1.5"
+                class="flex-shrink-0 text-muted opacity-60"
+              />
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="small fw-medium text-truncate">
+                  {{ r.kind === 'notebook' ? r.title : r.data.title }}
+                </div>
+                <div v-if="r.kind === 'note'" class="search-result-notebook text-muted" style="font-size: 0.7rem">
+                  {{ notebookTitle(r.data.notebook_id) }}
+                </div>
+                <div v-else class="search-result-notebook text-muted" style="font-size: 0.7rem">
+                  {{ $t('search.notebook_label') }}
+                </div>
+              </div>
             </button>
           </div>
         </div>
