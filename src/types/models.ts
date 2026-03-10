@@ -57,7 +57,11 @@ export interface SeedResult {
 }
 
 export interface SyncConfig {
-  target_path: string
+  provider: 'fs' | 'webdav'
+  target_path?: string
+  webdav_url?: string
+  webdav_username?: string
+  webdav_password?: string
   auto_sync_interval_secs: number
 }
 

@@ -8,28 +8,37 @@ const { currentLocale, availableLocales, setLocale } = useLocale()
 const syncStore = useSyncStore()
 
 type SyncType = 'none' | 'fs' | 'webdav'
-const syncType = ref<SyncType>(syncStore.config ? 'fs' : 'none')
+const syncType = ref<SyncType>(
+  syncStore.config?.provider === 'webdav' ? 'webdav' :
+  syncStore.config ? 'fs' : 'none'
+)
 
 // Filesystem
 const syncPath = ref(syncStore.config?.target_path ?? '')
 const syncInterval = ref(Number(syncStore.config?.auto_sync_interval_secs ?? 300))
 const syncSaved = ref(false)
 
-// WebDAV (UI only — backend pendiente)
-const webdavUrl = ref('')
-const webdavUser = ref('')
-const webdavPass = ref('')
+// WebDAV
+const webdavUrl = ref(syncStore.config?.webdav_url ?? '')
+const webdavUser = ref(syncStore.config?.webdav_username ?? '')
+const webdavPass = ref(syncStore.config?.webdav_password ?? '')
+const webdavSaved = ref(false)
 
 watch(() => syncStore.config, (cfg) => {
   if (cfg) {
-    syncPath.value = cfg.target_path
+    syncPath.value = cfg.target_path ?? ''
     syncInterval.value = Number(cfg.auto_sync_interval_secs)
+    webdavUrl.value = cfg.webdav_url ?? ''
+    webdavUser.value = cfg.webdav_username ?? ''
+    webdavPass.value = cfg.webdav_password ?? ''
   } else {
     syncPath.value = ''
     syncInterval.value = 300
+    webdavUrl.value = ''
+    webdavUser.value = ''
+    webdavPass.value = ''
   }
 })
-
 
 const pickFolder = async () => {
   const selected = await open({ directory: true, multiple: false })
@@ -40,16 +49,26 @@ const clearSyncConfig = async () => {
   await syncStore.clearConfig()
   syncPath.value = ''
   syncInterval.value = 300
+  webdavUrl.value = ''
+  webdavUser.value = ''
+  webdavPass.value = ''
 }
 
 const saveSyncConfig = async () => {
   const path = syncPath.value.trim()
   if (!path) return
-  await syncStore.configure(path, Number(syncInterval.value))
+  await syncStore.configure('fs', Number(syncInterval.value), path)
   syncSaved.value = true
   setTimeout(() => { syncSaved.value = false }, 2000)
 }
 
+const saveWebdavConfig = async () => {
+  const url = webdavUrl.value.trim()
+  if (!url) return
+  await syncStore.configure('webdav', Number(syncInterval.value), undefined, url, webdavUser.value, webdavPass.value)
+  webdavSaved.value = true
+  setTimeout(() => { webdavSaved.value = false }, 2000)
+}
 </script>
 
 <template>
@@ -176,9 +195,16 @@ const saveSyncConfig = async () => {
               <label class="small text-muted mb-1">{{ $t('sync.webdav_pass') }}</label>
               <input v-model="webdavPass" type="password" class="form-control form-control-sm" autocomplete="current-password" />
             </div>
-            <button class="btn btn-sm btn-secondary w-100 mb-2" disabled>
-              {{ $t('sync.coming_soon') }}
-            </button>
+            <div class="mb-2">
+              <button
+                class="btn btn-sm btn-primary w-100"
+                :disabled="!webdavUrl.trim()"
+                @click="saveWebdavConfig"
+              >
+                <IconCheck v-if="webdavSaved" :size="14" stroke-width="2.5" />
+                <span v-else>{{ $t('sync.save') }}</span>
+              </button>
+            </div>
           </template>
 
           <!-- Intervalo compartido -->

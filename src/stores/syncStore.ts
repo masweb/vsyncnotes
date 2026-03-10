@@ -27,8 +27,15 @@ export const useSyncStore = defineStore('sync', () => {
     scheduleAutoSync()
   }
 
-  const configure = async (targetPath: string, intervalSecs?: number) => {
-    await api.syncConfigure(targetPath, intervalSecs)
+  const configure = async (
+    provider: string,
+    intervalSecs: number,
+    targetPath?: string,
+    webdavUrl?: string,
+    webdavUsername?: string,
+    webdavPassword?: string,
+  ) => {
+    await api.syncConfigure(provider, intervalSecs, targetPath, webdavUrl, webdavUsername, webdavPassword)
     config.value = await api.syncGetConfig()
     scheduleAutoSync()
   }
