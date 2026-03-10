@@ -118,11 +118,20 @@
   "sync": {
     "title": "Sync",
     "run": "Sync now",
+    "target_label": "Sync target",
+    "target_none": "None",
+    "target_fs": "File system",
+    "target_webdav": "WebDAV",
     "path_placeholder": "Target folder path...",
     "pick_folder": "Pick folder",
     "interval_label": "Auto-sync interval",
+    "webdav_url": "Server URL",
+    "webdav_url_placeholder": "https://nextcloud.example.com/dav/files/user/",
+    "webdav_user": "Username",
+    "webdav_pass": "Password",
     "save": "Save",
     "clear": "Remove sync",
+    "coming_soon": "Coming soon",
     "result": "↑ {pushed} pushed · ↓ {pulled} pulled · = {skipped} unchanged"
   }
 }

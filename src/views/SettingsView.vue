@@ -1,25 +1,45 @@
 <script lang="ts" setup>
 import { open } from '@tauri-apps/plugin-dialog'
-import { IconX, IconCheck, IconTrash, IconFolderOpen } from '@tabler/icons-vue'
+import { IconX, IconCheck, IconFolderOpen } from '@tabler/icons-vue'
 
 const appStore = useAppStore()
 const { currentTheme, setTheme } = useTheme()
 const { currentLocale, availableLocales, setLocale } = useLocale()
-
 const syncStore = useSyncStore()
 
+type SyncType = 'none' | 'fs' | 'webdav'
+const syncType = ref<SyncType>(syncStore.config ? 'fs' : 'none')
+
+// Filesystem
 const syncPath = ref(syncStore.config?.target_path ?? '')
 const syncInterval = ref(Number(syncStore.config?.auto_sync_interval_secs ?? 300))
 const syncSaved = ref(false)
 
+// WebDAV (UI only — backend pendiente)
+const webdavUrl = ref('')
+const webdavUser = ref('')
+const webdavPass = ref('')
+
 watch(() => syncStore.config, (cfg) => {
-  syncPath.value = cfg?.target_path ?? ''
-  syncInterval.value = Number(cfg?.auto_sync_interval_secs ?? 300)
+  if (cfg) {
+    syncPath.value = cfg.target_path
+    syncInterval.value = Number(cfg.auto_sync_interval_secs)
+  } else {
+    syncPath.value = ''
+    syncInterval.value = 300
+  }
 })
+
 
 const pickFolder = async () => {
   const selected = await open({ directory: true, multiple: false })
   if (selected) syncPath.value = selected as string
+}
+
+const clearSyncConfig = async () => {
+  await syncStore.clearConfig()
+  syncPath.value = ''
+  syncInterval.value = 300
 }
 
 const saveSyncConfig = async () => {
@@ -30,16 +50,13 @@ const saveSyncConfig = async () => {
   setTimeout(() => { syncSaved.value = false }, 2000)
 }
 
-const clearSyncConfig = async () => {
-  await syncStore.clearConfig()
-  syncPath.value = ''
-  syncInterval.value = 300
-}
 </script>
 
 <template>
-  <div class="d-flex align-items-center justify-content-center h-100">
-    <div style="width: 340px">
+  <div class="d-flex align-items-center justify-content-center h-100 px-4">
+    <div class="w-100" style="max-width: 640px">
+
+      <!-- Header -->
       <div class="d-flex align-items-center justify-content-between mb-4">
         <h5 class="mb-0">{{ $t('settings.title') }}</h5>
         <button class="btn btn-sm p-0 lh-1 text-muted" :title="$t('settings.close')" @click="appStore.setView('main')">
@@ -47,91 +64,139 @@ const clearSyncConfig = async () => {
         </button>
       </div>
 
-      <!-- Apariencia -->
-      <div class="mb-4">
-        <label class="form-label small fw-semibold text-muted text-uppercase mb-2">
-          {{ $t('settings.theme') }}
-        </label>
-        <div class="btn-group btn-group-sm w-100">
-          <button
-            class="btn"
-            :class="currentTheme === 'light' ? 'btn-secondary' : 'btn-outline-secondary'"
-            @click="setTheme('light')"
-          >
-            {{ $t('settings.theme_light') }}
-          </button>
-          <button
-            class="btn"
-            :class="currentTheme === 'dark' ? 'btn-secondary' : 'btn-outline-secondary'"
-            @click="setTheme('dark')"
-          >
-            {{ $t('settings.theme_dark') }}
-          </button>
-        </div>
-      </div>
+      <!-- Dos columnas -->
+      <div class="d-flex gap-5">
 
-      <!-- Idioma -->
-      <div class="mb-4">
-        <label class="form-label small fw-semibold text-muted text-uppercase mb-2">
-          {{ $t('settings.language') }}
-        </label>
-        <select
-          class="form-select form-select-sm"
-          :value="currentLocale"
-          @change="setLocale(($event.target as HTMLSelectElement).value)"
-        >
-          <option v-for="loc in availableLocales" :key="loc.code" :value="loc.code">
-            {{ loc.label }}
-          </option>
-        </select>
-      </div>
+        <!-- Columna izquierda: Apariencia + Idioma -->
+        <div style="min-width: 200px">
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-muted text-uppercase mb-2">
+              {{ $t('settings.theme') }}
+            </label>
+            <div class="btn-group btn-group-sm w-100">
+              <button
+                class="btn"
+                :class="currentTheme === 'light' ? 'btn-secondary' : 'btn-outline-secondary'"
+                @click="setTheme('light')"
+              >
+                {{ $t('settings.theme_light') }}
+              </button>
+              <button
+                class="btn"
+                :class="currentTheme === 'dark' ? 'btn-secondary' : 'btn-outline-secondary'"
+                @click="setTheme('dark')"
+              >
+                {{ $t('settings.theme_dark') }}
+              </button>
+            </div>
+          </div>
 
-      <!-- Sync -->
-      <div class="mb-4">
-        <label class="form-label small fw-semibold text-muted text-uppercase mb-2">
-          {{ $t('sync.title') }}
-        </label>
-        <div class="input-group input-group-sm mb-2">
-          <input
-            v-model="syncPath"
-            class="form-control"
-            :placeholder="$t('sync.path_placeholder')"
-            @keyup.enter="saveSyncConfig"
-          />
-          <button class="btn btn-outline-secondary" type="button" :title="$t('sync.pick_folder')" @click="pickFolder">
-            <IconFolderOpen :size="14" stroke-width="1.5" />
-          </button>
+          <div class="mb-4">
+            <label class="form-label small fw-semibold text-muted text-uppercase mb-2">
+              {{ $t('settings.language') }}
+            </label>
+            <select
+              class="form-select form-select-sm"
+              :value="currentLocale"
+              @change="setLocale(($event.target as HTMLSelectElement).value)"
+            >
+              <option v-for="loc in availableLocales" :key="loc.code" :value="loc.code">
+                {{ loc.label }}
+              </option>
+            </select>
+          </div>
         </div>
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <label class="small text-muted mb-0 flex-grow-1">{{ $t('sync.interval_label') }}</label>
-          <select v-model="syncInterval" class="form-select form-select-sm" style="width: auto">
-            <option :value="60">1 min</option>
-            <option :value="300">5 min</option>
-            <option :value="600">10 min</option>
-            <option :value="1800">30 min</option>
-            <option :value="3600">1 h</option>
-          </select>
-        </div>
-        <div class="d-flex gap-2">
-          <button
-            class="btn btn-sm btn-primary flex-grow-1"
-            :disabled="!syncPath.trim()"
-            @click="saveSyncConfig"
-          >
-            <IconCheck v-if="syncSaved" :size="14" stroke-width="2.5" />
-            <span v-else>{{ $t('sync.save') }}</span>
-          </button>
-          <button
-            v-if="syncStore.config"
-            class="btn btn-sm btn-outline-danger"
-            :title="$t('sync.clear')"
-            @click="clearSyncConfig"
-          >
-            <IconTrash :size="14" stroke-width="1.5" />
-          </button>
-        </div>
-      </div>
 
+        <!-- Divisor vertical -->
+        <div class="border-start"></div>
+
+        <!-- Columna derecha: Sincronización -->
+        <div class="flex-grow-1">
+          <label class="form-label small fw-semibold text-muted text-uppercase mb-2">
+            {{ $t('sync.title') }}
+          </label>
+
+          <!-- Select objetivo -->
+          <div class="mb-3">
+            <label class="small text-muted mb-1">{{ $t('sync.target_label') }}</label>
+            <select v-model="syncType" class="form-select form-select-sm">
+              <option value="none">{{ $t('sync.target_none') }}</option>
+              <option value="fs">{{ $t('sync.target_fs') }}</option>
+              <option value="webdav">{{ $t('sync.target_webdav') }}</option>
+            </select>
+          </div>
+
+          <!-- Ninguno — confirmar desactivación -->
+          <template v-if="syncType === 'none' && syncStore.config">
+            <button class="btn btn-sm btn-outline-danger w-100 mb-2" @click="clearSyncConfig">
+              {{ $t('sync.clear') }}
+            </button>
+          </template>
+
+          <!-- Sistema de ficheros -->
+          <template v-if="syncType === 'fs'">
+            <div class="input-group input-group-sm mb-2">
+              <input
+                v-model="syncPath"
+                class="form-control"
+                :placeholder="$t('sync.path_placeholder')"
+                @keyup.enter="saveSyncConfig"
+              />
+              <button class="btn btn-outline-secondary" type="button" :title="$t('sync.pick_folder')" @click="pickFolder">
+                <IconFolderOpen :size="14" stroke-width="1.5" />
+              </button>
+            </div>
+            <div class="mb-2">
+              <button
+                class="btn btn-sm btn-primary w-100"
+                :disabled="!syncPath.trim()"
+                @click="saveSyncConfig"
+              >
+                <IconCheck v-if="syncSaved" :size="14" stroke-width="2.5" />
+                <span v-else>{{ $t('sync.save') }}</span>
+              </button>
+            </div>
+          </template>
+
+          <!-- WebDAV -->
+          <template v-else-if="syncType === 'webdav'">
+            <div class="mb-2">
+              <label class="small text-muted mb-1">{{ $t('sync.webdav_url') }}</label>
+              <input
+                v-model="webdavUrl"
+                class="form-control form-control-sm"
+                :placeholder="$t('sync.webdav_url_placeholder')"
+              />
+            </div>
+            <div class="mb-2">
+              <label class="small text-muted mb-1">{{ $t('sync.webdav_user') }}</label>
+              <input v-model="webdavUser" class="form-control form-control-sm" autocomplete="username" />
+            </div>
+            <div class="mb-2">
+              <label class="small text-muted mb-1">{{ $t('sync.webdav_pass') }}</label>
+              <input v-model="webdavPass" type="password" class="form-control form-control-sm" autocomplete="current-password" />
+            </div>
+            <button class="btn btn-sm btn-secondary w-100 mb-2" disabled>
+              {{ $t('sync.coming_soon') }}
+            </button>
+          </template>
+
+          <!-- Intervalo compartido -->
+          <template v-if="syncType !== 'none'">
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <label class="small text-muted mb-0 flex-grow-1">{{ $t('sync.interval_label') }}</label>
+              <select v-model="syncInterval" class="form-select form-select-sm" style="width: auto">
+                <option :value="60">1 min</option>
+                <option :value="300">5 min</option>
+                <option :value="600">10 min</option>
+                <option :value="1800">30 min</option>
+                <option :value="3600">1 h</option>
+              </select>
+            </div>
+          </template>
+        </div>
+
+      </div>
     </div>
   </div>
 </template>
