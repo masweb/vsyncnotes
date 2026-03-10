@@ -132,6 +132,8 @@
     "save": "Guardar",
     "clear": "Quitar sync",
     "coming_soon": "Próximamente",
+    "webdav_test": "Comprobar conexión",
+    "webdav_test_ok": "Conexión correcta",
     "result": "↑ {pushed} enviadas · ↓ {pulled} recibidas · = {skipped} sin cambios"
   }
 }

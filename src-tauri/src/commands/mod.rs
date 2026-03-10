@@ -216,3 +216,19 @@ pub async fn sync_clear_config(engine: State<'_, SyncEngine>) -> Result<(), Stri
 pub async fn sync_run(engine: State<'_, SyncEngine>) -> Result<SyncResult, String> {
     engine.run().await.map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn sync_webdav_test(
+    webdav_url: String,
+    webdav_username: Option<String>,
+    webdav_password: Option<String>,
+) -> Result<(), String> {
+    use crate::sync::webdav::WebDavClient;
+    let client = WebDavClient::new(
+        &webdav_url,
+        webdav_username.as_deref().unwrap_or(""),
+        webdav_password.as_deref().unwrap_or(""),
+    )
+    .map_err(|e| e.to_string())?;
+    client.test_connection().await.map_err(|e| e.to_string())
+}

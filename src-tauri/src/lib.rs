@@ -53,6 +53,7 @@ pub fn run() {
             commands::sync_get_config,
             commands::sync_clear_config,
             commands::sync_run,
+            commands::sync_webdav_test,
             // Dev
             commands::seed::dev_seed,
         ])

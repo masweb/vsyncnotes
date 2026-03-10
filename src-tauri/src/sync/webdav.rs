@@ -105,6 +105,31 @@ impl WebDavClient {
         Ok(())
     }
 
+    /// Verifies connectivity and credentials by doing a PROPFIND Depth:0 on the base URL.
+    pub async fn test_connection(&self) -> Result<()> {
+        let body = r#"<?xml version="1.0" encoding="utf-8"?><D:propfind xmlns:D="DAV:"><D:prop><D:resourcetype/></D:prop></D:propfind>"#;
+        let resp = self
+            .client
+            .request(
+                reqwest::Method::from_bytes(b"PROPFIND").unwrap(),
+                &self.base_url,
+            )
+            .header("Depth", "0")
+            .header("Content-Type", "application/xml; charset=utf-8")
+            .basic_auth(&self.username, Some(&self.password))
+            .body(body)
+            .send()
+            .await
+            .map_err(|e| anyhow!("No se pudo conectar al servidor: {e}"))?;
+
+        match resp.status().as_u16() {
+            207 | 200 => Ok(()),
+            401 | 403 => Err(anyhow!("Credenciales incorrectas")),
+            404 => Err(anyhow!("URL no encontrada")),
+            s => Err(anyhow!("El servidor respondió con código {s}")),
+        }
+    }
+
     pub async fn file_exists(&self, path: &str) -> bool {
         self.client
             .head(self.url(path))

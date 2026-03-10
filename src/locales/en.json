@@ -132,6 +132,8 @@
     "save": "Save",
     "clear": "Remove sync",
     "coming_soon": "Coming soon",
+    "webdav_test": "Test connection",
+    "webdav_test_ok": "Connection successful",
     "result": "↑ {pushed} pushed · ↓ {pulled} pulled · = {skipped} unchanged"
   }
 }
