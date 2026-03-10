@@ -43,18 +43,10 @@ defineExpose({ startCreate })
 <template>
   <div class="flex-shrink-0">
     <div class="d-flex align-items-center px-3 border-bottom" style="height: 41px">
-      <button
-        class="btn btn-sm p-0 lh-1 me-2 text-muted"
-        :title="$t('nav.collapse_sidebar')"
-        @click="emit('collapse')"
-      >
-        <IconLayoutSidebarLeftCollapse :size="15" stroke-width="1.5" :title="$t('nav.collapse_sidebar')" />
+      <button class="btn btn-sm p-0 lh-1 me-2 text-muted" :title="$t('nav.collapse_sidebar')" @click="emit('collapse')">
+        <IconLayoutSidebarLeftCollapse :size="22" stroke-width="1.2" :title="$t('nav.collapse_sidebar')" />
       </button>
-      <button
-        class="btn btn-sm p-0 lh-1 me-1 text-muted"
-        :title="$t('nav.new_notebook')"
-        @click="startCreate"
-      >
+      <button class="btn btn-sm p-0 lh-1 me-1 text-muted" :title="$t('nav.new_notebook')" @click="startCreate">
         <IconPlus :size="14" stroke-width="2" :title="$t('nav.new_notebook')" />
       </button>
       <button
@@ -62,24 +54,21 @@ defineExpose({ startCreate })
         :title="$t('settings.title')"
         @click="appStore.setView('settings')"
       >
-        <IconSettings :size="15" stroke-width="1.5" :title="$t('settings.title')" />
+        <IconSettings :size="22" stroke-width="1.2" :title="$t('settings.title')" />
       </button>
       <span class="flex-grow-1" />
       <button
         v-if="syncStore.config"
-        class="btn btn-sm p-0 lh-1 me-2 text-muted"
+        class="btn btn-sm btn-link p-0 lh-1 me-2"
+        :class="syncStore.syncing ? 'text-danger' : 'text-muted'"
         :title="$t('sync.run')"
         :disabled="syncStore.syncing"
         @click="syncStore.runSync()"
       >
-        <IconRefresh :size="14" stroke-width="1.5" :class="{ spin: syncStore.syncing }" :title="$t('sync.run')" />
+        <IconRefresh :size="22" stroke-width="1.2" :class="{ spin: syncStore.syncing }" :title="$t('sync.run')" />
       </button>
-      <button
-        class="btn btn-sm p-0 lh-1 text-muted"
-        :title="$t('nav.lock')"
-        @click="lock"
-      >
-        <IconPower :size="14" stroke-width="1.5" :title="$t('nav.lock')" />
+      <button class="btn btn-sm p-0 lh-1 text-muted" :title="$t('nav.lock')" @click="lock">
+        <IconPower :size="22" stroke-width="1.2" :title="$t('nav.lock')" />
       </button>
     </div>
 
