@@ -68,8 +68,22 @@ export const attachmentDelete = (id: string) =>
 
 // ── Sync ──────────────────────────────────────────────────────────────────────
 
-export const syncConfigure = (targetPath: string, autoSyncIntervalSecs?: number) =>
-  invoke<void>('sync_configure', { targetPath, autoSyncIntervalSecs: autoSyncIntervalSecs ?? null })
+export const syncConfigure = (
+  provider: string,
+  autoSyncIntervalSecs: number,
+  targetPath?: string,
+  webdavUrl?: string,
+  webdavUsername?: string,
+  webdavPassword?: string,
+) =>
+  invoke<void>('sync_configure', {
+    provider,
+    autoSyncIntervalSecs,
+    targetPath: targetPath ?? null,
+    webdavUrl: webdavUrl ?? null,
+    webdavUsername: webdavUsername ?? null,
+    webdavPassword: webdavPassword ?? null,
+  })
 
 export const syncGetConfig = () =>
   invoke<SyncConfig | null>('sync_get_config')

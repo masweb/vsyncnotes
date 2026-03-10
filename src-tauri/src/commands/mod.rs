@@ -182,11 +182,19 @@ pub async fn attachment_delete(repo: State<'_, FsRepo>, id: Uuid) -> Result<(), 
 #[tauri::command]
 pub async fn sync_configure(
     engine: State<'_, SyncEngine>,
-    target_path: String,
+    provider: String,
     auto_sync_interval_secs: Option<u64>,
+    target_path: Option<String>,
+    webdav_url: Option<String>,
+    webdav_username: Option<String>,
+    webdav_password: Option<String>,
 ) -> Result<(), String> {
     let config = SyncConfig {
+        provider,
         target_path,
+        webdav_url,
+        webdav_username,
+        webdav_password,
         auto_sync_interval_secs: auto_sync_interval_secs.unwrap_or(300),
     };
     engine.save_config(&config).await.map_err(|e| e.to_string())
