@@ -90,7 +90,7 @@ impl SyncEngine {
             .ok_or_else(|| anyhow!("Sync not configured"))?;
 
         match config.provider.as_str() {
-            "webdav" => self.do_sync_webdav(&config).await,
+            "webdav" | "nextcloud" => self.do_sync_webdav(&config).await,
             _ => self.do_sync_fs(&config).await,
         }
     }
