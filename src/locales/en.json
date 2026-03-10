@@ -40,7 +40,8 @@
     "unpin": "Unpin",
     "rename": "Rename",
     "delete": "Delete",
-    "close_note": "Close note"
+    "close_note": "Close note",
+    "export_md": "Export as Markdown"
   },
   "editor": {
     "placeholder": "Write something...",

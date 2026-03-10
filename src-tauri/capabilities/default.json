@@ -13,6 +13,15 @@
       "allow": [{ "path": "$DOWNLOAD/**" }]
     },
     {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        { "path": "$HOME/**" },
+        { "path": "$DESKTOP/**" },
+        { "path": "$DOCUMENT/**" },
+        { "path": "$DOWNLOAD/**" }
+      ]
+    },
+    {
       "identifier": "opener:allow-open-path",
       "allow": [{ "path": "$DOWNLOAD/**" }]
     }

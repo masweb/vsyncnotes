@@ -40,7 +40,8 @@
     "unpin": "Desfijar",
     "rename": "Renombrar",
     "delete": "Eliminar",
-    "close_note": "Cerrar nota"
+    "close_note": "Cerrar nota",
+    "export_md": "Exportar como Markdown"
   },
   "editor": {
     "placeholder": "Escribe algo...",
