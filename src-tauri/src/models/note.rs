@@ -16,12 +16,13 @@ pub struct Note {
     pub updated_at: DateTime<Utc>,
 }
 
-/// Versión ligera de Note para listados (sin body).
+/// Versión ligera de Note para listados (sin body completo).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteMeta {
     pub id: Uuid,
     pub notebook_id: Uuid,
     pub title: String,
+    pub snippet: Option<String>,
     pub sort_order: i32,
     pub is_pinned: bool,
     pub created_at: DateTime<Utc>,
@@ -59,6 +60,7 @@ impl Note {
             id: self.id,
             notebook_id: self.notebook_id,
             title: self.title.clone(),
+            snippet: None,
             sort_order: self.sort_order,
             is_pinned: self.is_pinned,
             created_at: self.created_at,

@@ -57,6 +57,36 @@ struct EncryptedAttachmentMeta {
 
 // ── Pure helpers ──────────────────────────────────────────────────────────────
 
+fn tiptap_text(node: &serde_json::Value, out: &mut String, limit: usize) {
+    if out.len() >= limit {
+        return;
+    }
+    if node.get("type").and_then(|t| t.as_str()) == Some("text") {
+        if let Some(text) = node.get("text").and_then(|t| t.as_str()) {
+            out.push_str(text);
+        }
+    }
+    if let Some(children) = node.get("content").and_then(|c| c.as_array()) {
+        for child in children {
+            tiptap_text(child, out, limit);
+            if out.len() >= limit {
+                break;
+            }
+        }
+        // Add space between block-level nodes so words don't run together
+        if !out.is_empty() && !out.ends_with(' ') {
+            out.push(' ');
+        }
+    }
+}
+
+fn extract_snippet(body: &serde_json::Value) -> Option<String> {
+    let mut text = String::new();
+    tiptap_text(body, &mut text, 160);
+    let trimmed = text.trim().to_string();
+    if trimmed.is_empty() { None } else { Some(trimmed) }
+}
+
 fn encrypt_note(note: &Note, master_key: &[u8; 32]) -> Result<EncryptedNote> {
     let dek = generate_dek();
     let (title_encrypted, nonce_title) = encrypt(note.title.as_bytes(), &dek)?;
@@ -107,10 +137,14 @@ fn decrypt_note_meta(enc: &EncryptedNote, master_key: &[u8; 32]) -> Result<NoteM
         .try_into()
         .map_err(|_| anyhow!("Invalid DEK length"))?;
     let title = String::from_utf8(decrypt(&enc.title_encrypted, &enc.nonce_title, &dek)?)?;
+    let body: serde_json::Value =
+        serde_json::from_slice(&decrypt(&enc.body_encrypted, &enc.nonce_body, &dek)?)?;
+    let snippet = extract_snippet(&body);
     Ok(NoteMeta {
         id: enc.id,
         notebook_id: enc.notebook_id,
         title,
+        snippet,
         sort_order: enc.sort_order,
         is_pinned: enc.is_pinned,
         created_at: enc.created_at,

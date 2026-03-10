@@ -101,7 +101,8 @@ const onContextMenu = async (e: MouseEvent) => {
           class="flex-shrink-0 opacity-75"
         />
       </div>
-      <div class="small opacity-50" style="padding-left: 18px">{{ formattedDate }}</div>
+      <div v-if="note.snippet" class="note-snippet small opacity-50" style="padding-left: 18px">{{ note.snippet }}</div>
+      <div class="small opacity-50 mt-1" style="padding-left: 18px">{{ formattedDate }}</div>
     </template>
   </div>
 </template>

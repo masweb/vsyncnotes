@@ -15,6 +15,7 @@ export interface NoteMeta {
   id: string
   notebook_id: string
   title: string
+  snippet?: string
   sort_order: number
   is_pinned: boolean
   created_at: string
