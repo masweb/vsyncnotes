@@ -38,6 +38,14 @@ export interface Attachment {
   updated_at: string
 }
 
+export interface DeletedNoteMeta {
+  id: string
+  notebook_id: string
+  title: string
+  deleted_at: string
+  updated_at: string
+}
+
 export interface NoteSearchResult {
   id: string
   notebook_id: string

@@ -45,6 +45,11 @@ pub fn run() {
             commands::note_set_pinned,
             commands::note_delete,
             commands::search_notes,
+            // Trash
+            commands::trash_list,
+            commands::trash_restore,
+            commands::trash_purge,
+            commands::trash_empty,
             // Attachments
             commands::attachment_save,
             commands::attachment_get,

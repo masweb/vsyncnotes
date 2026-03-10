@@ -23,6 +23,7 @@ declare module 'vue' {
     SettingsView: typeof import('./src/views/SettingsView.vue')['default']
     SidebarActions: typeof import('./src/components/sidebar/SidebarActions.vue')['default']
     SyncToast: typeof import('./src/components/SyncToast.vue')['default']
+    TrashModal: typeof import('./src/components/modals/TrashModal.vue')['default']
     UnlockView: typeof import('./src/views/UnlockView.vue')['default']
   }
 }

@@ -29,6 +29,16 @@ pub struct NoteMeta {
     pub updated_at: DateTime<Utc>,
 }
 
+/// Nota en la papelera (sin body).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeletedNoteMeta {
+    pub id: Uuid,
+    pub notebook_id: Uuid,
+    pub title: String,
+    pub deleted_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
 /// Resultado de búsqueda por título (sin body).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteSearchResult {
