@@ -180,7 +180,7 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
       <!-- Panel 1: collapsible tree (min 200px) — collapsed = 18px strip with expand button -->
       <Pane :size="p1" :min-size="sidebarOpen ? p1MinSize : p1CollapsedSize">
         <div v-show="sidebarOpen" class="h-100">
-          <NotebookTree @collapse="collapseSidebar" />
+          <NotebookTree @collapse="collapseSidebar" @create-notebook="openCreateNotebook" />
         </div>
         <div v-show="!sidebarOpen" class="h-100 d-flex align-items-start justify-content-center pt-1">
           <button

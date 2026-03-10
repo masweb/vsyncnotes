@@ -3,12 +3,11 @@ import Sortable, { type SortableEvent } from 'sortablejs'
 import { Menu, MenuItem } from '@tauri-apps/api/menu'
 import SidebarActions from './SidebarActions.vue'
 
-const emit = defineEmits<{ (e: 'collapse'): void }>()
+const emit = defineEmits<{ (e: 'collapse'): void; (e: 'create-notebook'): void }>()
 
 const { t } = useI18n()
 const notebookStore = useNotebookStore()
 const appStore = useAppStore()
-const sidebarActionsRef = ref<InstanceType<typeof SidebarActions> | null>(null)
 
 onMounted(notebookStore.loadNotebooks)
 
@@ -22,7 +21,7 @@ const onPanelContextMenu = async (e: MouseEvent) => {
     items: [
       await MenuItem.new({
         text: t('nav.new_root_notebook'),
-        action: () => sidebarActionsRef.value?.startCreate(),
+        action: () => emit('create-notebook'),
       }),
     ],
   })
