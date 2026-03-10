@@ -6,6 +6,7 @@ export const useAppStore = defineStore('app', () => {
   const currentView = ref<AppView>('unlock')
   const selectedNotebookId = ref<string | null>(null)
   const selectedNoteId = ref<string | null>(null)
+  const noteKey = ref(0)
 
   const setView = (view: AppView) => {
     currentView.value = view
@@ -20,5 +21,7 @@ export const useAppStore = defineStore('app', () => {
     selectedNoteId.value = id
   }
 
-  return { currentView, selectedNotebookId, selectedNoteId, setView, selectNotebook, selectNote }
+  const forceReloadNote = () => { noteKey.value++ }
+
+  return { currentView, selectedNotebookId, selectedNoteId, noteKey, setView, selectNotebook, selectNote, forceReloadNote }
 })
