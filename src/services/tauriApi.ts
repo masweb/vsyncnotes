@@ -93,3 +93,6 @@ export const syncClearConfig = () =>
 
 export const syncRun = () =>
   invoke<SyncResult>('sync_run')
+
+export const syncWebdavTest = (webdavUrl: string, webdavUsername?: string, webdavPassword?: string) =>
+  invoke<void>('sync_webdav_test', { webdavUrl, webdavUsername: webdavUsername ?? null, webdavPassword: webdavPassword ?? null })

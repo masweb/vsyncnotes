@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { open } from '@tauri-apps/plugin-dialog'
 import { IconX, IconCheck, IconFolderOpen } from '@tabler/icons-vue'
+import * as api from '@/services/tauriApi'
 
 const appStore = useAppStore()
 const { currentTheme, setTheme } = useTheme()
@@ -23,6 +24,8 @@ const webdavUrl = ref(syncStore.config?.webdav_url ?? '')
 const webdavUser = ref(syncStore.config?.webdav_username ?? '')
 const webdavPass = ref(syncStore.config?.webdav_password ?? '')
 const webdavSaved = ref(false)
+const webdavTesting = ref(false)
+const webdavTestResult = ref<null | 'ok' | string>(null)
 
 watch(() => syncStore.config, (cfg) => {
   if (cfg) {
@@ -60,6 +63,21 @@ const saveSyncConfig = async () => {
   await syncStore.configure('fs', Number(syncInterval.value), path)
   syncSaved.value = true
   setTimeout(() => { syncSaved.value = false }, 2000)
+}
+
+const testWebdavConnection = async () => {
+  const url = webdavUrl.value.trim()
+  if (!url) return
+  webdavTesting.value = true
+  webdavTestResult.value = null
+  try {
+    await api.syncWebdavTest(url, webdavUser.value, webdavPass.value)
+    webdavTestResult.value = 'ok'
+  } catch (e) {
+    webdavTestResult.value = String(e)
+  } finally {
+    webdavTesting.value = false
+  }
 }
 
 const saveWebdavConfig = async () => {
@@ -194,6 +212,23 @@ const saveWebdavConfig = async () => {
             <div class="mb-2">
               <label class="small text-muted mb-1">{{ $t('sync.webdav_pass') }}</label>
               <input v-model="webdavPass" type="password" class="form-control form-control-sm" autocomplete="current-password" />
+            </div>
+            <div class="mb-2">
+              <button
+                class="btn btn-sm w-100"
+                :class="webdavTestResult === 'ok' ? 'btn-outline-success' : 'btn-outline-secondary'"
+                :disabled="!webdavUrl.trim() || webdavTesting"
+                @click="testWebdavConnection"
+              >
+                <span v-if="webdavTesting">...</span>
+                <span v-else-if="webdavTestResult === 'ok'">
+                  <IconCheck :size="14" stroke-width="2.5" /> {{ $t('sync.webdav_test_ok') }}
+                </span>
+                <span v-else>{{ $t('sync.webdav_test') }}</span>
+              </button>
+              <div v-if="webdavTestResult && webdavTestResult !== 'ok'" class="small text-danger mt-1">
+                {{ webdavTestResult }}
+              </div>
             </div>
             <div class="mb-2">
               <button
