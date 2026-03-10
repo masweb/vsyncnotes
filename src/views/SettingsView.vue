@@ -9,12 +9,12 @@ const { currentLocale, availableLocales, setLocale } = useLocale()
 const syncStore = useSyncStore()
 
 const syncPath = ref(syncStore.config?.target_path ?? '')
-const syncInterval = ref(syncStore.config?.auto_sync_interval_secs ?? 300)
+const syncInterval = ref(Number(syncStore.config?.auto_sync_interval_secs ?? 300))
 const syncSaved = ref(false)
 
 watch(() => syncStore.config, (cfg) => {
   syncPath.value = cfg?.target_path ?? ''
-  syncInterval.value = cfg?.auto_sync_interval_secs ?? 300
+  syncInterval.value = Number(cfg?.auto_sync_interval_secs ?? 300)
 })
 
 const pickFolder = async () => {
@@ -25,7 +25,7 @@ const pickFolder = async () => {
 const saveSyncConfig = async () => {
   const path = syncPath.value.trim()
   if (!path) return
-  await syncStore.configure(path, syncInterval.value)
+  await syncStore.configure(path, Number(syncInterval.value))
   syncSaved.value = true
   setTimeout(() => { syncSaved.value = false }, 2000)
 }

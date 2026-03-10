@@ -33,9 +33,10 @@ export const useSyncStore = defineStore('sync', () => {
 
   const runSync = async () => {
     if (syncing.value) return
-    if (beforeSyncHook) await beforeSyncHook()
     syncing.value = true
     lastError.value = null
+    const started = Date.now()
+    if (beforeSyncHook) await beforeSyncHook()
     try {
       lastResult.value = await api.syncRun()
       if (lastResult.value) {
@@ -58,6 +59,8 @@ export const useSyncStore = defineStore('sync', () => {
     } catch (e) {
       lastError.value = String(e)
     } finally {
+      const elapsed = Date.now() - started
+      if (elapsed < 600) await new Promise(r => setTimeout(r, 600 - elapsed))
       syncing.value = false
     }
   }
