@@ -22,10 +22,23 @@ app.manage(sync_engine);
 ```
 
 ### Commands (`commands/mod.rs`)
-- `sync_configure(target_path, interval_secs?)` → guarda `SyncConfig`
+- `sync_configure(provider, interval_secs, target_path?, webdav_url?, webdav_username?, webdav_password?)` → guarda `SyncConfig`
 - `sync_get_config()` → `Option<SyncConfig>`
 - `sync_clear_config()` → borra el archivo de config
 - `sync_run()` → `SyncResult { pushed, pulled, skipped, errors, vault_updated }`
+- `sync_webdav_test(url, username, password)` → `Ok(())` o error String
+
+### SyncConfig (`src/types/models.ts`)
+```ts
+interface SyncConfig {
+  provider: 'fs' | 'webdav' | 'nextcloud'
+  target_path?: string
+  webdav_url?: string
+  webdav_username?: string
+  webdav_password?: string
+  auto_sync_interval_secs: number
+}
+```
 
 ### Frontend (`src/stores/syncStore.ts`)
 - `loadConfig()` → carga config al montar MainView, arranca auto-sync
@@ -118,11 +131,25 @@ Comando necesario una vez, desde el propietario o con sudo:
 sudo chmod -R a+rw /ruta/compartida
 ```
 
-**Pendiente**: pedir permisos al SO mediante APIs nativas (NSOpenPanel/security-scoped bookmarks) para que el usuario no tenga que usar el terminal.
+ 
+## Providers implementados
 
-## Pendientes de sync para próximas sesiones
+### WebDAV (`provider: 'webdav'`)
+- El usuario introduce directamente la URL WebDAV completa (ej. `https://cloud.ejemplo.com/dav/files/user/`)
+- Motor Rust: `engine.rs` despacha a `do_sync_webdav(&config)` cuando `provider == "webdav"`
+- Campos en config: `webdav_url`, `webdav_username`, `webdav_password`
+- UI: formulario en `SettingsView.vue` con URL + usuario + contraseña + botón "Test connection"
+- Botón test: llama `api.syncWebdavTest(url, user, pass)` → `sync_webdav_test` Tauri command
+- Botón test cambia a `btn-outline-success` cuando la prueba es exitosa
 
-1. **Permisos macOS sin terminal**: usar security-scoped bookmarks de macOS o mostrar diálogo nativo que solicite acceso. Investigar si `tauri-plugin-fs` expone esto.
-2. **Toast/notificación de sync en UI principal**: los errores y resultado del sync solo se ven en Settings. Añadir badge/tooltip en IconRefresh o un toast breve que muestre el resultado sin abrir Settings.
-3. **Recarga de nota activa tras pull**: si el sync actualiza la nota que está abierta en el editor, el contenido no se refresca. Hay que detectar si `selectedNoteId` está en las notas que han cambiado y recargar el editor.
-4. **Providers adicionales**: S3, WebDAV, Dropbox. La base de `SyncEngine` está diseñada para ser extensible — `sync_run` abstrae el filesystem, se puede parametrizar el provider.
+### Nextcloud (`provider: 'nextcloud'`)
+- El usuario introduce solo la URL base del servidor (ej. `https://cloud.ejemplo.com`)
+- La URL WebDAV se construye automáticamente: `{server}/remote.php/dav/files/{username}/`
+- Motor Rust: `engine.rs` despacha a `do_sync_webdav(&config)` también (mismo código que WebDAV)
+  - `"webdav" | "nextcloud" => self.do_sync_webdav(&config).await`
+- Campos en config: mismos que WebDAV (`webdav_url` contiene la URL construida, `webdav_username`, `webdav_password`)
+- UI: formulario en `SettingsView.vue` con campo `nextcloudServer` + usuario + contraseña
+  - `nextcloudWebdavUrl` computed construye y muestra preview de la URL final
+  - Al cargar config existente: extrae el servidor de `webdav_url` con regex `/^(https?:\/\/[^/]+)/`
+  - Botón test y guardado idéntico al WebDAV pero usando la URL construida
+- i18n: claves `sync.target_nextcloud`, `sync.nextcloud_server`, `sync.nextcloud_server_placeholder`, `sync.nextcloud_url_preview`
