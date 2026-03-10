@@ -36,6 +36,7 @@ rand = "0.8"
 zeroize = "1"
 base64 = "0.22"
 reqwest = { version = "0.12", features = ["json"] }
+tantivy = { version = "0.22", default-features = false, features = ["mmap"] }
 
 [target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.26"
