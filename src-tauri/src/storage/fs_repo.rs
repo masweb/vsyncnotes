@@ -6,6 +6,11 @@ use rand::{rngs::OsRng, RngCore};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
+use tantivy::collector::TopDocs;
+use tantivy::query::QueryParser;
+use tantivy::schema::{Field, Schema, STORED, STRING, TEXT};
+use tantivy::schema::Value;
+use tantivy::{Index, IndexWriter, TantivyDocument};
 use tokio::sync::Mutex;
 use uuid::Uuid;
 use zeroize::Zeroizing;
@@ -155,12 +160,38 @@ fn decrypt_note_meta(enc: &EncryptedNote, master_key: &[u8; 32]) -> Result<NoteM
     })
 }
 
+// ── Tantivy schema fields ─────────────────────────────────────────────────────
+
+#[derive(Clone)]
+struct SearchFields {
+    id: Field,
+    notebook_id: Field,
+    title: Field,
+    body: Field,
+    updated_at: Field,
+}
+
+fn build_schema() -> (Schema, SearchFields) {
+    let mut sb = Schema::builder();
+    let id = sb.add_text_field("id", STRING | STORED);
+    let notebook_id = sb.add_text_field("notebook_id", STRING | STORED);
+    let title = sb.add_text_field("title", TEXT | STORED);
+    let body = sb.add_text_field("body", TEXT);
+    let updated_at = sb.add_text_field("updated_at", STORED);
+    let schema = sb.build();
+    (schema, SearchFields { id, notebook_id, title, body, updated_at })
+}
+
 // ── FsRepo ────────────────────────────────────────────────────────────────────
 
 pub struct FsRepo {
     vault_path: PathBuf,
     master_key: Mutex<Option<Zeroizing<[u8; 32]>>>,
+    // Legacy title-only index kept for unauthenticated notebook_id filtering
     search_index: Mutex<HashMap<Uuid, NoteSearchResult>>,
+    // Full-text index (RAM, rebuilt on unlock)
+    tantivy_index: Mutex<Option<Index>>,
+    tantivy_fields: SearchFields,
 }
 
 impl FsRepo {
@@ -169,10 +200,14 @@ impl FsRepo {
         std::fs::create_dir_all(vault_path.join("notes"))?;
         std::fs::create_dir_all(vault_path.join("attachments"))?;
         std::fs::create_dir_all(vault_path.join("deleted"))?;
+        let (schema, fields) = build_schema();
+        let index = Index::create_in_ram(schema);
         Ok(Self {
             vault_path,
             master_key: Mutex::new(None),
             search_index: Mutex::new(HashMap::new()),
+            tantivy_index: Mutex::new(Some(index)),
+            tantivy_fields: fields,
         })
     }
 
@@ -247,6 +282,13 @@ impl FsRepo {
     pub async fn vault_lock(&self) {
         *self.master_key.lock().await = None;
         self.search_index.lock().await.clear();
+        // Rebuild fresh empty RAM index using the same schema as self.tantivy_fields
+        let schema = self.tantivy_index
+            .lock().await
+            .as_ref()
+            .map(|idx| idx.schema())
+            .unwrap_or_else(|| build_schema().0);
+        *self.tantivy_index.lock().await = Some(Index::create_in_ram(schema));
     }
 
     pub async fn vault_change_password(
@@ -340,26 +382,72 @@ impl FsRepo {
         let mut entries = tokio::fs::read_dir(&dir)
             .await
             .context("Failed to read notes directory")?;
-        let mut index = self.search_index.lock().await;
-        index.clear();
+
+        // Collect all notes first (before locking indexes)
+        let mut notes: Vec<(NoteSearchResult, String)> = Vec::new();
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("json") {
                 if let Ok(content) = tokio::fs::read_to_string(&path).await {
                     if let Ok(enc) = serde_json::from_str::<EncryptedNote>(&content) {
-                        if let Ok(meta) = decrypt_note_meta(&enc, &master_key) {
-                            index.insert(meta.id, NoteSearchResult {
-                                id: meta.id,
-                                notebook_id: meta.notebook_id,
-                                title: meta.title,
-                                updated_at: meta.updated_at,
-                            });
+                        if let Ok(note) = decrypt_note(&enc, &master_key) {
+                            let mut body_text = String::new();
+                            tiptap_text(&note.body, &mut body_text, usize::MAX);
+                            let meta = NoteSearchResult {
+                                id: note.id,
+                                notebook_id: note.notebook_id,
+                                title: note.title.clone(),
+                                updated_at: note.updated_at,
+                            };
+                            notes.push((meta, body_text));
                         }
                     }
                 }
             }
         }
+
+        // Populate legacy HashMap index
+        let mut index = self.search_index.lock().await;
+        index.clear();
+        for (meta, _) in &notes {
+            index.insert(meta.id, meta.clone());
+        }
+        drop(index);
+
+        // Populate tantivy index
+        let f = &self.tantivy_fields;
+        let tantivy_guard = self.tantivy_index.lock().await;
+        if let Some(ref tidx) = *tantivy_guard {
+            let mut writer: IndexWriter<TantivyDocument> = tidx.writer(50_000_000)?;
+            writer.delete_all_documents()?;
+            for (meta, body_text) in &notes {
+                let mut doc = TantivyDocument::default();
+                doc.add_text(f.id, meta.id.to_string());
+                doc.add_text(f.notebook_id, meta.notebook_id.to_string());
+                doc.add_text(f.title, &meta.title);
+                doc.add_text(f.body, body_text);
+                doc.add_text(f.updated_at, meta.updated_at.to_rfc3339());
+                writer.add_document(doc)?;
+            }
+            writer.commit()?;
+        }
         Ok(())
+    }
+
+    fn tantivy_upsert_note(&self, writer: &mut IndexWriter, note: &Note) {
+        let f = &self.tantivy_fields;
+        // Delete existing doc for this id first
+        let id_term = tantivy::Term::from_field_text(f.id, &note.id.to_string());
+        writer.delete_term(id_term);
+        let mut body_text = String::new();
+        tiptap_text(&note.body, &mut body_text, usize::MAX);
+        let mut doc = TantivyDocument::default();
+        doc.add_text(f.id, note.id.to_string());
+        doc.add_text(f.notebook_id, note.notebook_id.to_string());
+        doc.add_text(f.title, &note.title);
+        doc.add_text(f.body, &body_text);
+        doc.add_text(f.updated_at, note.updated_at.to_rfc3339());
+        let _ = writer.add_document(doc);
     }
 
     pub async fn set_note_sort_order(&self, id: Uuid, sort_order: i32) -> Result<()> {
@@ -549,6 +637,14 @@ impl StorageRepo for FsRepo {
             title: note.title.clone(),
             updated_at: note.updated_at,
         });
+        // Update tantivy
+        let tantivy_guard = self.tantivy_index.lock().await;
+        if let Some(ref tidx) = *tantivy_guard {
+            if let Ok(mut writer) = tidx.writer::<TantivyDocument>(10_000_000) {
+                self.tantivy_upsert_note(&mut writer, note);
+                let _ = writer.commit();
+            }
+        }
         Ok(())
     }
 
@@ -563,10 +659,51 @@ impl StorageRepo for FsRepo {
         tokio::fs::write(self.deleted_path(id), serde_json::to_string_pretty(&enc)?).await?;
         tokio::fs::remove_file(&src).await?;
         self.search_index.lock().await.remove(&id);
+        // Remove from tantivy
+        let tantivy_guard = self.tantivy_index.lock().await;
+        if let Some(ref tidx) = *tantivy_guard {
+            if let Ok(mut writer) = tidx.writer::<TantivyDocument>(10_000_000) {
+                let id_term = tantivy::Term::from_field_text(self.tantivy_fields.id, &id.to_string());
+                writer.delete_term(id_term);
+                let _ = writer.commit();
+            }
+        }
         Ok(())
     }
 
     async fn search_notes(&self, query: &str) -> Result<Vec<NoteSearchResult>> {
+        let tantivy_guard = self.tantivy_index.lock().await;
+        if let Some(ref tidx) = *tantivy_guard {
+            let f = &self.tantivy_fields;
+            let reader = tidx.reader()?;
+            let searcher = reader.searcher();
+            let query_parser = QueryParser::for_index(tidx, vec![f.title, f.body]);
+            // Build query: escape to avoid parse errors on raw user input
+            let safe = query.replace('\\', "\\\\").replace('"', "\\\"");
+            let parsed = query_parser.parse_query(&safe).unwrap_or_else(|_| {
+                // Fallback: treat as prefix on title
+                Box::new(tantivy::query::AllQuery)
+            });
+            let top_docs = searcher.search(&parsed, &TopDocs::with_limit(20))?;
+
+            // Collect NoteSearchResult from stored fields
+            let legacy = self.search_index.lock().await;
+            let mut results: Vec<NoteSearchResult> = top_docs
+                .into_iter()
+                .filter_map(|(_, addr)| {
+                    let doc: TantivyDocument = searcher.doc(addr).ok()?;
+                    let id_str = doc.get_first(f.id)?.as_str()?;
+                    let id: Uuid = id_str.parse().ok()?;
+                    legacy.get(&id).cloned()
+                })
+                .collect();
+
+            // Deduplicate (tantivy can return same doc if matched on both fields)
+            results.dedup_by_key(|r| r.id);
+            return Ok(results);
+        }
+
+        // Fallback if tantivy not ready
         let query_lower = query.to_lowercase();
         let index = self.search_index.lock().await;
         let mut results: Vec<NoteSearchResult> = index
