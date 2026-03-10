@@ -62,7 +62,7 @@ const saveSyncConfig = async () => {
   if (!path) return
   await syncStore.configure('fs', Number(syncInterval.value), path)
   syncSaved.value = true
-  setTimeout(() => { syncSaved.value = false }, 2000)
+  setTimeout(() => { appStore.setView('main') }, 800)
 }
 
 const testWebdavConnection = async () => {
@@ -85,7 +85,7 @@ const saveWebdavConfig = async () => {
   if (!url) return
   await syncStore.configure('webdav', Number(syncInterval.value), undefined, url, webdavUser.value, webdavPass.value)
   webdavSaved.value = true
-  setTimeout(() => { webdavSaved.value = false }, 2000)
+  setTimeout(() => { appStore.setView('main') }, 800)
 }
 </script>
 
@@ -114,14 +114,14 @@ const saveWebdavConfig = async () => {
               <button
                 class="btn"
                 :class="currentTheme === 'light' ? 'btn-secondary' : 'btn-outline-secondary'"
-                @click="setTheme('light')"
+                @click="setTheme('light'); appStore.setView('main')"
               >
                 {{ $t('settings.theme_light') }}
               </button>
               <button
                 class="btn"
                 :class="currentTheme === 'dark' ? 'btn-secondary' : 'btn-outline-secondary'"
-                @click="setTheme('dark')"
+                @click="setTheme('dark'); appStore.setView('main')"
               >
                 {{ $t('settings.theme_dark') }}
               </button>
@@ -135,7 +135,7 @@ const saveWebdavConfig = async () => {
             <select
               class="form-select form-select-sm"
               :value="currentLocale"
-              @change="setLocale(($event.target as HTMLSelectElement).value)"
+              @change="setLocale(($event.target as HTMLSelectElement).value); appStore.setView('main')"
             >
               <option v-for="loc in availableLocales" :key="loc.code" :value="loc.code">
                 {{ loc.label }}
