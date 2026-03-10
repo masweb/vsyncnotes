@@ -7,9 +7,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use tantivy::collector::TopDocs;
-use tantivy::query::QueryParser;
-use tantivy::schema::{Field, Schema, STORED, STRING, TEXT};
-use tantivy::schema::Value;
+use tantivy::query::{BooleanQuery, Occur, RegexQuery};
+use tantivy::schema::{Field, Schema, Value, STORED, STRING, TEXT};
 use tantivy::{Index, IndexWriter, TantivyDocument};
 use tokio::sync::Mutex;
 use uuid::Uuid;
@@ -677,13 +676,39 @@ impl StorageRepo for FsRepo {
             let f = &self.tantivy_fields;
             let reader = tidx.reader()?;
             let searcher = reader.searcher();
-            let query_parser = QueryParser::for_index(tidx, vec![f.title, f.body]);
-            // Build query: escape to avoid parse errors on raw user input
-            let safe = query.replace('\\', "\\\\").replace('"', "\\\"");
-            let parsed = query_parser.parse_query(&safe).unwrap_or_else(|_| {
-                // Fallback: treat as prefix on title
+
+            // Build PrefixQuery manually for each word × each field,
+            // combined with BooleanQuery so that:
+            //   - within one word: title OR body (Should)
+            //   - across multiple words: all words must match (Must)
+            let words: Vec<String> = query
+                .split_whitespace()
+                .map(|w| w.to_lowercase())
+                .collect();
+
+            let parsed: Box<dyn tantivy::query::Query> = if words.is_empty() {
                 Box::new(tantivy::query::AllQuery)
-            });
+            } else {
+                let must_clauses: Vec<(Occur, Box<dyn tantivy::query::Query>)> = words
+                    .iter()
+                    .filter_map(|word| {
+                        // Escape regex special chars except we want prefix matching
+                        let escaped = regex::escape(word);
+                        let pattern = format!("{escaped}.*");
+                        let title_q = RegexQuery::from_pattern(&pattern, f.title).ok()?;
+                        let body_q = RegexQuery::from_pattern(&pattern, f.body).ok()?;
+                        let word_q: Box<dyn tantivy::query::Query> = Box::new(
+                            BooleanQuery::new(vec![
+                                (Occur::Should, Box::new(title_q) as Box<dyn tantivy::query::Query>),
+                                (Occur::Should, Box::new(body_q) as Box<dyn tantivy::query::Query>),
+                            ])
+                        );
+                        Some((Occur::Must, word_q))
+                    })
+                    .collect();
+                Box::new(BooleanQuery::new(must_clauses))
+            };
+
             let top_docs = searcher.search(&parsed, &TopDocs::with_limit(20))?;
 
             // Collect NoteSearchResult from stored fields
