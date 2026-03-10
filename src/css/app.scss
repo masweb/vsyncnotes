@@ -182,6 +182,15 @@ body {
   animation: spin 1s linear infinite;
 }
 
+// ── Sync toast ─────────────────────────────────────────────────────────────────
+
+.sync-toast { z-index: 9500; }
+
+.toast-fade-enter-active,
+.toast-fade-leave-active { transition: opacity 0.25s, transform 0.25s; }
+.toast-fade-enter-from,
+.toast-fade-leave-to    { opacity: 0; transform: translateY(8px); }
+
 // ── Search modal ───────────────────────────────────────────────────────────────
 
 .search-overlay {

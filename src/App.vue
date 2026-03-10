@@ -2,6 +2,7 @@
 import UnlockView from '@/views/UnlockView.vue'
 import MainView from '@/views/MainView.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import SyncToast from '@/components/SyncToast.vue'
 
 const appStore = useAppStore()
 
@@ -14,4 +15,5 @@ const currentComponent = computed(() => {
 
 <template>
   <component :is="currentComponent" class="h-100" />
+  <SyncToast />
 </template>
