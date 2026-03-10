@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import Sortable, { type SortableEvent, type MoveEvent } from 'sortablejs'
-import { IconNote } from '@tabler/icons-vue'
+import { IconNote, IconTrash } from '@tabler/icons-vue'
 import { Menu, MenuItem } from '@tauri-apps/api/menu'
+import * as api from '@/services/tauriApi'
 
-const emit = defineEmits<{ (e: 'create-notebook'): void }>()
+const emit = defineEmits<{ (e: 'create-notebook'): void; (e: 'open-trash'): void }>()
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -66,6 +67,22 @@ watch(noteListEl, (el) => {
     },
   })
 })
+
+// ── Trash count ────────────────────────────────────────────────────────────────
+
+const trashCount = ref(0)
+
+const refreshTrashCount = async () => {
+  const list = await api.trashList()
+  trashCount.value = list.length
+}
+
+onMounted(refreshTrashCount)
+
+// Refetch when a note is deleted (notes array shrinks)
+watch(() => noteStore.notes.length, refreshTrashCount)
+
+defineExpose({ refreshTrashCount })
 </script>
 
 <template>
@@ -132,5 +149,22 @@ watch(noteListEl, (el) => {
       </div>
 
     </div>
+
+    <!-- Footer: papelera -->
+    <div class="flex-shrink-0 border-top">
+      <button
+        class="btn btn-sm w-100 d-flex align-items-center gap-2 px-3 text-muted rounded-0 hover-bg"
+        style="height: 30px"
+        :title="$t('trash.title')"
+        @click="emit('open-trash')"
+      >
+        <IconTrash :size="14" stroke-width="1.5" class="flex-shrink-0" />
+        <span class="small">{{ $t('trash.title') }}</span>
+        <span class="small ms-auto opacity-60">
+          {{ trashCount ? $t('trash.count', trashCount) : $t('trash.empty_label') }}
+        </span>
+      </button>
+    </div>
+
   </div>
 </template>

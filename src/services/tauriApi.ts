@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import type { Attachment, Notebook, Note, NoteMeta, NoteSearchResult, VaultStatus, SeedResult, SyncConfig, SyncResult } from '@/types/models'
+import type { Attachment, DeletedNoteMeta, Notebook, Note, NoteMeta, NoteSearchResult, VaultStatus, SeedResult, SyncConfig, SyncResult } from '@/types/models'
 
 // ── Vault ─────────────────────────────────────────────────────────────────────
 
@@ -54,6 +54,18 @@ export const noteSetPinned = (id: string, pinned: boolean) =>
 
 export const noteDelete = (id: string) =>
   invoke<void>('note_delete', { id })
+
+export const trashList = () =>
+  invoke<DeletedNoteMeta[]>('trash_list')
+
+export const trashRestore = (id: string) =>
+  invoke<void>('trash_restore', { id })
+
+export const trashPurge = (id: string) =>
+  invoke<void>('trash_purge', { id })
+
+export const trashEmpty = () =>
+  invoke<void>('trash_empty')
 
 export const searchNotes = (query: string) =>
   invoke<NoteSearchResult[]>('search_notes', { query })

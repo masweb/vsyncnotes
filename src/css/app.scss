@@ -253,3 +253,14 @@ body {
 .search-fade-leave-to {
   opacity: 0;
 }
+
+// ── Generic hover background ───────────────────────────────────────────────────
+
+.hover-bg {
+  transition: background 0.1s;
+  &:hover { background: rgba(0, 0, 0, 0.05); }
+}
+
+[data-coreui-theme='dark'] .hover-bg:hover {
+  background: rgba(255, 255, 255, 0.07);
+}

@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::models::{
     attachment::Attachment,
-    note::{Note, NoteMeta, NoteSearchResult},
+    note::{DeletedNoteMeta, Note, NoteMeta, NoteSearchResult},
     notebook::Notebook,
 };
 use crate::storage::{fs_repo::FsRepo, repo::StorageRepo};
@@ -150,6 +150,28 @@ pub async fn note_set_pinned(
 #[tauri::command]
 pub async fn note_delete(repo: State<'_, FsRepo>, id: Uuid) -> Result<(), String> {
     repo.delete_note(id).await.map_err(|e| e.to_string())
+}
+
+// ── Trash ─────────────────────────────────────────────────────────────────────
+
+#[tauri::command]
+pub async fn trash_list(repo: State<'_, FsRepo>) -> Result<Vec<DeletedNoteMeta>, String> {
+    repo.list_deleted_notes().await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn trash_restore(repo: State<'_, FsRepo>, id: Uuid) -> Result<(), String> {
+    repo.restore_note(id).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn trash_purge(repo: State<'_, FsRepo>, id: Uuid) -> Result<(), String> {
+    repo.purge_note(id).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn trash_empty(repo: State<'_, FsRepo>) -> Result<(), String> {
+    repo.trash_empty().await.map_err(|e| e.to_string())
 }
 
 #[tauri::command]

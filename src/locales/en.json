@@ -110,6 +110,19 @@
     "new_note_hint": "new note",
     "new_notebook_hint": "new notebook"
   },
+  "trash": {
+    "title": "Trash",
+    "empty_btn": "Empty trash",
+    "restore": "Restore",
+    "delete_forever": "Delete forever",
+    "no_items": "Trash is empty",
+    "deleted_at": "Deleted {date}",
+    "confirm_empty": "Empty trash? This cannot be undone.",
+    "confirm_purge": "Delete forever? This cannot be undone.",
+    "empty_label": "empty",
+    "count": "{n} note | {n} notes",
+    "auto_purge_hint": "Notes are permanently deleted after 30 days"
+  },
   "settings": {
     "title": "Settings",
     "close": "Close",

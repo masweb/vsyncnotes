@@ -110,6 +110,19 @@
     "new_note_hint": "nueva nota",
     "new_notebook_hint": "nuevo notebook"
   },
+  "trash": {
+    "title": "Papelera",
+    "empty_btn": "Vaciar papelera",
+    "restore": "Restaurar",
+    "delete_forever": "Eliminar definitivamente",
+    "no_items": "La papelera está vacía",
+    "deleted_at": "Eliminada {date}",
+    "confirm_empty": "¿Vaciar la papelera? Esta acción no se puede deshacer.",
+    "confirm_purge": "¿Eliminar definitivamente? Esta acción no se puede deshacer.",
+    "empty_label": "vacía",
+    "count": "{n} nota | {n} notas",
+    "auto_purge_hint": "Las notas se eliminan definitivamente a los 30 días"
+  },
   "settings": {
     "title": "Ajustes",
     "close": "Cerrar",
