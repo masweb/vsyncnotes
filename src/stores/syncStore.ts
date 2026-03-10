@@ -6,9 +6,17 @@ export const useSyncStore = defineStore('sync', () => {
   const syncing = ref(false)
   const lastResult = ref<SyncResult | null>(null)
   const lastError = ref<string | null>(null)
+  const toast = ref<{ result: SyncResult } | { error: string } | null>(null)
 
   let autoSyncTimer: ReturnType<typeof setInterval> | null = null
+  let toastTimer: ReturnType<typeof setTimeout> | null = null
   let beforeSyncHook: (() => Promise<void>) | null = null
+
+  const showToast = (payload: { result: SyncResult } | { error: string }) => {
+    if (toastTimer !== null) clearTimeout(toastTimer)
+    toast.value = payload
+    toastTimer = setTimeout(() => { toast.value = null }, 4000)
+  }
 
   const registerBeforeSyncHook = (fn: (() => Promise<void>) | null) => {
     beforeSyncHook = fn
@@ -58,10 +66,14 @@ export const useSyncStore = defineStore('sync', () => {
       }
     } catch (e) {
       lastError.value = String(e)
+      showToast({ error: String(e) })
     } finally {
       const elapsed = Date.now() - started
       if (elapsed < 600) await new Promise(r => setTimeout(r, 600 - elapsed))
       syncing.value = false
+      if (lastResult.value && !lastError.value) {
+        showToast({ result: lastResult.value })
+      }
     }
   }
 
@@ -79,5 +91,5 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
-  return { config, syncing, lastResult, lastError, loadConfig, configure, clearConfig, runSync, registerBeforeSyncHook }
+  return { config, syncing, lastResult, lastError, toast, loadConfig, configure, clearConfig, runSync, registerBeforeSyncHook }
 })
