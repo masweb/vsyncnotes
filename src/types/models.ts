@@ -67,4 +67,5 @@ export interface SyncResult {
   skipped: number
   errors: string[]
   vault_updated: boolean
+  pulled_note_ids: string[]
 }

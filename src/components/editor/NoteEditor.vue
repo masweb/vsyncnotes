@@ -540,6 +540,14 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => appStore.noteKey,
+  () => {
+    const id = appStore.selectedNoteId
+    if (id) loadNote(id)
+  }
+)
+
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
 const syncStore = useSyncStore()

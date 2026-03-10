@@ -62,6 +62,13 @@ export const useSyncStore = defineStore('sync', () => {
           if (appStore.selectedNotebookId) {
             await noteStore.loadNotes(appStore.selectedNotebookId)
           }
+          // If the active note was updated, reload it in the editor
+          if (
+            appStore.selectedNoteId &&
+            lastResult.value.pulled_note_ids.includes(appStore.selectedNoteId)
+          ) {
+            appStore.forceReloadNote()
+          }
         }
       }
     } catch (e) {

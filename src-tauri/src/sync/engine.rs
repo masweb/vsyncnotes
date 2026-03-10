@@ -19,6 +19,7 @@ pub struct SyncResult {
     pub skipped: u32,
     pub errors: Vec<String>,
     pub vault_updated: bool,
+    pub pulled_note_ids: Vec<String>,
 }
 
 pub struct SyncEngine {
@@ -85,6 +86,7 @@ impl SyncEngine {
             skipped: 0,
             errors: vec![],
             vault_updated: false,
+            pulled_note_ids: vec![],
         };
 
         if let Err(e) = self.sync_vault_json(&target, &mut result).await {
@@ -167,6 +169,10 @@ impl SyncEngine {
                     } else {
                         result.pulled += 1;
                         sync_bin_sidecar(&local_dir, &remote_dir, &fname, Direction::Pull).await;
+                        if subdir == "notes" {
+                            let id = fname.trim_end_matches(".json").to_string();
+                            result.pulled_note_ids.push(id);
+                        }
                     }
                 }
                 TimestampCmp::Equal => {
@@ -196,6 +202,10 @@ impl SyncEngine {
                 } else {
                     result.pulled += 1;
                     sync_bin_sidecar(&local_dir, &remote_dir, &fname, Direction::Pull).await;
+                    if subdir == "notes" {
+                        let id = fname.trim_end_matches(".json").to_string();
+                        result.pulled_note_ids.push(id);
+                    }
                 }
             }
         }
