@@ -8,8 +8,9 @@ const { currentTheme, setTheme } = useTheme()
 const { currentLocale, availableLocales, setLocale } = useLocale()
 const syncStore = useSyncStore()
 
-type SyncType = 'none' | 'fs' | 'webdav'
+type SyncType = 'none' | 'fs' | 'webdav' | 'nextcloud'
 const syncType = ref<SyncType>(
+  syncStore.config?.provider === 'nextcloud' ? 'nextcloud' :
   syncStore.config?.provider === 'webdav' ? 'webdav' :
   syncStore.config ? 'fs' : 'none'
 )
@@ -27,6 +28,27 @@ const webdavSaved = ref(false)
 const webdavTesting = ref(false)
 const webdavTestResult = ref<null | 'ok' | string>(null)
 
+// Nextcloud
+const nextcloudSaved = ref(false)
+const nextcloudTesting = ref(false)
+const nextcloudTestResult = ref<null | 'ok' | string>(null)
+const nextcloudServer = ref('')
+const nextcloudUser = ref(syncStore.config?.webdav_username ?? '')
+const nextcloudPass = ref(syncStore.config?.webdav_password ?? '')
+
+// Extract server from stored webdav_url if provider is nextcloud
+if (syncStore.config?.provider === 'nextcloud' && syncStore.config.webdav_url) {
+  const match = syncStore.config.webdav_url.match(/^(https?:\/\/[^/]+)/)
+  nextcloudServer.value = match ? match[1] : ''
+}
+
+const nextcloudWebdavUrl = computed(() => {
+  const s = nextcloudServer.value.trim().replace(/\/$/, '')
+  const u = nextcloudUser.value.trim()
+  if (!s || !u) return ''
+  return `${s}/remote.php/dav/files/${u}/`
+})
+
 watch(() => syncStore.config, (cfg) => {
   if (cfg) {
     syncPath.value = cfg.target_path ?? ''
@@ -34,12 +56,21 @@ watch(() => syncStore.config, (cfg) => {
     webdavUrl.value = cfg.webdav_url ?? ''
     webdavUser.value = cfg.webdav_username ?? ''
     webdavPass.value = cfg.webdav_password ?? ''
+    nextcloudUser.value = cfg.webdav_username ?? ''
+    nextcloudPass.value = cfg.webdav_password ?? ''
+    if (cfg.provider === 'nextcloud' && cfg.webdav_url) {
+      const match = cfg.webdav_url.match(/^(https?:\/\/[^/]+)/)
+      nextcloudServer.value = match ? match[1] : ''
+    }
   } else {
     syncPath.value = ''
     syncInterval.value = 300
     webdavUrl.value = ''
     webdavUser.value = ''
     webdavPass.value = ''
+    nextcloudServer.value = ''
+    nextcloudUser.value = ''
+    nextcloudPass.value = ''
   }
 })
 
@@ -55,6 +86,9 @@ const clearSyncConfig = async () => {
   webdavUrl.value = ''
   webdavUser.value = ''
   webdavPass.value = ''
+  nextcloudServer.value = ''
+  nextcloudUser.value = ''
+  nextcloudPass.value = ''
 }
 
 const saveSyncConfig = async () => {
@@ -85,6 +119,29 @@ const saveWebdavConfig = async () => {
   if (!url) return
   await syncStore.configure('webdav', Number(syncInterval.value), undefined, url, webdavUser.value, webdavPass.value)
   webdavSaved.value = true
+  setTimeout(() => { appStore.setView('main') }, 800)
+}
+
+const testNextcloudConnection = async () => {
+  const url = nextcloudWebdavUrl.value
+  if (!url) return
+  nextcloudTesting.value = true
+  nextcloudTestResult.value = null
+  try {
+    await api.syncWebdavTest(url, nextcloudUser.value, nextcloudPass.value)
+    nextcloudTestResult.value = 'ok'
+  } catch (e) {
+    nextcloudTestResult.value = String(e)
+  } finally {
+    nextcloudTesting.value = false
+  }
+}
+
+const saveNextcloudConfig = async () => {
+  const url = nextcloudWebdavUrl.value
+  if (!url) return
+  await syncStore.configure('nextcloud', Number(syncInterval.value), undefined, url, nextcloudUser.value, nextcloudPass.value)
+  nextcloudSaved.value = true
   setTimeout(() => { appStore.setView('main') }, 800)
 }
 </script>
@@ -160,6 +217,7 @@ const saveWebdavConfig = async () => {
               <option value="none">{{ $t('sync.target_none') }}</option>
               <option value="fs">{{ $t('sync.target_fs') }}</option>
               <option value="webdav">{{ $t('sync.target_webdav') }}</option>
+              <option value="nextcloud">{{ $t('sync.target_nextcloud') }}</option>
             </select>
           </div>
 
@@ -237,6 +295,56 @@ const saveWebdavConfig = async () => {
                 @click="saveWebdavConfig"
               >
                 <IconCheck v-if="webdavSaved" :size="14" stroke-width="2.5" />
+                <span v-else>{{ $t('sync.save') }}</span>
+              </button>
+            </div>
+          </template>
+
+          <!-- Nextcloud -->
+          <template v-else-if="syncType === 'nextcloud'">
+            <div class="mb-2">
+              <label class="small text-muted mb-1">{{ $t('sync.nextcloud_server') }}</label>
+              <input
+                v-model="nextcloudServer"
+                class="form-control form-control-sm"
+                :placeholder="$t('sync.nextcloud_server_placeholder')"
+              />
+            </div>
+            <div class="mb-2">
+              <label class="small text-muted mb-1">{{ $t('sync.webdav_user') }}</label>
+              <input v-model="nextcloudUser" class="form-control form-control-sm" autocomplete="username" />
+            </div>
+            <div class="mb-2">
+              <label class="small text-muted mb-1">{{ $t('sync.webdav_pass') }}</label>
+              <input v-model="nextcloudPass" type="password" class="form-control form-control-sm" autocomplete="current-password" />
+            </div>
+            <div v-if="nextcloudWebdavUrl" class="small text-muted mb-2">
+              {{ $t('sync.nextcloud_url_preview', { url: nextcloudWebdavUrl }) }}
+            </div>
+            <div class="mb-2">
+              <button
+                class="btn btn-sm w-100"
+                :class="nextcloudTestResult === 'ok' ? 'btn-outline-success' : 'btn-outline-secondary'"
+                :disabled="!nextcloudWebdavUrl || nextcloudTesting"
+                @click="testNextcloudConnection"
+              >
+                <span v-if="nextcloudTesting">...</span>
+                <span v-else-if="nextcloudTestResult === 'ok'">
+                  <IconCheck :size="14" stroke-width="2.5" /> {{ $t('sync.webdav_test_ok') }}
+                </span>
+                <span v-else>{{ $t('sync.webdav_test') }}</span>
+              </button>
+              <div v-if="nextcloudTestResult && nextcloudTestResult !== 'ok'" class="small text-danger mt-1">
+                {{ nextcloudTestResult }}
+              </div>
+            </div>
+            <div class="mb-2">
+              <button
+                class="btn btn-sm btn-primary w-100"
+                :disabled="!nextcloudWebdavUrl"
+                @click="saveNextcloudConfig"
+              >
+                <IconCheck v-if="nextcloudSaved" :size="14" stroke-width="2.5" />
                 <span v-else>{{ $t('sync.save') }}</span>
               </button>
             </div>

@@ -57,7 +57,7 @@ export interface SeedResult {
 }
 
 export interface SyncConfig {
-  provider: 'fs' | 'webdav'
+  provider: 'fs' | 'webdav' | 'nextcloud'
   target_path?: string
   webdav_url?: string
   webdav_username?: string
