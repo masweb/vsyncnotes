@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import Sortable, { type SortableEvent, type MoveEvent } from 'sortablejs'
-import { IconPlus, IconNote } from '@tabler/icons-vue'
+import { IconNote } from '@tabler/icons-vue'
 import { Menu, MenuItem } from '@tauri-apps/api/menu'
+
+const emit = defineEmits<{ (e: 'create-notebook'): void }>()
 
 const { t } = useI18n()
 const appStore = useAppStore()
@@ -29,13 +31,11 @@ const createNote = async () => {
 }
 
 const onBodyContextMenu = async (e: MouseEvent) => {
-  if (!appStore.selectedNotebookId) return
   e.preventDefault()
-  const menu = await Menu.new({
-    items: [
-      await MenuItem.new({ text: t('note.new'), action: createNote }),
-    ],
-  })
+  const items = appStore.selectedNotebookId
+    ? [await MenuItem.new({ text: t('note.new'), action: createNote })]
+    : [await MenuItem.new({ text: t('nav.new_notebook'), action: () => emit('create-notebook') })]
+  const menu = await Menu.new({ items })
   await menu.popup()
 }
 
@@ -72,28 +72,20 @@ watch(noteListEl, (el) => {
   <div class="panel-notes d-flex flex-column h-100">
 
     <!-- Header -->
-    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom flex-shrink-0">
-      <span class="small fw-semibold flex-grow-1">
+    <div class="d-flex align-items-center px-3 py-2 border-bottom flex-shrink-0">
+      <span class="small fw-semibold">
         {{ $t('note.header') }} <span class="text-muted fw-normal">· {{ currentNotebookName }}</span>
       </span>
-      <button
-        v-if="appStore.selectedNotebookId"
-        class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1 py-0 px-1"
-        style="font-size: 0.7rem"
-        @click="createNote"
-      >
-        <IconPlus :size="12" stroke-width="2.5" />
-        {{ $t('note.new') }}
-      </button>
     </div>
 
     <!-- Body -->
-    <div class="flex-grow-1 overflow-y-auto" @contextmenu="onBodyContextMenu" @click.self="appStore.selectNote(null)">
+    <div class="flex-grow-1 overflow-y-auto" @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }" @contextmenu="onBodyContextMenu" @click.self="appStore.selectNote(null)">
 
       <!-- Sin notebook seleccionado -->
       <div
         v-if="!appStore.selectedNotebookId"
         class="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-2 px-3 text-center"
+        @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
       >
         <IconNote :size="30" stroke-width="1" class="opacity-40" />
         <span class="small">{{ $t('note.select_notebook') }}</span>
@@ -121,6 +113,8 @@ watch(noteListEl, (el) => {
       <div
         v-else-if="!noteStore.sortedNotes.length"
         class="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-2 px-3 text-center"
+        @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
+        @contextmenu="onBodyContextMenu"
       >
         <IconNote :size="30" stroke-width="1" class="opacity-40" />
         <span class="small">{{ $t('note.no_notes') }}</span>

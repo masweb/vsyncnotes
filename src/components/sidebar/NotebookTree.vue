@@ -65,6 +65,7 @@ onMounted(() => {
           :node="node"
           :depth="0"
           :data-notebook-id="node.id"
+          @create-notebook="emit('create-notebook')"
         />
       </div>
       <div

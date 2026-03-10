@@ -364,6 +364,7 @@ const toggleSpellcheck = () => {
 
 const onEditorContextMenu = async (e: MouseEvent) => {
   e.preventDefault()
+  if (!note.value) return
   const selection = window.getSelection()?.toString() ?? ''
   const menu = await Menu.new({
     items: [

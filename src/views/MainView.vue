@@ -194,7 +194,7 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 
       <!-- Panel 2: note list -->
       <Pane :size="p2" :min-size="15">
-        <NoteList />
+        <NoteList @create-notebook="openCreateNotebook" />
       </Pane>
 
       <!-- Panel 3: content / editor -->
