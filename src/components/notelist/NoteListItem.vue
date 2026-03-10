@@ -1,7 +1,11 @@
 <script lang="ts" setup>
 import { IconPin, IconGripVertical } from '@tabler/icons-vue'
 import { Menu, MenuItem, PredefinedMenuItem } from '@tauri-apps/api/menu'
+import { save } from '@tauri-apps/plugin-dialog'
+import { writeTextFile } from '@tauri-apps/plugin-fs'
 import type { NoteMeta } from '@/types/models'
+import * as api from '@/services/tauriApi'
+import { tiptapToMarkdown } from '@/utils/tiptapToMarkdown'
 
 const props = defineProps<{ note: NoteMeta }>()
 
@@ -44,6 +48,18 @@ const cancelRename = () => {
   showRename.value = false
 }
 
+// ── Export ────────────────────────────────────────────────────────────────────
+
+const exportMarkdown = async () => {
+  const note = await api.noteGet(props.note.id)
+  const md = `# ${note.title}\n\n${tiptapToMarkdown(note.body)}`
+  const path = await save({
+    defaultPath: `${note.title}.md`,
+    filters: [{ name: 'Markdown', extensions: ['md'] }],
+  })
+  if (path) await writeTextFile(path, md)
+}
+
 // ── Context menu ──────────────────────────────────────────────────────────────
 
 const onContextMenu = async (e: MouseEvent) => {
@@ -58,6 +74,7 @@ const onContextMenu = async (e: MouseEvent) => {
       }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({ text: t('note.rename'), action: startRename }),
+      await MenuItem.new({ text: t('note.export_md'), action: exportMarkdown }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
         text: t('note.delete'),
