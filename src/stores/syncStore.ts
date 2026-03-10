@@ -12,10 +12,10 @@ export const useSyncStore = defineStore('sync', () => {
   let toastTimer: ReturnType<typeof setTimeout> | null = null
   let beforeSyncHook: (() => Promise<void>) | null = null
 
-  const showToast = (payload: { result: SyncResult } | { error: string }) => {
+  const showToast = (payload: { result: SyncResult } | { error: string }, ms = 4000) => {
     if (toastTimer !== null) clearTimeout(toastTimer)
     toast.value = payload
-    toastTimer = setTimeout(() => { toast.value = null }, 4000)
+    toastTimer = setTimeout(() => { toast.value = null }, ms)
   }
 
   const registerBeforeSyncHook = (fn: (() => Promise<void>) | null) => {
@@ -72,7 +72,8 @@ export const useSyncStore = defineStore('sync', () => {
       if (elapsed < 600) await new Promise(r => setTimeout(r, 600 - elapsed))
       syncing.value = false
       if (lastResult.value && !lastError.value) {
-        showToast({ result: lastResult.value })
+        const hasErrors = lastResult.value.errors.length > 0
+        showToast({ result: lastResult.value }, hasErrors ? 8000 : 4000)
       }
     }
   }
