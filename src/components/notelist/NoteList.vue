@@ -154,7 +154,7 @@ defineExpose({ refreshTrashCount })
     <div class="flex-shrink-0 border-top">
       <button
         class="btn btn-sm w-100 d-flex align-items-center gap-2 px-3 text-muted rounded-0 hover-bg"
-        style="height: 30px"
+        style="height: 29px"
         :title="$t('trash.title')"
         @click="emit('open-trash')"
       >
