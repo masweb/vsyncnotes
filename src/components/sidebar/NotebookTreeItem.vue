@@ -9,6 +9,8 @@ const props = defineProps<{
   depth: number
 }>()
 
+const emit = defineEmits<{ (e: 'create-notebook'): void }>()
+
 const { t } = useI18n()
 const appStore = useAppStore()
 const notebookStore = useNotebookStore()
@@ -20,33 +22,6 @@ const expanded = computed(() => isExpanded(props.node.id))
 const toggleExpanded = () => toggle(props.node.id)
 const isSelected = computed(() => appStore.selectedNotebookId === props.node.id)
 const hasChildren = computed(() => props.node.children.length > 0)
-
-// ── Create child ──────────────────────────────────────────────────────────────
-
-const showInput = ref(false)
-const newTitle = ref('')
-const inputRef = ref<HTMLInputElement | null>(null)
-
-const startCreate = async () => {
-  expand(props.node.id)
-  showInput.value = true
-  await nextTick()
-  inputRef.value?.focus()
-}
-
-const confirmCreate = async () => {
-  const title = newTitle.value.trim()
-  if (title) {
-    const nb = await notebookStore.createNotebook(title, props.node.id)
-    appStore.selectNotebook(nb.id)
-  }
-  cancelCreate()
-}
-
-const cancelCreate = () => {
-  showInput.value = false
-  newTitle.value = ''
-}
 
 // ── Rename ────────────────────────────────────────────────────────────────────
 
@@ -86,7 +61,10 @@ const onContextMenu = async (e: MouseEvent) => {
   e.preventDefault()
   const menu = await Menu.new({
     items: [
-      await MenuItem.new({ text: t('nav.new_child_notebook'), action: startCreate }),
+      await MenuItem.new({
+        text: t('nav.new_child_notebook'),
+        action: () => { appStore.selectNotebook(props.node.id); emit('create-notebook') },
+      }),
       await MenuItem.new({ text: t('nav.new_note_here'), action: createNoteHere }),
       await MenuItem.new({ text: t('nav.rename_notebook'), action: startRename }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
@@ -147,7 +125,7 @@ onUnmounted(() => {
         @click.stop="toggleExpanded"
       >
         <IconChevronRight
-          v-if="hasChildren || showInput"
+          v-if="hasChildren"
           :size="14"
           stroke-width="2"
           class="text-muted"
@@ -188,22 +166,7 @@ onUnmounted(() => {
         :node="child"
         :depth="depth + 1"
         :data-notebook-id="child.id"
-      />
-    </div>
-
-    <div
-      v-if="expanded && showInput"
-      class="pe-2 py-1"
-      :style="{ paddingLeft: `${(depth + 1) * 12 + 38}px` }"
-    >
-      <input
-        ref="inputRef"
-        v-model="newTitle"
-        class="form-control form-control-sm"
-        :placeholder="t('nav.notebook_placeholder')"
-        @keyup.enter="confirmCreate"
-        @keyup.escape="cancelCreate"
-        @blur="confirmCreate"
+        @create-notebook="emit('create-notebook')"
       />
     </div>
   </div>
