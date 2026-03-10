@@ -331,6 +331,16 @@ impl FsRepo {
         Ok(())
     }
 
+    pub async fn set_note_pinned(&self, id: Uuid, pinned: bool) -> Result<()> {
+        let path = self.note_path(id);
+        let content = tokio::fs::read_to_string(&path).await?;
+        let mut json: serde_json::Value = serde_json::from_str(&content)?;
+        json["is_pinned"] = serde_json::Value::Bool(pinned);
+        json["updated_at"] = serde_json::Value::String(Utc::now().to_rfc3339());
+        tokio::fs::write(&path, serde_json::to_string_pretty(&json)?).await?;
+        Ok(())
+    }
+
 }
 
 // ── StorageRepo impl ──────────────────────────────────────────────────────────

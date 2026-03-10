@@ -49,6 +49,9 @@ export const noteUpdate = (note: Note) =>
 export const noteSetSortOrder = (id: string, sortOrder: number) =>
   invoke<void>('note_set_sort_order', { id, sortOrder })
 
+export const noteSetPinned = (id: string, pinned: boolean) =>
+  invoke<void>('note_set_pinned', { id, pinned })
+
 export const noteDelete = (id: string) =>
   invoke<void>('note_delete', { id })
 

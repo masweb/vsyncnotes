@@ -42,6 +42,7 @@ pub fn run() {
             commands::note_create,
             commands::note_update,
             commands::note_set_sort_order,
+            commands::note_set_pinned,
             commands::note_delete,
             commands::search_notes,
             // Attachments

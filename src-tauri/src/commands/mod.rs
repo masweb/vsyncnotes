@@ -137,6 +137,17 @@ pub async fn note_set_sort_order(
 }
 
 #[tauri::command]
+pub async fn note_set_pinned(
+    repo: State<'_, FsRepo>,
+    id: Uuid,
+    pinned: bool,
+) -> Result<(), String> {
+    repo.set_note_pinned(id, pinned)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn note_delete(repo: State<'_, FsRepo>, id: Uuid) -> Result<(), String> {
     repo.delete_note(id).await.map_err(|e| e.to_string())
 }

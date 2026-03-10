@@ -36,6 +36,8 @@
     "words": "palabras",
     "new_title": "Sin título",
     "title_required": "El título es obligatorio",
+    "pin": "Fijar",
+    "unpin": "Desfijar",
     "rename": "Renombrar",
     "delete": "Eliminar",
     "close_note": "Cerrar nota"

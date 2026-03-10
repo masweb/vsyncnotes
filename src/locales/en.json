@@ -36,6 +36,8 @@
     "words": "words",
     "new_title": "Untitled",
     "title_required": "Title is required",
+    "pin": "Pin",
+    "unpin": "Unpin",
     "rename": "Rename",
     "delete": "Delete",
     "close_note": "Close note"
