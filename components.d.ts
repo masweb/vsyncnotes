@@ -11,7 +11,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AppNavbar: typeof import('./src/components/AppNavbar.vue')['default']
     ImageNodeView: typeof import('./src/components/editor/ImageNodeView.vue')['default']
     MainView: typeof import('./src/views/MainView.vue')['default']
     NotebookTree: typeof import('./src/components/sidebar/NotebookTree.vue')['default']
@@ -23,6 +22,7 @@ declare module 'vue' {
     SearchModal: typeof import('./src/components/search/SearchModal.vue')['default']
     SettingsView: typeof import('./src/views/SettingsView.vue')['default']
     SidebarActions: typeof import('./src/components/sidebar/SidebarActions.vue')['default']
+    SyncToast: typeof import('./src/components/SyncToast.vue')['default']
     UnlockView: typeof import('./src/views/UnlockView.vue')['default']
   }
 }
