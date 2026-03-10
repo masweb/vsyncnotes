@@ -88,12 +88,12 @@ impl SyncEngine {
         };
 
         if let Err(e) = self.sync_vault_json(&target, &mut result).await {
-            result.errors.push(format!("vault.json: {e}"));
+            result.errors.push(format!("vault.json: {}", friendly_error(&e)));
         }
 
         for subdir in &["notebooks", "notes", "attachments"] {
             if let Err(e) = self.sync_dir(subdir, &target, &mut result).await {
-                result.errors.push(format!("{subdir}: {e}"));
+                result.errors.push(format!("{subdir}: {}", friendly_error(&e)));
             }
         }
 
@@ -155,7 +155,7 @@ impl SyncEngine {
             match compare_timestamps(&path, &remote_path).await {
                 TimestampCmp::LocalNewer | TimestampCmp::RemoteMissing => {
                     if let Err(e) = copy_atomic(&path, &remote_path).await {
-                        result.errors.push(format!("push {fname}: {e}"));
+                        result.errors.push(format!("{fname}: {}", friendly_error(&e)));
                     } else {
                         result.pushed += 1;
                         sync_bin_sidecar(&local_dir, &remote_dir, &fname, Direction::Push).await;
@@ -163,7 +163,7 @@ impl SyncEngine {
                 }
                 TimestampCmp::RemoteNewer => {
                     if let Err(e) = copy_atomic(&remote_path, &path).await {
-                        result.errors.push(format!("pull {fname}: {e}"));
+                        result.errors.push(format!("{fname}: {}", friendly_error(&e)));
                     } else {
                         result.pulled += 1;
                         sync_bin_sidecar(&local_dir, &remote_dir, &fname, Direction::Pull).await;
@@ -192,7 +192,7 @@ impl SyncEngine {
             let local_path = local_dir.join(&fname);
             if !local_path.exists() {
                 if let Err(e) = copy_atomic(&path, &local_path).await {
-                    result.errors.push(format!("pull-new {fname}: {e}"));
+                    result.errors.push(format!("{fname}: {}", friendly_error(&e)));
                 } else {
                     result.pulled += 1;
                     sync_bin_sidecar(&local_dir, &remote_dir, &fname, Direction::Pull).await;
@@ -259,6 +259,23 @@ async fn read_updated_at(path: &Path) -> Result<DateTime<Utc>> {
         .as_str()
         .ok_or_else(|| anyhow!("missing updated_at in {}", path.display()))?;
     Ok(ts_str.parse::<DateTime<Utc>>()?)
+}
+
+/// Convierte un error anyhow a un mensaje legible por el usuario.
+/// Detecta errores de permisos de SO (EPERM / EACCES) y los traduce.
+fn friendly_error(e: &anyhow::Error) -> String {
+    if let Some(io_err) = e.downcast_ref::<std::io::Error>() {
+        match io_err.kind() {
+            std::io::ErrorKind::PermissionDenied => {
+                return "sin permisos de escritura en la carpeta destino".to_string();
+            }
+            std::io::ErrorKind::NotFound => {
+                return "carpeta destino no encontrada".to_string();
+            }
+            _ => {}
+        }
+    }
+    e.to_string()
 }
 
 /// Copia src → dst de forma atómica: lee todo en memoria, escribe a .tmp, renombra.
