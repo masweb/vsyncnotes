@@ -64,9 +64,17 @@ export const useNoteStore = defineStore('notes', () => {
     }
   }
 
+  const togglePin = async (id: string) => {
+    const meta = notes.value.find(n => n.id === id)
+    if (!meta) return
+    const pinned = !meta.is_pinned
+    await api.noteSetPinned(id, pinned)
+    meta.is_pinned = pinned
+  }
+
   const clear = () => {
     notes.value = []
   }
 
-  return { notes, sortedNotes, loading, error, loadNotes, createNote, deleteNote, renameNote, reorderNote, clear }
+  return { notes, sortedNotes, loading, error, loadNotes, createNote, deleteNote, renameNote, reorderNote, togglePin, clear }
 })

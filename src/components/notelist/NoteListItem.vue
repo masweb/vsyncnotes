@@ -52,6 +52,11 @@ const onContextMenu = async (e: MouseEvent) => {
   appStore.selectNote(props.note.id)
   const menu = await Menu.new({
     items: [
+      await MenuItem.new({
+        text: props.note.is_pinned ? t('note.unpin') : t('note.pin'),
+        action: () => noteStore.togglePin(props.note.id),
+      }),
+      await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({ text: t('note.rename'), action: startRename }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
