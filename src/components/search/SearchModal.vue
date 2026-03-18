@@ -10,9 +10,7 @@ const { t } = useI18n()
 const appStore = useAppStore()
 const notebookStore = useNotebookStore()
 
-type CombinedResult =
-  | { kind: 'note'; data: NoteSearchResult }
-  | { kind: 'notebook'; id: string; title: string }
+type CombinedResult = { kind: 'note'; data: NoteSearchResult } | { kind: 'notebook'; id: string; title: string }
 
 const query = ref('')
 const noteResults = ref<NoteSearchResult[]>([])
@@ -33,11 +31,14 @@ const notebookResults = computed<CombinedResult[]>(() => {
 
 const results = computed<CombinedResult[]>(() => [
   ...notebookResults.value,
-  ...noteResults.value.map(r => ({ kind: 'note' as const, data: r })),
+  ...noteResults.value.map(r => ({ kind: 'note' as const, data: r }))
 ])
 
 const doSearch = async (q: string) => {
-  if (!q.trim()) { noteResults.value = []; return }
+  if (!q.trim()) {
+    noteResults.value = []
+    return
+  }
   loading.value = true
   try {
     noteResults.value = await api.searchNotes(q.trim())
@@ -63,12 +64,11 @@ const selectResult = (r: CombinedResult) => {
   emit('close')
 }
 
-const notebookTitle = (id: string) =>
-  notebookStore.notebooks.find(n => n.id === id)?.title ?? ''
+const notebookTitle = (id: string) => notebookStore.notebooks.find(n => n.id === id)?.title ?? ''
 
 watch(
   () => props.open,
-  (val) => {
+  val => {
     if (val) {
       query.value = ''
       noteResults.value = []
@@ -100,11 +100,7 @@ const onInputKeydown = (e: KeyboardEvent) => {
 <template>
   <Teleport to="body">
     <Transition name="search-fade">
-      <div
-        v-if="open"
-        class="search-overlay"
-        @mousedown.self="emit('close')"
-      >
+      <div v-if="open" class="search-overlay" @mousedown.self="emit('close')">
         <div class="search-box border rounded shadow-lg bg-body">
           <!-- Input -->
           <div class="d-flex align-items-center px-3 py-2 border-bottom gap-2">
@@ -122,17 +118,11 @@ const onInputKeydown = (e: KeyboardEvent) => {
 
           <!-- Resultados -->
           <div class="search-results overflow-y-auto">
-            <div
-              v-if="loading"
-              class="d-flex justify-content-center py-3"
-            >
+            <div v-if="loading" class="d-flex justify-content-center py-3">
               <div class="spinner-border spinner-border-sm text-secondary" role="status" />
             </div>
 
-            <div
-              v-else-if="query && !results.length"
-              class="text-muted small text-center py-3"
-            >
+            <div v-else-if="query && !results.length" class="text-muted small text-center py-3">
               {{ $t('search.no_results') }}
             </div>
 

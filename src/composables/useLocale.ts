@@ -7,7 +7,7 @@ export interface LocaleOption {
 
 export const availableLocales: LocaleOption[] = [
   { code: 'es', label: 'Español' },
-  { code: 'en', label: 'English' },
+  { code: 'en', label: 'English' }
 ]
 
 export const useLocale = () => {
@@ -21,6 +21,6 @@ export const useLocale = () => {
   return {
     currentLocale: locale,
     availableLocales,
-    setLocale,
+    setLocale
   }
 }

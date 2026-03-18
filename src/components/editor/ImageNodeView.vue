@@ -52,7 +52,7 @@ watch(
       resolvedSrc.value = src
     }
   },
-  { immediate: true },
+  { immediate: true }
 )
 
 // ── Selection tracking (more reliable than `selected` prop for inline nodes) ──
@@ -62,10 +62,7 @@ const isSelected = ref(false)
 const checkSelection = () => {
   const { selection } = props.editor.state
   const pos = props.getPos()
-  isSelected.value =
-    pos !== undefined &&
-    selection instanceof NodeSelection &&
-    selection.from === pos
+  isSelected.value = pos !== undefined && selection instanceof NodeSelection && selection.from === pos
 }
 
 onMounted(() => {
@@ -98,11 +95,14 @@ const startResize = (e: MouseEvent, direction: 'bottom-right' | 'bottom-left' | 
   const onMove = (ev: MouseEvent) => {
     let w: number, h: number
     if (direction === 'bottom-right') {
-      w = Math.max(80, startW + (ev.clientX - startX)); h = w / ratio
+      w = Math.max(80, startW + (ev.clientX - startX))
+      h = w / ratio
     } else if (direction === 'bottom-left') {
-      w = Math.max(80, startW - (ev.clientX - startX)); h = w / ratio
+      w = Math.max(80, startW - (ev.clientX - startX))
+      h = w / ratio
     } else {
-      h = Math.max(40, startH + (ev.clientY - startY)); w = h * ratio
+      h = Math.max(40, startH + (ev.clientY - startY))
+      w = h * ratio
     }
     props.updateAttributes({ width: Math.round(w), height: Math.round(h) })
   }
@@ -141,7 +141,6 @@ const download = async () => {
   <!-- as="span" for inline: true images -->
   <NodeViewWrapper as="span" class="image-node-wrapper" :class="{ 'image-node-wrapper--selected': isSelected }">
     <span class="image-resize-container">
-
       <img
         v-if="resolvedSrc"
         ref="imgRef"
@@ -172,7 +171,6 @@ const download = async () => {
       >
         <IconDownload :size="14" stroke-width="1.5" />
       </button>
-
     </span>
   </NodeViewWrapper>
 </template>

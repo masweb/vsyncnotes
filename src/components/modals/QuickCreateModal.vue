@@ -5,7 +5,7 @@ const props = defineProps<{
   // 'notebook'     → crear notebook (raíz o hijo según parentId)
   // 'note-warning' → sin notebook seleccionado, solo aviso
   mode: 'note' | 'notebook' | 'note-warning'
-  parentTitle: string   // nombre del notebook seleccionado (vacío = raíz)
+  parentTitle: string // nombre del notebook seleccionado (vacío = raíz)
 }>()
 
 const emit = defineEmits<{
@@ -21,9 +21,7 @@ const value = ref('')
 const heading = computed(() => {
   if (props.mode === 'note') return t('nav.new_note_in', { title: props.parentTitle })
   if (props.mode === 'note-warning') return t('nav.select_notebook_for_note')
-  return props.parentTitle
-    ? t('nav.new_notebook_in', { title: props.parentTitle })
-    : t('nav.new_root_notebook')
+  return props.parentTitle ? t('nav.new_notebook_in', { title: props.parentTitle }) : t('nav.new_root_notebook')
 })
 
 const placeholder = computed(() =>
@@ -32,7 +30,7 @@ const placeholder = computed(() =>
 
 watch(
   () => props.open,
-  (val) => {
+  val => {
     if (val) {
       value.value = ''
       if (props.mode !== 'note-warning') nextTick(() => inputRef.value?.focus())
@@ -41,7 +39,10 @@ watch(
 )
 
 const confirm = () => {
-  if (props.mode === 'note-warning') { emit('close'); return }
+  if (props.mode === 'note-warning') {
+    emit('close')
+    return
+  }
   const v = value.value.trim()
   if (!v) return
   emit('confirm', v)
@@ -56,12 +57,7 @@ const onKeydown = (e: KeyboardEvent) => {
 <template>
   <Teleport to="body">
     <Transition name="search-fade">
-      <div
-        v-if="open"
-        class="search-overlay"
-        @mousedown.self="emit('close')"
-        @keydown="onKeydown"
-      >
+      <div v-if="open" class="search-overlay" @mousedown.self="emit('close')" @keydown="onKeydown">
         <div class="search-box border rounded shadow-lg bg-body px-4 py-3 d-flex flex-column gap-3">
           <p class="mb-0 fw-medium small">{{ heading }}</p>
 

@@ -21,9 +21,9 @@ const onPanelContextMenu = async (e: MouseEvent) => {
     items: [
       await MenuItem.new({
         text: t('nav.new_root_notebook'),
-        action: () => emit('create-notebook'),
-      }),
-    ],
+        action: () => emit('create-notebook')
+      })
+    ]
   })
   await menu.popup()
 }
@@ -44,7 +44,7 @@ onMounted(() => {
       if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return
       const id = (evt.item as HTMLElement).dataset.notebookId!
       setTimeout(() => notebookStore.reorderNotebook(id, null, newIndex), 0)
-    },
+    }
   })
 })
 </script>
@@ -53,11 +53,7 @@ onMounted(() => {
   <div class="panel-tree h-100 d-flex flex-column">
     <SidebarActions ref="sidebarActionsRef" @collapse="emit('collapse')" />
 
-    <div
-      class="flex-grow-1 overflow-auto py-1"
-      @click.self="onPanelClick"
-      @contextmenu.self="onPanelContextMenu"
-    >
+    <div class="flex-grow-1 overflow-auto py-1" @click.self="onPanelClick" @contextmenu.self="onPanelContextMenu">
       <div ref="rootContainerEl" class="notebook-sortable-container">
         <NotebookTreeItem
           v-for="node in notebookStore.tree"
@@ -68,10 +64,7 @@ onMounted(() => {
           @create-notebook="emit('create-notebook')"
         />
       </div>
-      <div
-        v-if="!notebookStore.loading && notebookStore.tree.length === 0"
-        class="text-muted small px-3 py-2"
-      >
+      <div v-if="!notebookStore.loading && notebookStore.tree.length === 0" class="text-muted small px-3 py-2">
         {{ $t('nav.no_notebooks') }}
       </div>
     </div>

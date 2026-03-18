@@ -21,7 +21,18 @@ export const useAppStore = defineStore('app', () => {
     selectedNoteId.value = id
   }
 
-  const forceReloadNote = () => { noteKey.value++ }
+  const forceReloadNote = () => {
+    noteKey.value++
+  }
 
-  return { currentView, selectedNotebookId, selectedNoteId, noteKey, setView, selectNotebook, selectNote, forceReloadNote }
+  return {
+    currentView,
+    selectedNotebookId,
+    selectedNoteId,
+    noteKey,
+    setView,
+    selectNotebook,
+    selectNote,
+    forceReloadNote
+  }
 })

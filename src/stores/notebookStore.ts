@@ -89,5 +89,15 @@ export const useNotebookStore = defineStore('notebooks', () => {
     await Promise.all(toUpdate.map(nb => api.notebookUpdate(nb)))
   }
 
-  return { notebooks, tree, loading, error, loadNotebooks, createNotebook, updateNotebook, deleteNotebook, reorderNotebook }
+  return {
+    notebooks,
+    tree,
+    loading,
+    error,
+    loadNotebooks,
+    createNotebook,
+    updateNotebook,
+    deleteNotebook,
+    reorderNotebook
+  }
 })
