@@ -18,7 +18,7 @@ const currentNotebookName = computed(() => {
 
 watch(
   () => appStore.selectedNotebookId,
-  (id) => {
+  id => {
     if (id) noteStore.loadNotes(id)
     else noteStore.clear()
   },
@@ -45,7 +45,7 @@ const onBodyContextMenu = async (e: MouseEvent) => {
 const noteListEl = ref<HTMLElement | null>(null)
 let sortableInstance: Sortable | null = null
 
-watch(noteListEl, (el) => {
+watch(noteListEl, el => {
   sortableInstance?.destroy()
   sortableInstance = null
   if (!el) return
@@ -64,7 +64,7 @@ watch(noteListEl, (el) => {
       if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return
       const id = (evt.item as HTMLElement).dataset.noteId!
       setTimeout(() => noteStore.reorderNote(id, newIndex), 0)
-    },
+    }
   })
 })
 
@@ -87,7 +87,6 @@ defineExpose({ refreshTrashCount })
 
 <template>
   <div class="panel-notes d-flex flex-column h-100">
-
     <!-- Header -->
     <div class="d-flex align-items-center px-3 py-2 border-bottom flex-shrink-0">
       <span class="small fw-semibold">
@@ -96,23 +95,32 @@ defineExpose({ refreshTrashCount })
     </div>
 
     <!-- Body -->
-    <div class="flex-grow-1 overflow-y-auto" @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }" @contextmenu="onBodyContextMenu" @click.self="appStore.selectNote(null)">
-
+    <div
+      class="flex-grow-1 overflow-y-auto"
+      @mousedown="
+        (e: MouseEvent) => {
+          if (e.button === 2) e.preventDefault()
+        }
+      "
+      @contextmenu="onBodyContextMenu"
+      @click.self="appStore.selectNote(null)"
+    >
       <!-- Sin notebook seleccionado -->
       <div
         v-if="!appStore.selectedNotebookId"
         class="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-2 px-3 text-center"
-        @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
+        @mousedown="
+          (e: MouseEvent) => {
+            if (e.button === 2) e.preventDefault()
+          }
+        "
       >
         <IconNote :size="30" stroke-width="1" class="opacity-40" />
         <span class="small">{{ $t('note.select_notebook') }}</span>
       </div>
 
       <!-- Cargando -->
-      <div
-        v-else-if="noteStore.loading"
-        class="d-flex align-items-center justify-content-center h-100"
-      >
+      <div v-else-if="noteStore.loading" class="d-flex align-items-center justify-content-center h-100">
         <div class="spinner-border spinner-border-sm text-secondary" role="status">
           <span class="visually-hidden">{{ $t('note.loading_list') }}</span>
         </div>
@@ -130,7 +138,11 @@ defineExpose({ refreshTrashCount })
       <div
         v-else-if="!noteStore.sortedNotes.length"
         class="d-flex flex-column align-items-center justify-content-center h-100 text-muted gap-2 px-3 text-center"
-        @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
+        @mousedown="
+          (e: MouseEvent) => {
+            if (e.button === 2) e.preventDefault()
+          }
+        "
         @contextmenu="onBodyContextMenu"
       >
         <IconNote :size="30" stroke-width="1" class="opacity-40" />
@@ -147,7 +159,6 @@ defineExpose({ refreshTrashCount })
           :data-pinned="note.is_pinned"
         />
       </div>
-
     </div>
 
     <!-- Footer: papelera -->
@@ -165,6 +176,5 @@ defineExpose({ refreshTrashCount })
         </span>
       </button>
     </div>
-
   </div>
 </template>

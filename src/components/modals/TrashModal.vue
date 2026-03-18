@@ -14,15 +14,27 @@ const loading = ref(false)
 
 const load = async () => {
   loading.value = true
-  try { items.value = await api.trashList() }
-  finally { loading.value = false }
+  try {
+    items.value = await api.trashList()
+  } finally {
+    loading.value = false
+  }
 }
 
-watch(() => props.open, (val) => { if (val) load() })
+watch(
+  () => props.open,
+  val => {
+    if (val) load()
+  }
+)
 
 const formatDate = (iso: string) => {
   const d = new Date(iso)
-  return d.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: 'short', year: '2-digit' })
+  return d.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit'
+  })
 }
 
 const restore = async (id: string) => {
@@ -53,12 +65,7 @@ const onKeydown = (e: KeyboardEvent) => {
 <template>
   <Teleport to="body">
     <Transition name="search-fade">
-      <div
-        v-if="open"
-        class="search-overlay"
-        @mousedown.self="emit('close')"
-        @keydown="onKeydown"
-      >
+      <div v-if="open" class="search-overlay" @mousedown.self="emit('close')" @keydown="onKeydown">
         <div
           class="search-box border rounded shadow-lg bg-body d-flex flex-column"
           style="min-height: 200px; max-height: 70vh; width: 480px"
@@ -66,11 +73,7 @@ const onKeydown = (e: KeyboardEvent) => {
           <!-- Header -->
           <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom flex-shrink-0">
             <span class="fw-medium">{{ $t('trash.title') }}</span>
-            <button
-              v-if="items.length"
-              class="btn btn-sm btn-outline-danger"
-              @click="emptyTrash"
-            >
+            <button v-if="items.length" class="btn btn-sm btn-outline-danger" @click="emptyTrash">
               {{ $t('trash.empty_btn') }}
             </button>
           </div>

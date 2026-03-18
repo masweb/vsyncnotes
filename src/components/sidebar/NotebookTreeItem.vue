@@ -63,16 +63,19 @@ const onContextMenu = async (e: MouseEvent) => {
     items: [
       await MenuItem.new({
         text: t('nav.new_child_notebook'),
-        action: () => { appStore.selectNotebook(props.node.id); emit('create-notebook') },
+        action: () => {
+          appStore.selectNotebook(props.node.id)
+          emit('create-notebook')
+        }
       }),
       await MenuItem.new({ text: t('nav.new_note_here'), action: createNoteHere }),
       await MenuItem.new({ text: t('nav.rename_notebook'), action: startRename }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
         text: t('nav.delete_notebook'),
-        action: () => notebookStore.deleteNotebook(props.node.id),
-      }),
-    ],
+        action: () => notebookStore.deleteNotebook(props.node.id)
+      })
+    ]
   })
   await menu.popup()
 }
@@ -82,7 +85,7 @@ const onContextMenu = async (e: MouseEvent) => {
 const childrenEl = ref<HTMLElement | null>(null)
 let sortableInstance: Sortable | null = null
 
-watch(childrenEl, (el) => {
+watch(childrenEl, el => {
   sortableInstance?.destroy()
   sortableInstance = null
   if (!el) return
@@ -96,7 +99,7 @@ watch(childrenEl, (el) => {
       if (oldIndex === undefined || newIndex === undefined || oldIndex === newIndex) return
       const id = (evt.item as HTMLElement).dataset.notebookId!
       setTimeout(() => notebookStore.reorderNotebook(id, props.node.id, newIndex), 0)
-    },
+    }
   })
 })
 
@@ -112,10 +115,16 @@ onUnmounted(() => {
       :class="{ 'notebook-item--selected': isSelected }"
       :style="{ paddingLeft: `${depth * 12 + 8}px` }"
       @click="appStore.selectNotebook(node.id)"
-      @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
+      @mousedown="
+        (e: MouseEvent) => {
+          if (e.button === 2) e.preventDefault()
+        }
+      "
       @contextmenu="onContextMenu"
     >
-      <span class="notebook-drag-handle d-inline-flex align-items-center justify-content-center flex-shrink-0 text-muted">
+      <span
+        class="notebook-drag-handle d-inline-flex align-items-center justify-content-center flex-shrink-0 text-muted"
+      >
         <IconGripVertical :size="16" stroke-width="1.5" />
       </span>
 
@@ -133,18 +142,8 @@ onUnmounted(() => {
         />
       </span>
 
-      <IconFolderOpen
-        v-if="isSelected"
-        :size="17"
-        stroke-width="1.5"
-        class="flex-shrink-0 text-primary"
-      />
-      <IconFolder
-        v-else
-        :size="17"
-        stroke-width="1.5"
-        class="flex-shrink-0 text-muted"
-      />
+      <IconFolderOpen v-if="isSelected" :size="17" stroke-width="1.5" class="flex-shrink-0 text-primary" />
+      <IconFolder v-else :size="17" stroke-width="1.5" class="flex-shrink-0 text-muted" />
 
       <input
         v-if="showRename"

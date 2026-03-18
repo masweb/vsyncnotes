@@ -10,9 +10,13 @@ const syncStore = useSyncStore()
 
 type SyncType = 'none' | 'fs' | 'webdav' | 'nextcloud'
 const syncType = ref<SyncType>(
-  syncStore.config?.provider === 'nextcloud' ? 'nextcloud' :
-  syncStore.config?.provider === 'webdav' ? 'webdav' :
-  syncStore.config ? 'fs' : 'none'
+  syncStore.config?.provider === 'nextcloud'
+    ? 'nextcloud'
+    : syncStore.config?.provider === 'webdav'
+      ? 'webdav'
+      : syncStore.config
+        ? 'fs'
+        : 'none'
 )
 
 // Filesystem
@@ -49,30 +53,33 @@ const nextcloudWebdavUrl = computed(() => {
   return `${s}/remote.php/dav/files/${u}/`
 })
 
-watch(() => syncStore.config, (cfg) => {
-  if (cfg) {
-    syncPath.value = cfg.target_path ?? ''
-    syncInterval.value = Number(cfg.auto_sync_interval_secs)
-    webdavUrl.value = cfg.webdav_url ?? ''
-    webdavUser.value = cfg.webdav_username ?? ''
-    webdavPass.value = cfg.webdav_password ?? ''
-    nextcloudUser.value = cfg.webdav_username ?? ''
-    nextcloudPass.value = cfg.webdav_password ?? ''
-    if (cfg.provider === 'nextcloud' && cfg.webdav_url) {
-      const match = cfg.webdav_url.match(/^(https?:\/\/[^/]+)/)
-      nextcloudServer.value = match ? match[1] : ''
+watch(
+  () => syncStore.config,
+  cfg => {
+    if (cfg) {
+      syncPath.value = cfg.target_path ?? ''
+      syncInterval.value = Number(cfg.auto_sync_interval_secs)
+      webdavUrl.value = cfg.webdav_url ?? ''
+      webdavUser.value = cfg.webdav_username ?? ''
+      webdavPass.value = cfg.webdav_password ?? ''
+      nextcloudUser.value = cfg.webdav_username ?? ''
+      nextcloudPass.value = cfg.webdav_password ?? ''
+      if (cfg.provider === 'nextcloud' && cfg.webdav_url) {
+        const match = cfg.webdav_url.match(/^(https?:\/\/[^/]+)/)
+        nextcloudServer.value = match ? match[1] : ''
+      }
+    } else {
+      syncPath.value = ''
+      syncInterval.value = 300
+      webdavUrl.value = ''
+      webdavUser.value = ''
+      webdavPass.value = ''
+      nextcloudServer.value = ''
+      nextcloudUser.value = ''
+      nextcloudPass.value = ''
     }
-  } else {
-    syncPath.value = ''
-    syncInterval.value = 300
-    webdavUrl.value = ''
-    webdavUser.value = ''
-    webdavPass.value = ''
-    nextcloudServer.value = ''
-    nextcloudUser.value = ''
-    nextcloudPass.value = ''
   }
-})
+)
 
 const pickFolder = async () => {
   const selected = await open({ directory: true, multiple: false })
@@ -96,7 +103,9 @@ const saveSyncConfig = async () => {
   if (!path) return
   await syncStore.configure('fs', Number(syncInterval.value), path)
   syncSaved.value = true
-  setTimeout(() => { appStore.setView('main') }, 800)
+  setTimeout(() => {
+    appStore.setView('main')
+  }, 800)
 }
 
 const testWebdavConnection = async () => {
@@ -119,7 +128,9 @@ const saveWebdavConfig = async () => {
   if (!url) return
   await syncStore.configure('webdav', Number(syncInterval.value), undefined, url, webdavUser.value, webdavPass.value)
   webdavSaved.value = true
-  setTimeout(() => { appStore.setView('main') }, 800)
+  setTimeout(() => {
+    appStore.setView('main')
+  }, 800)
 }
 
 const testNextcloudConnection = async () => {
@@ -140,16 +151,24 @@ const testNextcloudConnection = async () => {
 const saveNextcloudConfig = async () => {
   const url = nextcloudWebdavUrl.value
   if (!url) return
-  await syncStore.configure('nextcloud', Number(syncInterval.value), undefined, url, nextcloudUser.value, nextcloudPass.value)
+  await syncStore.configure(
+    'nextcloud',
+    Number(syncInterval.value),
+    undefined,
+    url,
+    nextcloudUser.value,
+    nextcloudPass.value
+  )
   nextcloudSaved.value = true
-  setTimeout(() => { appStore.setView('main') }, 800)
+  setTimeout(() => {
+    appStore.setView('main')
+  }, 800)
 }
 </script>
 
 <template>
   <div class="d-flex align-items-center justify-content-center h-100 px-4">
     <div class="w-100" style="max-width: 640px">
-
       <!-- Header -->
       <div class="d-flex align-items-center justify-content-between mb-4">
         <h5 class="mb-0">{{ $t('settings.title') }}</h5>
@@ -160,7 +179,6 @@ const saveNextcloudConfig = async () => {
 
       <!-- Dos columnas -->
       <div class="d-flex gap-5">
-
         <!-- Columna izquierda: Apariencia + Idioma -->
         <div style="min-width: 200px">
           <div class="mb-4">
@@ -171,14 +189,20 @@ const saveNextcloudConfig = async () => {
               <button
                 class="btn"
                 :class="currentTheme === 'light' ? 'btn-secondary' : 'btn-outline-secondary'"
-                @click="setTheme('light'); appStore.setView('main')"
+                @click="
+                  setTheme('light')
+                  appStore.setView('main')
+                "
               >
                 {{ $t('settings.theme_light') }}
               </button>
               <button
                 class="btn"
                 :class="currentTheme === 'dark' ? 'btn-secondary' : 'btn-outline-secondary'"
-                @click="setTheme('dark'); appStore.setView('main')"
+                @click="
+                  setTheme('dark')
+                  appStore.setView('main')
+                "
               >
                 {{ $t('settings.theme_dark') }}
               </button>
@@ -192,7 +216,10 @@ const saveNextcloudConfig = async () => {
             <select
               class="form-select form-select-sm"
               :value="currentLocale"
-              @change="setLocale(($event.target as HTMLSelectElement).value); appStore.setView('main')"
+              @change="
+                setLocale(($event.target as HTMLSelectElement).value)
+                appStore.setView('main')
+              "
             >
               <option v-for="loc in availableLocales" :key="loc.code" :value="loc.code">
                 {{ loc.label }}
@@ -237,16 +264,17 @@ const saveNextcloudConfig = async () => {
                 :placeholder="$t('sync.path_placeholder')"
                 @keyup.enter="saveSyncConfig"
               />
-              <button class="btn btn-outline-secondary" type="button" :title="$t('sync.pick_folder')" @click="pickFolder">
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                :title="$t('sync.pick_folder')"
+                @click="pickFolder"
+              >
                 <IconFolderOpen :size="14" stroke-width="1.5" />
               </button>
             </div>
             <div class="mb-2">
-              <button
-                class="btn btn-sm btn-primary w-100"
-                :disabled="!syncPath.trim()"
-                @click="saveSyncConfig"
-              >
+              <button class="btn btn-sm btn-primary w-100" :disabled="!syncPath.trim()" @click="saveSyncConfig">
                 <IconCheck v-if="syncSaved" :size="14" stroke-width="2.5" />
                 <span v-else>{{ $t('sync.save') }}</span>
               </button>
@@ -269,7 +297,12 @@ const saveNextcloudConfig = async () => {
             </div>
             <div class="mb-2">
               <label class="small text-muted mb-1">{{ $t('sync.webdav_pass') }}</label>
-              <input v-model="webdavPass" type="password" class="form-control form-control-sm" autocomplete="current-password" />
+              <input
+                v-model="webdavPass"
+                type="password"
+                class="form-control form-control-sm"
+                autocomplete="current-password"
+              />
             </div>
             <div class="mb-2">
               <button
@@ -289,11 +322,7 @@ const saveNextcloudConfig = async () => {
               </div>
             </div>
             <div class="mb-2">
-              <button
-                class="btn btn-sm btn-primary w-100"
-                :disabled="!webdavUrl.trim()"
-                @click="saveWebdavConfig"
-              >
+              <button class="btn btn-sm btn-primary w-100" :disabled="!webdavUrl.trim()" @click="saveWebdavConfig">
                 <IconCheck v-if="webdavSaved" :size="14" stroke-width="2.5" />
                 <span v-else>{{ $t('sync.save') }}</span>
               </button>
@@ -316,7 +345,12 @@ const saveNextcloudConfig = async () => {
             </div>
             <div class="mb-2">
               <label class="small text-muted mb-1">{{ $t('sync.webdav_pass') }}</label>
-              <input v-model="nextcloudPass" type="password" class="form-control form-control-sm" autocomplete="current-password" />
+              <input
+                v-model="nextcloudPass"
+                type="password"
+                class="form-control form-control-sm"
+                autocomplete="current-password"
+              />
             </div>
             <div v-if="nextcloudWebdavUrl" class="small text-muted mb-2">
               {{ $t('sync.nextcloud_url_preview', { url: nextcloudWebdavUrl }) }}
@@ -339,11 +373,7 @@ const saveNextcloudConfig = async () => {
               </div>
             </div>
             <div class="mb-2">
-              <button
-                class="btn btn-sm btn-primary w-100"
-                :disabled="!nextcloudWebdavUrl"
-                @click="saveNextcloudConfig"
-              >
+              <button class="btn btn-sm btn-primary w-100" :disabled="!nextcloudWebdavUrl" @click="saveNextcloudConfig">
                 <IconCheck v-if="nextcloudSaved" :size="14" stroke-width="2.5" />
                 <span v-else>{{ $t('sync.save') }}</span>
               </button>
@@ -364,7 +394,6 @@ const saveNextcloudConfig = async () => {
             </div>
           </template>
         </div>
-
       </div>
     </div>
   </div>

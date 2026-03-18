@@ -13,11 +13,21 @@ const applyMarks = (text: string, marks: TiptapNode['marks']): string => {
   let result = text
   for (const mark of marks) {
     switch (mark.type) {
-      case 'bold': result = `**${result}**`; break
-      case 'italic': result = `*${result}*`; break
-      case 'code': result = `\`${result}\``; break
-      case 'strike': result = `~~${result}~~`; break
-      case 'link': result = `[${result}](${mark.attrs?.href ?? ''})`; break
+      case 'bold':
+        result = `**${result}**`
+        break
+      case 'italic':
+        result = `*${result}*`
+        break
+      case 'code':
+        result = `\`${result}\``
+        break
+      case 'strike':
+        result = `~~${result}~~`
+        break
+      case 'link':
+        result = `[${result}](${mark.attrs?.href ?? ''})`
+        break
     }
   }
   return result
@@ -51,11 +61,16 @@ const nodeToMd = (node: TiptapNode, listDepth = 0, listType = ''): string => {
     case 'listItem': {
       const indent = '  '.repeat(listDepth)
       const bullet = listType === 'bullet' ? '-' : listType
-      const inner = (node.content ?? []).map(n => {
-        if (n.type === 'bulletList' || n.type === 'orderedList' || n.type === 'taskList')
-          return '\n' + nodeToMd(n, listDepth + 1, n.type === 'orderedList' ? '1.' : n.type === 'taskList' ? 'task' : 'bullet')
-        return nodeToMd(n)
-      }).join('')
+      const inner = (node.content ?? [])
+        .map(n => {
+          if (n.type === 'bulletList' || n.type === 'orderedList' || n.type === 'taskList')
+            return (
+              '\n' +
+              nodeToMd(n, listDepth + 1, n.type === 'orderedList' ? '1.' : n.type === 'taskList' ? 'task' : 'bullet')
+            )
+          return nodeToMd(n)
+        })
+        .join('')
       return `${indent}${bullet} ${inner}`
     }
 
@@ -68,7 +83,10 @@ const nodeToMd = (node: TiptapNode, listDepth = 0, listType = ''): string => {
 
     case 'blockquote': {
       const inner = (node.content ?? []).map(n => nodeToMd(n)).join('\n')
-      return inner.split('\n').map(l => `> ${l}`).join('\n')
+      return inner
+        .split('\n')
+        .map(l => `> ${l}`)
+        .join('\n')
     }
 
     case 'codeBlock': {

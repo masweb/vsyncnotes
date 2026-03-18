@@ -4,7 +4,9 @@ const load = (): string[] => {
   try {
     const raw = localStorage.getItem(EXPANDED_KEY)
     return raw ? JSON.parse(raw) : []
-  } catch { return [] }
+  } catch {
+    return []
+  }
 }
 
 // Estado reactivo compartido entre todas las instancias del composable
@@ -27,7 +29,7 @@ export const useTreeExpanded = () => {
     persist()
   }
 
-  const toggle = (id: string) => isExpanded(id) ? collapse(id) : expand(id)
+  const toggle = (id: string) => (isExpanded(id) ? collapse(id) : expand(id))
 
   return { isExpanded, expand, collapse, toggle }
 }

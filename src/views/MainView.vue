@@ -3,7 +3,7 @@ import { Splitpanes, Pane } from 'splitpanes'
 import { IconLayoutSidebarLeftExpand } from '@tabler/icons-vue'
 
 const { currentTheme } = useTheme()
-const splitClass = computed(() => currentTheme.value === 'dark' ? 'split-dark' : 'default-theme')
+const splitClass = computed(() => (currentTheme.value === 'dark' ? 'split-dark' : 'default-theme'))
 
 const syncStore = useSyncStore()
 onMounted(() => syncStore.loadConfig())
@@ -30,7 +30,9 @@ const loadSizes = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : DEFAULTS
-  } catch { return DEFAULTS }
+  } catch {
+    return DEFAULTS
+  }
 }
 
 const saveSizes = (sizes: { p1: number; p2: number; p3: number }) => {
@@ -77,10 +79,7 @@ const onResized = (event: { panes: Array<{ size: number }> }) => {
   }
 }
 
-const rootClass = computed(() => [
-  splitClass.value,
-  { 'sidebar-collapsed': !sidebarOpen.value },
-])
+const rootClass = computed(() => [splitClass.value, { 'sidebar-collapsed': !sidebarOpen.value }])
 
 // ── Search modal ──────────────────────────────────────────────────────────────
 
@@ -90,7 +89,9 @@ const searchOpen = ref(false)
 
 const trashOpen = ref(false)
 const noteListRef = ref<{ refreshTrashCount: () => void } | null>(null)
-watch(trashOpen, (val) => { if (!val) noteListRef.value?.refreshTrashCount() })
+watch(trashOpen, val => {
+  if (!val) noteListRef.value?.refreshTrashCount()
+})
 
 // ── Quick create modal ─────────────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ const openCreateNote = () => {
 const openCreateNotebook = () => {
   createMode.value = 'notebook'
   createParentTitle.value = appStore.selectedNotebookId
-    ? notebookStore.notebooks.find(n => n.id === appStore.selectedNotebookId)?.title ?? ''
+    ? (notebookStore.notebooks.find(n => n.id === appStore.selectedNotebookId)?.title ?? '')
     : ''
   createOpen.value = true
 }
@@ -166,7 +167,7 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 </script>
 
 <template>
-  <div class="d-flex flex-column h-100">
+  <div class="d-flex flex-column h-100 border-top">
     <SearchModal :open="searchOpen" @close="searchOpen = false" />
     <TrashModal :open="trashOpen" @close="trashOpen = false" />
     <QuickCreateModal
@@ -177,23 +178,14 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
       @confirm="onCreateConfirm"
     />
 
-    <Splitpanes
-      ref="splitpanesEl"
-      :class="rootClass"
-      class="flex-grow-1 overflow-hidden"
-      @resized="onResized"
-    >
-
+    <Splitpanes ref="splitpanesEl" :class="rootClass" class="flex-grow-1 overflow-hidden" @resized="onResized">
       <!-- Panel 1: collapsible tree (min 200px) — collapsed = 18px strip with expand button -->
       <Pane :size="p1" :min-size="sidebarOpen ? p1MinSize : p1CollapsedSize">
         <div v-show="sidebarOpen" class="h-100">
           <NotebookTree @collapse="collapseSidebar" @create-notebook="openCreateNotebook" />
         </div>
         <div v-show="!sidebarOpen" class="h-100 d-flex align-items-start justify-content-center pt-1">
-          <button
-            class="btn btn-sm p-0 lh-1 text-muted"
-            @click="expandSidebar"
-          >
+          <button class="btn btn-sm p-0 lh-1 text-muted" @click="expandSidebar">
             <IconLayoutSidebarLeftExpand :size="15" stroke-width="1.5" />
           </button>
         </div>
@@ -208,7 +200,6 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
       <Pane :size="p3" :min-size="30">
         <NoteEditor />
       </Pane>
-
     </Splitpanes>
   </div>
 </template>

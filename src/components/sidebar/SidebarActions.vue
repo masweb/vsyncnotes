@@ -11,8 +11,6 @@ const lock = async () => {
   await api.vaultLock()
   appStore.setView('unlock')
 }
-
-
 </script>
 
 <template>
@@ -43,6 +41,5 @@ const lock = async () => {
         <IconSettings :size="22" stroke-width="1.2" :title="$t('settings.title')" />
       </button>
     </div>
-
   </div>
 </template>

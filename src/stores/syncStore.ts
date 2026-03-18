@@ -15,7 +15,9 @@ export const useSyncStore = defineStore('sync', () => {
   const showToast = (payload: { result: SyncResult } | { error: string }, ms = 4000) => {
     if (toastTimer !== null) clearTimeout(toastTimer)
     toast.value = payload
-    toastTimer = setTimeout(() => { toast.value = null }, ms)
+    toastTimer = setTimeout(() => {
+      toast.value = null
+    }, ms)
   }
 
   const registerBeforeSyncHook = (fn: (() => Promise<void>) | null) => {
@@ -33,7 +35,7 @@ export const useSyncStore = defineStore('sync', () => {
     targetPath?: string,
     webdavUrl?: string,
     webdavUsername?: string,
-    webdavPassword?: string,
+    webdavPassword?: string
   ) => {
     await api.syncConfigure(provider, intervalSecs, targetPath, webdavUrl, webdavUsername, webdavPassword)
     config.value = await api.syncGetConfig()
@@ -70,10 +72,7 @@ export const useSyncStore = defineStore('sync', () => {
             await noteStore.loadNotes(appStore.selectedNotebookId)
           }
           // If the active note was updated, reload it in the editor
-          if (
-            appStore.selectedNoteId &&
-            lastResult.value.pulled_note_ids.includes(appStore.selectedNoteId)
-          ) {
+          if (appStore.selectedNoteId && lastResult.value.pulled_note_ids.includes(appStore.selectedNoteId)) {
             appStore.forceReloadNote()
           }
         }
@@ -106,5 +105,16 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
-  return { config, syncing, lastResult, lastError, toast, loadConfig, configure, clearConfig, runSync, registerBeforeSyncHook }
+  return {
+    config,
+    syncing,
+    lastResult,
+    lastError,
+    toast,
+    loadConfig,
+    configure,
+    clearConfig,
+    runSync,
+    registerBeforeSyncHook
+  }
 })

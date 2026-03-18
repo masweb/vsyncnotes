@@ -136,7 +136,10 @@ const submitTitle = handleTitleSubmit(async values => {
   await api.noteUpdate(updated)
   note.value = updated
   const meta = noteStore.notes.find(n => n.id === updated.id)
-  if (meta) { meta.title = values.title; meta.updated_at = updated.updated_at }
+  if (meta) {
+    meta.title = values.title
+    meta.updated_at = updated.updated_at
+  }
   cancelEditTitle()
 })
 
@@ -1137,7 +1140,10 @@ onBeforeUnmount(() => {
       @contextmenu="onEditorContextMenu"
     >
       <div v-if="loading" class="text-secondary small mt-3">{{ $t('note.loading') }}</div>
-      <div v-else-if="!note" class="d-flex flex-column align-items-center justify-content-center h-100 text-muted small">
+      <div
+        v-else-if="!note"
+        class="d-flex flex-column align-items-center justify-content-center h-100 text-muted small"
+      >
         <span>{{ $t('note.select_hint') }}</span>
         <div class="d-flex flex-column gap-1 mt-3" style="opacity: 0.6">
           <span class="d-flex align-items-center gap-1">

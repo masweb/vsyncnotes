@@ -59,6 +59,6 @@ export const useTheme = () => {
     setTheme,
     toggleTheme: () => setTheme(currentTheme.value === 'light' ? 'dark' : 'light'),
     isDark: computed(() => currentTheme.value === 'dark'),
-    isLight: computed(() => currentTheme.value === 'light'),
+    isLight: computed(() => currentTheme.value === 'light')
   }
 }
