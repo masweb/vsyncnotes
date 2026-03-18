@@ -20,7 +20,11 @@ const formattedDate = computed(() => {
   if (diffDays === 0) return t('date.today')
   if (diffDays === 1) return t('date.yesterday')
   if (diffDays < 7) return t('date.days_ago', { n: diffDays })
-  return d.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: 'short', year: '2-digit' })
+  return d.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit'
+  })
 })
 
 // ── Rename ────────────────────────────────────────────────────────────────────
@@ -55,7 +59,7 @@ const exportMarkdown = async () => {
   const md = `# ${note.title}\n\n${tiptapToMarkdown(note.body)}`
   const path = await save({
     defaultPath: `${note.title}.md`,
-    filters: [{ name: 'Markdown', extensions: ['md'] }],
+    filters: [{ name: 'Markdown', extensions: ['md'] }]
   })
   if (path) await writeTextFile(path, md)
 }
@@ -70,7 +74,7 @@ const onContextMenu = async (e: MouseEvent) => {
     items: [
       await MenuItem.new({
         text: props.note.is_pinned ? t('note.unpin') : t('note.pin'),
-        action: () => noteStore.togglePin(props.note.id),
+        action: () => noteStore.togglePin(props.note.id)
       }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({ text: t('note.rename'), action: startRename }),
@@ -78,9 +82,9 @@ const onContextMenu = async (e: MouseEvent) => {
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
         text: t('note.delete'),
-        action: () => noteStore.deleteNote(props.note.id),
-      }),
-    ],
+        action: () => noteStore.deleteNote(props.note.id)
+      })
+    ]
   })
   await menu.popup()
 }
@@ -91,7 +95,11 @@ const onContextMenu = async (e: MouseEvent) => {
     class="note-list-item list-group-item list-group-item-action px-3 py-2 border-0 border-bottom"
     :class="{ active: isSelected }"
     @click="!showRename && appStore.selectNote(note.id)"
-    @mousedown="(e: MouseEvent) => { if (e.button === 2) e.preventDefault() }"
+    @mousedown="
+      (e: MouseEvent) => {
+        if (e.button === 2) e.preventDefault()
+      }
+    "
     @contextmenu="onContextMenu"
   >
     <div v-if="showRename">
@@ -107,19 +115,16 @@ const onContextMenu = async (e: MouseEvent) => {
     </div>
     <template v-else>
       <div class="d-flex align-items-center gap-1 mb-1">
-        <span class="note-drag-handle d-inline-flex align-items-center justify-content-center flex-shrink-0 align-self-stretch text-muted">
+        <span
+          class="note-drag-handle d-inline-flex align-items-center justify-content-center flex-shrink-0 align-self-stretch text-muted"
+        >
           <IconGripVertical :size="14" stroke-width="1.5" class="note-drag-handle-icon" />
         </span>
         <span class="small fw-medium text-truncate flex-grow-1">{{ note.title }}</span>
-        <IconPin
-          v-if="note.is_pinned"
-          :size="11"
-          stroke-width="2"
-          class="flex-shrink-0 opacity-75"
-        />
+        <IconPin v-if="note.is_pinned" :size="11" stroke-width="2" class="flex-shrink-0 opacity-75" />
       </div>
-      <div v-if="note.snippet" class="note-snippet small opacity-50" style="padding-left: 24px">{{ note.snippet }}</div>
-      <div class="small opacity-50 mt-1" style="padding-left: 24px">{{ formattedDate }}</div>
+      <small v-if="note.snippet" class="note-snippet opacity-50" style="padding-left: 24px">{{ note.snippet }}</small>
+      <small class="opacity-50 mt-1" style="padding-left: 24px">{{ formattedDate }}</small>
     </template>
   </div>
 </template>

@@ -105,6 +105,21 @@ impl WebDavClient {
         Ok(())
     }
 
+    pub async fn delete(&self, path: &str) -> Result<()> {
+        let resp = self
+            .client
+            .delete(self.url(path))
+            .basic_auth(&self.username, Some(&self.password))
+            .send()
+            .await?;
+        // 200 OK, 204 No Content, or 404 Not Found (already gone) are all fine
+        let status = resp.status().as_u16();
+        if status != 200 && status != 204 && status != 404 {
+            return Err(anyhow!("DELETE {} failed: {}", path, status));
+        }
+        Ok(())
+    }
+
     /// Verifies connectivity and credentials by doing a PROPFIND Depth:0 on the base URL.
     pub async fn test_connection(&self) -> Result<()> {
         let body = r#"<?xml version="1.0" encoding="utf-8"?><D:propfind xmlns:D="DAV:"><D:prop><D:resourcetype/></D:prop></D:propfind>"#;

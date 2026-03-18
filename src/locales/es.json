@@ -155,6 +155,6 @@
     "coming_soon": "Próximamente",
     "webdav_test": "Comprobar conexión",
     "webdav_test_ok": "Conexión correcta",
-    "result": "↑ {pushed} enviadas · ↓ {pulled} recibidas · = {skipped} sin cambios"
+    "result": "↑ {pushed} enviadas · ↓ {pulled} recibidas · ✕ {deleted} eliminadas · = {skipped} sin cambios"
   }
 }

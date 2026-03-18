@@ -31,6 +31,7 @@ pub struct SyncConfig {
 pub struct SyncResult {
     pub pushed: u32,
     pub pulled: u32,
+    pub deleted: u32,
     pub skipped: u32,
     pub errors: Vec<String>,
     pub vault_updated: bool,
@@ -110,7 +111,7 @@ impl SyncEngine {
         }
 
         let mut result = SyncResult {
-            pushed: 0, pulled: 0, skipped: 0,
+            pushed: 0, pulled: 0, deleted: 0, skipped: 0,
             errors: vec![], vault_updated: false, pulled_note_ids: vec![],
         };
 
@@ -152,6 +153,9 @@ impl SyncEngine {
         let local_dir = self.vault_path.join(subdir);
         let remote_dir = target.join(subdir);
 
+        // Read tombstones for this subdir
+        let tombstones = read_tombstones(&self.vault_path, subdir).await;
+
         let mut local_rd = match fs::read_dir(&local_dir).await { Ok(rd) => rd, Err(_) => return Ok(()) };
         while let Some(entry) = local_rd.next_entry().await? {
             let path = entry.path();
@@ -183,14 +187,30 @@ impl SyncEngine {
             let path = entry.path();
             let fname = path.file_name().unwrap().to_string_lossy().to_string();
             if !fname.ends_with(".json") { continue; }
+            let id = fname.trim_end_matches(".json");
             let local_path = local_dir.join(&fname);
             if !local_path.exists() {
-                if let Err(e) = copy_atomic(&path, &local_path).await {
-                    result.errors.push(format!("{fname}: {}", friendly_error(&e)));
+                // Check if this is a tombstoned item (local deletion)
+                if tombstones.contains(id) {
+                    // Delete from remote and remove tombstone
+                    if let Err(e) = fs::remove_file(&path).await {
+                        result.errors.push(format!("{fname}: failed to delete remote: {e}"));
+                    } else {
+                        result.deleted += 1;
+                        remove_tombstone(&self.vault_path, id, subdir).await;
+                        // Also remove .bin sidecar if exists
+                        let bin_remote = remote_dir.join(fname.replace(".json", ".bin"));
+                        let _ = fs::remove_file(&bin_remote).await;
+                    }
                 } else {
-                    result.pulled += 1;
-                    sync_bin_sidecar(&local_dir, &remote_dir, &fname, Direction::Pull).await;
-                    if subdir == "notes" { result.pulled_note_ids.push(fname.trim_end_matches(".json").to_string()); }
+                    // New file on remote, pull it
+                    if let Err(e) = copy_atomic(&path, &local_path).await {
+                        result.errors.push(format!("{fname}: {}", friendly_error(&e)));
+                    } else {
+                        result.pulled += 1;
+                        sync_bin_sidecar(&local_dir, &remote_dir, &fname, Direction::Pull).await;
+                        if subdir == "notes" { result.pulled_note_ids.push(id.to_string()); }
+                    }
                 }
             }
         }
@@ -211,7 +231,7 @@ impl SyncEngine {
         }
 
         let mut result = SyncResult {
-            pushed: 0, pulled: 0, skipped: 0,
+            pushed: 0, pulled: 0, deleted: 0, skipped: 0,
             errors: vec![], vault_updated: false, pulled_note_ids: vec![],
         };
 
@@ -254,6 +274,9 @@ impl SyncEngine {
         let local_dir = self.vault_path.join(subdir);
         let remote_files: HashSet<String> = client.list_json_files(subdir).await.unwrap_or_default().into_iter().collect();
         let mut local_files: HashSet<String> = HashSet::new();
+
+        // Read tombstones for this subdir
+        let tombstones = read_tombstones(&self.vault_path, subdir).await;
 
         let mut local_rd = match fs::read_dir(&local_dir).await { Ok(rd) => rd, Err(_) => return Ok(()) };
         while let Some(entry) = local_rd.next_entry().await? {
@@ -313,18 +336,35 @@ impl SyncEngine {
 
         for fname in &remote_files {
             if !local_files.contains(fname) {
+                let id = fname.trim_end_matches(".json");
                 let remote_path = format!("{}/{}", subdir, fname);
-                match client.read_bytes(&remote_path).await {
-                    Ok(bytes) => {
-                        let local_path = local_dir.join(fname);
-                        if let Err(e) = copy_atomic_bytes(&local_path, bytes).await { result.errors.push(format!("{fname}: {e}")); }
-                        else {
-                            result.pulled += 1;
-                            self.sync_bin_webdav(subdir, fname, client, Direction::Pull).await;
-                            if subdir == "notes" { result.pulled_note_ids.push(fname.trim_end_matches(".json").to_string()); }
-                        }
+
+                // Check if this is a tombstoned item (local deletion)
+                if tombstones.contains(id) {
+                    // Delete from remote and remove tombstone
+                    if let Err(e) = client.delete(&remote_path).await {
+                        result.errors.push(format!("{fname}: failed to delete remote: {e}"));
+                    } else {
+                        result.deleted += 1;
+                        remove_tombstone(&self.vault_path, id, subdir).await;
+                        // Also delete .bin sidecar if exists
+                        let bin_remote = format!("{}/{}", subdir, fname.replace(".json", ".bin"));
+                        let _ = client.delete(&bin_remote).await;
                     }
-                    Err(e) => result.errors.push(format!("{fname}: {e}")),
+                } else {
+                    // New file on remote, pull it
+                    match client.read_bytes(&remote_path).await {
+                        Ok(bytes) => {
+                            let local_path = local_dir.join(fname);
+                            if let Err(e) = copy_atomic_bytes(&local_path, bytes).await { result.errors.push(format!("{fname}: {e}")); }
+                            else {
+                                result.pulled += 1;
+                                self.sync_bin_webdav(subdir, fname, client, Direction::Pull).await;
+                                if subdir == "notes" { result.pulled_note_ids.push(id.to_string()); }
+                            }
+                        }
+                        Err(e) => result.errors.push(format!("{fname}: {e}")),
+                    }
                 }
             }
         }
@@ -402,4 +442,27 @@ async fn copy_atomic_bytes(dst: &Path, bytes: Vec<u8>) -> Result<()> {
     fs::write(&tmp, &bytes).await?;
     fs::rename(&tmp, dst).await?;
     Ok(())
+}
+
+/// Read tombstone IDs for a given subdir from vault/tombstones/
+async fn read_tombstones(vault_path: &Path, subdir: &str) -> HashSet<String> {
+    let mut ids = HashSet::new();
+    let dir = vault_path.join("tombstones");
+    if !dir.exists() { return ids; }
+    let prefix = format!("{subdir}_");
+    let Ok(mut entries) = fs::read_dir(&dir).await else { return ids; };
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let fname = entry.file_name().to_string_lossy().to_string();
+        if fname.starts_with(&prefix) && fname.ends_with(".deleted") {
+            let id_part = fname.trim_start_matches(&prefix).trim_end_matches(".deleted");
+            ids.insert(id_part.to_string());
+        }
+    }
+    ids
+}
+
+/// Remove a tombstone file after successful deletion propagation
+async fn remove_tombstone(vault_path: &Path, id: &str, subdir: &str) {
+    let path = vault_path.join("tombstones").join(format!("{subdir}_{id}.deleted"));
+    let _ = fs::remove_file(&path).await;
 }
