@@ -77,6 +77,7 @@ export interface SyncConfig {
 export interface SyncResult {
   pushed: number
   pulled: number
+  deleted: number
   skipped: number
   errors: string[]
   vault_updated: boolean

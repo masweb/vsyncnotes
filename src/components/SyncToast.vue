@@ -17,6 +17,7 @@ const hasErrors = computed(() =>
         <div>{{ $t('sync.result', {
           pushed: syncStore.toast.result.pushed,
           pulled: syncStore.toast.result.pulled,
+          deleted: syncStore.toast.result.deleted,
           skipped: syncStore.toast.result.skipped
         }) }}</div>
         <div v-for="err in syncStore.toast.result.errors" :key="err" class="mt-1">

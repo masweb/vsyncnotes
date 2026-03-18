@@ -24,8 +24,8 @@ $font-family-sans-serif:
   -apple-system,
   sans-serif;
 
-$primary-dark: coral; // Color para el tema dark
-$primary: #4a78f9; //
+$primary-dark: #4a586c; // Color para el tema dark
+$primary: #7992b4; //
 @import '@coreui/coreui/scss/coreui';
 @import './editor';
 
@@ -128,7 +128,9 @@ body {
   transition: opacity 0.1s;
   flex-shrink: 0;
 
-  &:active { cursor: grabbing; }
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .notebook-item:hover .notebook-drag-handle {
@@ -139,7 +141,9 @@ body {
   width: 20px;
   cursor: grab;
 
-  &:active { cursor: grabbing; }
+  &:active {
+    cursor: grabbing;
+  }
 
   .note-drag-handle-icon {
     opacity: 0;
@@ -182,8 +186,12 @@ body {
 // ── Sync spin ──────────────────────────────────────────────────────────────────
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .spin {
@@ -192,12 +200,21 @@ body {
 
 // ── Sync toast ─────────────────────────────────────────────────────────────────
 
-.sync-toast { z-index: 9500; }
+.sync-toast {
+  z-index: 9500;
+}
 
 .toast-fade-enter-active,
-.toast-fade-leave-active { transition: opacity 0.25s, transform 0.25s; }
+.toast-fade-leave-active {
+  transition:
+    opacity 0.25s,
+    transform 0.25s;
+}
 .toast-fade-enter-from,
-.toast-fade-leave-to    { opacity: 0; transform: translateY(8px); }
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
 
 // ── Search modal ───────────────────────────────────────────────────────────────
 
@@ -258,7 +275,9 @@ body {
 
 .hover-bg {
   transition: background 0.1s;
-  &:hover { background: rgba(0, 0, 0, 0.05); }
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
 }
 
 [data-coreui-theme='dark'] .hover-bg:hover {

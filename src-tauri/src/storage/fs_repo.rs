@@ -199,6 +199,7 @@ impl FsRepo {
         std::fs::create_dir_all(vault_path.join("notes"))?;
         std::fs::create_dir_all(vault_path.join("attachments"))?;
         std::fs::create_dir_all(vault_path.join("deleted"))?;
+        std::fs::create_dir_all(vault_path.join("tombstones"))?;
         let (schema, fields) = build_schema();
         let index = Index::create_in_ram(schema);
         Ok(Self {
@@ -227,8 +228,23 @@ impl FsRepo {
     fn attachment_data_path(&self, id: Uuid) -> PathBuf {
         self.vault_path.join("attachments").join(format!("{id}.bin"))
     }
+    fn tombstone_path(&self, id: Uuid, subdir: &str) -> PathBuf {
+        self.vault_path.join("tombstones").join(format!("{subdir}_{id}.deleted"))
+    }
     fn vault_meta_path(&self) -> PathBuf {
         self.vault_path.join("vault.json")
+    }
+
+    /// Create a tombstone marker for a deleted item (used by sync to propagate deletions)
+    pub async fn create_tombstone(&self, id: Uuid, subdir: &str) -> Result<()> {
+        let path = self.tombstone_path(id, subdir);
+        let content = serde_json::json!({
+            "id": id.to_string(),
+            "subdir": subdir,
+            "deleted_at": Utc::now().to_rfc3339()
+        });
+        tokio::fs::write(&path, serde_json::to_string_pretty(&content)?).await?;
+        Ok(())
     }
 
     // ── Master key access ─────────────────────────────────────────────────────
@@ -528,6 +544,8 @@ impl FsRepo {
         tokio::fs::remove_file(self.deleted_path(id))
             .await
             .with_context(|| format!("Deleted note {id} not found"))?;
+        // Create tombstone so sync propagates deletion to remote
+        self.create_tombstone(id, "notes").await?;
         Ok(())
     }
 
@@ -537,6 +555,12 @@ impl FsRepo {
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("json") {
+                // Extract ID from filename before removing
+                if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                    if let Ok(id) = stem.parse::<Uuid>() {
+                        let _ = self.create_tombstone(id, "notes").await;
+                    }
+                }
                 let _ = tokio::fs::remove_file(path).await;
             }
         }
@@ -587,6 +611,8 @@ impl StorageRepo for FsRepo {
         tokio::fs::remove_file(self.notebook_path(id))
             .await
             .with_context(|| format!("Notebook {id} not found"))?;
+        // Create tombstone so sync propagates deletion to remote
+        self.create_tombstone(id, "notebooks").await?;
         Ok(())
     }
 
