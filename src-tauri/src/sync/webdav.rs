@@ -33,10 +33,7 @@ impl WebDavClient {
         let url = self.url(&format!("{}/", subdir));
         let resp = self
             .client
-            .request(
-                reqwest::Method::from_bytes(b"MKCOL").unwrap(),
-                &url,
-            )
+            .request(reqwest::Method::from_bytes(b"MKCOL").unwrap(), &url)
             .basic_auth(&self.username, Some(&self.password))
             .send()
             .await?;
@@ -55,10 +52,7 @@ impl WebDavClient {
 
         let resp = self
             .client
-            .request(
-                reqwest::Method::from_bytes(b"PROPFIND").unwrap(),
-                &url,
-            )
+            .request(reqwest::Method::from_bytes(b"PROPFIND").unwrap(), &url)
             .header("Depth", "1")
             .header("Content-Type", "application/xml; charset=utf-8")
             .basic_auth(&self.username, Some(&self.password))

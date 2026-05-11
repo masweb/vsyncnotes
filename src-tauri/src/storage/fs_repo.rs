@@ -31,12 +31,12 @@ use super::repo::StorageRepo;
 #[derive(Serialize, Deserialize)]
 struct EncryptedNote {
     id: Uuid,
-    notebook_id: Uuid,       // plaintext for filtering
+    notebook_id: Uuid, // plaintext for filtering
     title_encrypted: String,
     nonce_title: String,
     body_encrypted: String,
     nonce_body: String,
-    dek_encrypted: String,   // DEK encrypted with master_key
+    dek_encrypted: String, // DEK encrypted with master_key
     nonce_dek: String,
     body_format: String,
     sort_order: i32,
@@ -90,7 +90,11 @@ fn extract_snippet(body: &serde_json::Value) -> Option<String> {
     let mut text = String::new();
     tiptap_text(body, &mut text, 160);
     let trimmed = text.trim().to_string();
-    if trimmed.is_empty() { None } else { Some(trimmed) }
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(trimmed)
+    }
 }
 
 fn encrypt_note(note: &Note, master_key: &[u8; 32]) -> Result<EncryptedNote> {
@@ -178,7 +182,16 @@ fn build_schema() -> (Schema, SearchFields) {
     let body = sb.add_text_field("body", TEXT);
     let updated_at = sb.add_text_field("updated_at", STORED);
     let schema = sb.build();
-    (schema, SearchFields { id, notebook_id, title, body, updated_at })
+    (
+        schema,
+        SearchFields {
+            id,
+            notebook_id,
+            title,
+            body,
+            updated_at,
+        },
+    )
 }
 
 // ── FsRepo ────────────────────────────────────────────────────────────────────
@@ -223,13 +236,19 @@ impl FsRepo {
         self.vault_path.join("deleted").join(format!("{id}.json"))
     }
     fn attachment_meta_path(&self, id: Uuid) -> PathBuf {
-        self.vault_path.join("attachments").join(format!("{id}.json"))
+        self.vault_path
+            .join("attachments")
+            .join(format!("{id}.json"))
     }
     fn attachment_data_path(&self, id: Uuid) -> PathBuf {
-        self.vault_path.join("attachments").join(format!("{id}.bin"))
+        self.vault_path
+            .join("attachments")
+            .join(format!("{id}.bin"))
     }
     fn tombstone_path(&self, id: Uuid, subdir: &str) -> PathBuf {
-        self.vault_path.join("tombstones").join(format!("{subdir}_{id}.deleted"))
+        self.vault_path
+            .join("tombstones")
+            .join(format!("{subdir}_{id}.deleted"))
     }
     fn vault_meta_path(&self) -> PathBuf {
         self.vault_path.join("vault.json")
@@ -300,8 +319,10 @@ impl FsRepo {
         *self.master_key.lock().await = None;
         self.search_index.lock().await.clear();
         // Rebuild fresh empty RAM index using the same schema as self.tantivy_fields
-        let schema = self.tantivy_index
-            .lock().await
+        let schema = self
+            .tantivy_index
+            .lock()
+            .await
             .as_ref()
             .map(|idx| idx.schema())
             .unwrap_or_else(|| build_schema().0);
@@ -486,7 +507,6 @@ impl FsRepo {
         tokio::fs::write(&path, serde_json::to_string_pretty(&json)?).await?;
         Ok(())
     }
-
 }
 
 // ── StorageRepo impl ──────────────────────────────────────────────────────────
@@ -577,12 +597,15 @@ impl StorageRepo for FsRepo {
         let master_key = self.get_master_key().await?;
         let enc = encrypt_note(note, &master_key)?;
         tokio::fs::write(self.note_path(note.id), serde_json::to_string_pretty(&enc)?).await?;
-        self.search_index.lock().await.insert(note.id, NoteSearchResult {
-            id: note.id,
-            notebook_id: note.notebook_id,
-            title: note.title.clone(),
-            updated_at: note.updated_at,
-        });
+        self.search_index.lock().await.insert(
+            note.id,
+            NoteSearchResult {
+                id: note.id,
+                notebook_id: note.notebook_id,
+                title: note.title.clone(),
+                updated_at: note.updated_at,
+            },
+        );
         // Update tantivy
         let tantivy_guard = self.tantivy_index.lock().await;
         if let Some(ref tidx) = *tantivy_guard {
@@ -613,7 +636,8 @@ impl StorageRepo for FsRepo {
         let tantivy_guard = self.tantivy_index.lock().await;
         if let Some(ref tidx) = *tantivy_guard {
             if let Ok(mut writer) = tidx.writer::<TantivyDocument>(10_000_000) {
-                let id_term = tantivy::Term::from_field_text(self.tantivy_fields.id, &id.to_string());
+                let id_term =
+                    tantivy::Term::from_field_text(self.tantivy_fields.id, &id.to_string());
                 writer.delete_term(id_term);
                 let _ = writer.commit();
             }
@@ -632,10 +656,7 @@ impl StorageRepo for FsRepo {
             // combined with BooleanQuery so that:
             //   - within one word: title OR body (Should)
             //   - across multiple words: all words must match (Must)
-            let words: Vec<String> = query
-                .split_whitespace()
-                .map(|w| w.to_lowercase())
-                .collect();
+            let words: Vec<String> = query.split_whitespace().map(|w| w.to_lowercase()).collect();
 
             let parsed: Box<dyn tantivy::query::Query> = if words.is_empty() {
                 Box::new(tantivy::query::AllQuery)
@@ -648,12 +669,17 @@ impl StorageRepo for FsRepo {
                         let pattern = format!("{escaped}.*");
                         let title_q = RegexQuery::from_pattern(&pattern, f.title).ok()?;
                         let body_q = RegexQuery::from_pattern(&pattern, f.body).ok()?;
-                        let word_q: Box<dyn tantivy::query::Query> = Box::new(
-                            BooleanQuery::new(vec![
-                                (Occur::Should, Box::new(title_q) as Box<dyn tantivy::query::Query>),
-                                (Occur::Should, Box::new(body_q) as Box<dyn tantivy::query::Query>),
-                            ])
-                        );
+                        let word_q: Box<dyn tantivy::query::Query> =
+                            Box::new(BooleanQuery::new(vec![
+                                (
+                                    Occur::Should,
+                                    Box::new(title_q) as Box<dyn tantivy::query::Query>,
+                                ),
+                                (
+                                    Occur::Should,
+                                    Box::new(body_q) as Box<dyn tantivy::query::Query>,
+                                ),
+                            ]));
                         Some((Occur::Must, word_q))
                     })
                     .collect();
@@ -722,7 +748,10 @@ impl StorageRepo for FsRepo {
             meta: &'a EncryptedAttachmentMeta,
             nonce_data: String,
         }
-        let full = WithNonce { meta: &enc_meta, nonce_data: nonce_data.clone() };
+        let full = WithNonce {
+            meta: &enc_meta,
+            nonce_data: nonce_data.clone(),
+        };
         tokio::fs::write(
             self.attachment_meta_path(att.id),
             serde_json::to_string_pretty(&full)?,
@@ -747,7 +776,11 @@ impl StorageRepo for FsRepo {
         let meta: AttMetaFull = serde_json::from_str(&raw)?;
 
         // Decrypt DEK
-        let dek_bytes = decrypt(&meta.inner.dek_encrypted, &meta.inner.nonce_dek, &master_key)?;
+        let dek_bytes = decrypt(
+            &meta.inner.dek_encrypted,
+            &meta.inner.nonce_dek,
+            &master_key,
+        )?;
         let dek: [u8; 32] = dek_bytes
             .try_into()
             .map_err(|_| anyhow!("Invalid DEK length"))?;
@@ -773,12 +806,16 @@ impl FsRepo {
         if !dir.exists() {
             return Ok(Vec::new());
         }
-        let mut entries = tokio::fs::read_dir(&dir).await.context("Failed to read deleted dir")?;
+        let mut entries = tokio::fs::read_dir(&dir)
+            .await
+            .context("Failed to read deleted dir")?;
         let cutoff = Utc::now() - chrono::Duration::days(30);
         let mut notes = Vec::new();
         while let Some(entry) = entries.next_entry().await? {
             let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) != Some("json") { continue; }
+            if path.extension().and_then(|e| e.to_str()) != Some("json") {
+                continue;
+            }
             let content = match tokio::fs::read_to_string(&path).await {
                 Ok(c) => c,
                 Err(_) => continue,
@@ -797,7 +834,9 @@ impl FsRepo {
                 continue;
             }
             let dek_bytes = decrypt(&enc.dek_encrypted, &enc.nonce_dek, &master_key)?;
-            let dek: [u8; 32] = dek_bytes.try_into().map_err(|_| anyhow!("Invalid DEK length"))?;
+            let dek: [u8; 32] = dek_bytes
+                .try_into()
+                .map_err(|_| anyhow!("Invalid DEK length"))?;
             let title = String::from_utf8(decrypt(&enc.title_encrypted, &enc.nonce_title, &dek)?)?;
             notes.push(DeletedNoteMeta {
                 id: enc.id,

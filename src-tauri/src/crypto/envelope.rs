@@ -2,7 +2,7 @@ use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Key, Nonce,
 };
-use anyhow::{Context, Result, anyhow};
+use anyhow::{anyhow, Context, Result};
 use argon2::Argon2;
 use base64::{engine::general_purpose::STANDARD as B64, Engine};
 use rand::{rngs::OsRng, RngCore};
@@ -25,7 +25,9 @@ pub fn encrypt(plaintext: &[u8], key: &[u8; 32]) -> Result<(String, String)> {
 
 /// Decrypts AES-256-GCM ciphertext (base64-encoded).
 pub fn decrypt(ciphertext_b64: &str, nonce_b64: &str, key: &[u8; 32]) -> Result<Vec<u8>> {
-    let ciphertext = B64.decode(ciphertext_b64).context("base64 decode ciphertext")?;
+    let ciphertext = B64
+        .decode(ciphertext_b64)
+        .context("base64 decode ciphertext")?;
     let nonce_bytes = B64.decode(nonce_b64).context("base64 decode nonce")?;
     let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(key));
     let nonce = Nonce::from_slice(&nonce_bytes);

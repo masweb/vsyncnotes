@@ -15,7 +15,13 @@ pub struct Attachment {
 }
 
 impl Attachment {
-    pub fn new(note_id: Uuid, filename: String, mime: String, size_bytes: u64, hash_sha256: String) -> Self {
+    pub fn new(
+        note_id: Uuid,
+        filename: String,
+        mime: String,
+        size_bytes: u64,
+        hash_sha256: String,
+    ) -> Self {
         let now = Utc::now();
         Self {
             id: Uuid::now_v7(),

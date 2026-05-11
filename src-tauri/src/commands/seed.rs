@@ -8,10 +8,7 @@ use tauri::State;
 use uuid::Uuid;
 
 use crate::{
-    models::{
-        note::Note,
-        notebook::Notebook,
-    },
+    models::{note::Note, notebook::Notebook},
     storage::{fs_repo::FsRepo, repo::StorageRepo},
 };
 
@@ -48,21 +45,25 @@ fn paragraph_mixed(parts: Vec<serde_json::Value>) -> serde_json::Value {
 fn bullet_list(items: Vec<&str>) -> serde_json::Value {
     let list_items: Vec<serde_json::Value> = items
         .into_iter()
-        .map(|t| serde_json::json!({
-            "type": "listItem",
-            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": t }] }]
-        }))
+        .map(|t| {
+            serde_json::json!({
+                "type": "listItem",
+                "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": t }] }]
+            })
+        })
         .collect();
     serde_json::json!({ "type": "bulletList", "content": list_items })
 }
 fn task_list(items: Vec<(&str, bool)>) -> serde_json::Value {
     let list_items: Vec<serde_json::Value> = items
         .into_iter()
-        .map(|(t, checked)| serde_json::json!({
-            "type": "taskItem",
-            "attrs": { "checked": checked },
-            "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": t }] }]
-        }))
+        .map(|(t, checked)| {
+            serde_json::json!({
+                "type": "taskItem",
+                "attrs": { "checked": checked },
+                "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": t }] }]
+            })
+        })
         .collect();
     serde_json::json!({ "type": "taskList", "content": list_items })
 }
@@ -90,13 +91,41 @@ struct NbSpec {
 
 fn notebook_specs() -> Vec<NbSpec> {
     vec![
-        NbSpec { title: "Personal",    sort_order: 0, parent: None },    // 0
-        NbSpec { title: "Journal",     sort_order: 0, parent: Some(0) }, // 1
-        NbSpec { title: "Ideas",       sort_order: 1, parent: Some(0) }, // 2
-        NbSpec { title: "Work",        sort_order: 1, parent: None },    // 3
-        NbSpec { title: "Projects",    sort_order: 0, parent: Some(3) }, // 4
-        NbSpec { title: "Meetings",    sort_order: 1, parent: Some(3) }, // 5
-        NbSpec { title: "Reference",   sort_order: 2, parent: None },    // 6
+        NbSpec {
+            title: "Personal",
+            sort_order: 0,
+            parent: None,
+        }, // 0
+        NbSpec {
+            title: "Journal",
+            sort_order: 0,
+            parent: Some(0),
+        }, // 1
+        NbSpec {
+            title: "Ideas",
+            sort_order: 1,
+            parent: Some(0),
+        }, // 2
+        NbSpec {
+            title: "Work",
+            sort_order: 1,
+            parent: None,
+        }, // 3
+        NbSpec {
+            title: "Projects",
+            sort_order: 0,
+            parent: Some(3),
+        }, // 4
+        NbSpec {
+            title: "Meetings",
+            sort_order: 1,
+            parent: Some(3),
+        }, // 5
+        NbSpec {
+            title: "Reference",
+            sort_order: 2,
+            parent: None,
+        }, // 6
     ]
 }
 
@@ -137,7 +166,10 @@ fn note_specs(nb_ids: &[Uuid]) -> Vec<(usize, Note)> {
     ]);
     notes.push((1, n));
 
-    let mut n = Note::new(nb_ids[1], "Primeras impresiones del libro Sapiens".to_string());
+    let mut n = Note::new(
+        nb_ids[1],
+        "Primeras impresiones del libro Sapiens".to_string(),
+    );
     n.body = doc(vec![
         heading(2, "Sapiens — Yuval Noah Harari"),
         paragraph("Llevo tres capítulos y engancha desde la primera página. La tesis sobre la revolución cognitiva y la capacidad de los humanos para creer en ficciones compartidas es reveladora."),
@@ -187,7 +219,10 @@ fn note_specs(nb_ids: &[Uuid]) -> Vec<(usize, Note)> {
     ]);
     notes.push((1, n));
 
-    let mut n = Note::new(nb_ids[1], "Películas por ver este fin de semana".to_string());
+    let mut n = Note::new(
+        nb_ids[1],
+        "Películas por ver este fin de semana".to_string(),
+    );
     n.body = doc(vec![
         heading(2, "Watchlist"),
         bullet_list(vec![
@@ -365,9 +400,7 @@ pub async fn dev_seed(repo: State<'_, FsRepo>) -> Result<serde_json::Value, Stri
         let parent_id = spec.parent.map(|i| nb_ids[i]);
         let mut nb = Notebook::new(spec.title.to_string(), parent_id);
         nb.sort_order = spec.sort_order;
-        repo.save_notebook(&nb)
-            .await
-            .map_err(|e| e.to_string())?;
+        repo.save_notebook(&nb).await.map_err(|e| e.to_string())?;
         nb_ids.push(nb.id);
     }
 
