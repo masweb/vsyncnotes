@@ -129,6 +129,99 @@ fn note_specs(nb_ids: &[Uuid]) -> Vec<(usize, Note)> {
     ]);
     notes.push((1, n));
 
+    let mut n = Note::new(nb_ids[1], "Cena con amigos en el centro".to_string());
+    n.body = doc(vec![
+        heading(2, "Cena en La Bodeguilla"),
+        paragraph("Quedamos ocho para cenar. La comida estaba excelente como siempre — probamos el menú de temporada con setas."),
+        paragraph("Buena conversación sobre planes de verano. Quizá organicemos un viaje juntos en julio."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Primeras impresiones del libro Sapiens".to_string());
+    n.body = doc(vec![
+        heading(2, "Sapiens — Yuval Noah Harari"),
+        paragraph("Llevo tres capítulos y engancha desde la primera página. La tesis sobre la revolución cognitiva y la capacidad de los humanos para creer en ficciones compartidas es reveladora."),
+        paragraph("Quiero terminar el capítulo sobre la revolución agrícola antes del fin de semana."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Lista de podcasts recomendados".to_string());
+    n.body = doc(vec![
+        heading(2, "Podcasts para escuchar"),
+        bullet_list(vec![
+            "Darknet Diaries — historias de ciberseguridad",
+            "The Rustacean Station — novedades de Rust",
+            "Radio Ambulante — crónicas latinoamericanas",
+            "Lex Fridman Podcast — entrevistas largas sobre IA",
+        ]),
+        paragraph("Idea: crear una nota por podcast con los episodios favoritos."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Reflexiones tras la caminata de hoy".to_string());
+    n.body = doc(vec![
+        heading(2, "Caminata por el parque del Oeste"),
+        paragraph("Salí a caminar una hora sin móvil. Es increíble cómo se despeja la mente cuando te desconectas un rato."),
+        paragraph("Se me ocurrió una solución para el bug del editor que me llevaba dos días dando vueltas. A veces el mejor debugging es no pensar en ello."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Receta: pasta al pesto casero".to_string());
+    n.body = doc(vec![
+        heading(2, "Pesto genovés casero"),
+        paragraph("Triturar albahaca fresca (50g), piñones (30g), ajo (1 diente), parmesano rallado (50g) y aceite de oliva virgen extra. Sal y pimienta al gusto."),
+        paragraph("Clave: no calentar el pesto. Mezclar con la pasta caliente directamente para que no pierda el color verde intenso."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Objetivos del mes de marzo".to_string());
+    n.body = doc(vec![
+        heading(2, "Marzo 2026"),
+        task_list(vec![
+            ("Terminar el MVP de vsyncnotes", false),
+            ("Correr 3 veces por semana", false),
+            ("Leer 2 libros", false),
+            ("Organizar el escritorio y cables", true),
+            ("Cita dentista día 18", true),
+        ]),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Películas por ver este fin de semana".to_string());
+    n.body = doc(vec![
+        heading(2, "Watchlist"),
+        bullet_list(vec![
+            "Ex Machina (segundo visionado)",
+            "The Imitation Game",
+            "Arrival — Denis Villeneuve",
+        ]),
+        paragraph("Aprovechar que llueve todo el sábado para hacer maratón."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Ideas para el balcón esta primavera".to_string());
+    n.body = doc(vec![
+        heading(2, "Plantas para el balcón"),
+        paragraph("Comprar macetas de terracota medianas. Plantar tomates cherry, albahaca y pimientos. La lavanda puede ir en la esquina con más sol."),
+        paragraph("Mirar un sistema de riego automático pequeño en IKEA o Leroy Merlin."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Entrenamiento de la semana".to_string());
+    n.body = doc(vec![
+        heading(2, "Semana 10 — Cutting"),
+        paragraph("Lunes: pecho + tríceps. Martes: espalda + bíceps. Miércoles: descanso. Jueves: piernas. Viernes: hombros + core."),
+        paragraph("Peso estable en 74kg. El déficit calórico de 300kcal parece el punto dulce — pierdo grasa sin perder fuerza."),
+    ]);
+    notes.push((1, n));
+
+    let mut n = Note::new(nb_ids[1], "Frase del día — Marco Aurelio".to_string());
+    n.body = doc(vec![
+        blockquote("You have power over your mind — not outside events. Realize this, and you will find strength."),
+        paragraph("Recordatorio personal: no puedo controlar lo que pasa, solo cómo reacciono. Aplicable al bug de producción de ayer."),
+    ]);
+    notes.push((1, n));
+
     // ── Personal / Ideas ──────────────────────────────────────────────────────
     let mut n = Note::new(nb_ids[2], "App de meditación offline".to_string());
     n.body = doc(vec![
