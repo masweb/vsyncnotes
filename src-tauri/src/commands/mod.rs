@@ -16,12 +16,16 @@ use crate::sync::engine::{SyncConfig, SyncEngine, SyncResult};
 
 #[tauri::command]
 pub async fn vault_create(repo: State<'_, FsRepo>, password: String) -> Result<(), String> {
-    repo.vault_create(&password).await.map_err(|e| e.to_string())
+    repo.vault_create(&password)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub async fn vault_unlock(repo: State<'_, FsRepo>, password: String) -> Result<(), String> {
-    repo.vault_unlock(&password).await.map_err(|e| e.to_string())
+    repo.vault_unlock(&password)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -83,7 +87,9 @@ pub async fn notebook_create(
 
 #[tauri::command]
 pub async fn notebook_update(repo: State<'_, FsRepo>, notebook: Notebook) -> Result<(), String> {
-    repo.save_notebook(&notebook).await.map_err(|e| e.to_string())
+    repo.save_notebook(&notebook)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -98,7 +104,9 @@ pub async fn notes_list(
     repo: State<'_, FsRepo>,
     notebook_id: Uuid,
 ) -> Result<Vec<NoteMeta>, String> {
-    repo.list_notes(notebook_id).await.map_err(|e| e.to_string())
+    repo.list_notes(notebook_id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -112,7 +120,10 @@ pub async fn note_create(
     notebook_id: Uuid,
     title: String,
 ) -> Result<Note, String> {
-    let siblings = repo.list_notes(notebook_id).await.map_err(|e| e.to_string())?;
+    let siblings = repo
+        .list_notes(notebook_id)
+        .await
+        .map_err(|e| e.to_string())?;
     let next_order = siblings.iter().map(|n| n.sort_order).max().unwrap_or(-1) + 1;
     let mut note = Note::new(notebook_id, title);
     note.sort_order = next_order;
@@ -202,7 +213,9 @@ pub async fn attachment_save(
 
 #[tauri::command]
 pub async fn attachment_get(repo: State<'_, FsRepo>, id: Uuid) -> Result<Vec<u8>, String> {
-    repo.get_attachment_data(id).await.map_err(|e| e.to_string())
+    repo.get_attachment_data(id)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -234,9 +247,7 @@ pub async fn sync_configure(
 }
 
 #[tauri::command]
-pub async fn sync_get_config(
-    engine: State<'_, SyncEngine>,
-) -> Result<Option<SyncConfig>, String> {
+pub async fn sync_get_config(engine: State<'_, SyncEngine>) -> Result<Option<SyncConfig>, String> {
     Ok(engine.load_config().await)
 }
 
