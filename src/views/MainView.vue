@@ -85,14 +85,6 @@ const rootClass = computed(() => [splitClass.value, { 'sidebar-collapsed': !side
 
 const searchOpen = ref(false)
 
-// ── Trash modal ────────────────────────────────────────────────────────────────
-
-const trashOpen = ref(false)
-const noteListRef = ref<{ refreshTrashCount: () => void } | null>(null)
-watch(trashOpen, val => {
-  if (!val) noteListRef.value?.refreshTrashCount()
-})
-
 // ── Quick create modal ─────────────────────────────────────────────────────────
 
 const appStore = useAppStore()
@@ -169,7 +161,6 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 <template>
   <div class="d-flex flex-column h-100 border-top">
     <SearchModal :open="searchOpen" @close="searchOpen = false" />
-    <TrashModal :open="trashOpen" @close="trashOpen = false" />
     <QuickCreateModal
       :open="createOpen"
       :mode="createMode"
@@ -193,7 +184,7 @@ onUnmounted(() => window.removeEventListener('keydown', onGlobalKeydown))
 
       <!-- Panel 2: note list -->
       <Pane :size="p2" :min-size="15">
-        <NoteList ref="noteListRef" @create-notebook="openCreateNotebook" @open-trash="trashOpen = true" />
+        <NoteList @create-notebook="openCreateNotebook" />
       </Pane>
 
       <!-- Panel 3: content / editor -->

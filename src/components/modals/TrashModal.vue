@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { IconTrash, IconRestore } from '@tabler/icons-vue'
-import type { DeletedNoteMeta } from '@/types/models'
 import * as api from '@/services/tauriApi'
 
 const props = defineProps<{ open: boolean }>()
@@ -8,38 +7,18 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 
 const { t, locale } = useI18n()
 const noteStore = useNoteStore()
+const trashStore = useTrashStore()
 
-const items = ref<DeletedNoteMeta[]>([])
-const loading = ref(false)
-
-const load = async () => {
-  loading.value = true
-  try {
-    items.value = await api.trashList()
-  } finally {
-    loading.value = false
-  }
-}
-
-watch(
-  () => props.open,
-  val => {
-    if (val) load()
-  }
-)
+watch(() => props.open, (val) => { if (val) trashStore.load() })
 
 const formatDate = (iso: string) => {
   const d = new Date(iso)
-  return d.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: '2-digit'
-  })
+  return d.toLocaleDateString(locale.value === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: 'short', year: '2-digit' })
 }
 
 const restore = async (id: string) => {
   await api.trashRestore(id)
-  items.value = items.value.filter(n => n.id !== id)
+  trashStore.items = trashStore.items.filter(n => n.id !== id)
   const nbId = useAppStore().selectedNotebookId
   if (nbId) await noteStore.loadNotes(nbId)
 }
@@ -47,14 +26,14 @@ const restore = async (id: string) => {
 const purge = async (id: string) => {
   if (!confirm(t('trash.confirm_purge'))) return
   await api.trashPurge(id)
-  items.value = items.value.filter(n => n.id !== id)
+  trashStore.items = trashStore.items.filter(n => n.id !== id)
 }
 
 const emptyTrash = async () => {
-  if (!items.value.length) return
+  if (!trashStore.items.length) return
   if (!confirm(t('trash.confirm_empty'))) return
   await api.trashEmpty()
-  items.value = []
+  trashStore.items = []
 }
 
 const onKeydown = (e: KeyboardEvent) => {
@@ -65,7 +44,12 @@ const onKeydown = (e: KeyboardEvent) => {
 <template>
   <Teleport to="body">
     <Transition name="search-fade">
-      <div v-if="open" class="search-overlay" @mousedown.self="emit('close')" @keydown="onKeydown">
+      <div
+        v-if="open"
+        class="search-overlay"
+        @mousedown.self="emit('close')"
+        @keydown="onKeydown"
+      >
         <div
           class="search-box border rounded shadow-lg bg-body d-flex flex-column"
           style="min-height: 200px; max-height: 70vh; width: 480px"
@@ -73,19 +57,23 @@ const onKeydown = (e: KeyboardEvent) => {
           <!-- Header -->
           <div class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom flex-shrink-0">
             <span class="fw-medium">{{ $t('trash.title') }}</span>
-            <button v-if="items.length" class="btn btn-sm btn-outline-danger" @click="emptyTrash">
+            <button
+              v-if="trashStore.items.length"
+              class="btn btn-sm btn-outline-danger"
+              @click="emptyTrash"
+            >
               {{ $t('trash.empty_btn') }}
             </button>
           </div>
 
           <!-- List -->
           <div class="overflow-auto flex-grow-1 px-2 py-2 min-h-0">
-            <div v-if="loading" class="text-center text-muted small py-4">…</div>
-            <div v-else-if="!items.length" class="text-center text-muted small py-4">
+            <div v-if="trashStore.loading" class="text-center text-muted small py-4">…</div>
+            <div v-else-if="!trashStore.items.length" class="text-center text-muted small py-4">
               {{ $t('trash.no_items') }}
             </div>
             <div
-              v-for="note in items"
+              v-for="note in trashStore.items"
               v-else
               :key="note.id"
               class="d-flex align-items-center gap-2 px-2 py-2 rounded hover-bg"

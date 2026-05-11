@@ -102,6 +102,7 @@ declare global {
   const useSyncStore: typeof import('./stores/syncStore').useSyncStore
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useTheme: typeof import('./composables/useTheme').useTheme
+  const useTrashStore: typeof import('./stores/trashStore').useTrashStore
   const useTreeExpanded: typeof import('./composables/useTreeExpanded').useTreeExpanded
   const useValidateField: typeof import('vee-validate').useValidateField
   const useValidateForm: typeof import('vee-validate').useValidateForm
