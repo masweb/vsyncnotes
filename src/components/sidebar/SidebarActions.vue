@@ -29,10 +29,11 @@ const lock = async () => {
       >
         <IconRefresh :size="22" stroke-width="1.2" :class="{ spin: syncStore.syncing }" :title="$t('sync.run')" />
       </button>
+
+      <span class="flex-grow-1" />
       <button class="btn btn-sm p-0 lh-1 text-muted" :title="$t('nav.lock')" @click="lock">
         <IconPower :size="22" stroke-width="1.2" :title="$t('nav.lock')" />
       </button>
-      <span class="flex-grow-1" />
       <button
         class="btn btn-sm p-0 lh-1 text-muted"
         :title="$t('settings.title')"

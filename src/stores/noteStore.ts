@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { NoteMeta, Note } from '@/types/models'
 import * as api from '@/services/tauriApi'
+import { useAppStore } from './appStore'
 
 export const useNoteStore = defineStore('notes', () => {
   const notes = ref<NoteMeta[]>([])
@@ -35,6 +36,11 @@ export const useNoteStore = defineStore('notes', () => {
   const deleteNote = async (id: string) => {
     await api.noteDelete(id)
     notes.value = notes.value.filter(n => n.id !== id)
+    // Deselect if this was the active note to prevent auto-save from recreating it
+    const appStore = useAppStore()
+    if (appStore.selectedNoteId === id) {
+      appStore.selectNote(null)
+    }
   }
 
   const renameNote = async (id: string, title: string) => {

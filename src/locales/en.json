@@ -111,19 +111,6 @@
     "new_note_hint": "new note",
     "new_notebook_hint": "new notebook"
   },
-  "trash": {
-    "title": "Trash",
-    "empty_btn": "Empty trash",
-    "restore": "Restore",
-    "delete_forever": "Delete forever",
-    "no_items": "Trash is empty",
-    "deleted_at": "Deleted {date}",
-    "confirm_empty": "Empty trash? This cannot be undone.",
-    "confirm_purge": "Delete forever? This cannot be undone.",
-    "empty_label": "empty",
-    "count": "{n} note | {n} notes",
-    "auto_purge_hint": "Notes are permanently deleted after 30 days"
-  },
   "settings": {
     "title": "Settings",
     "close": "Close",
@@ -156,5 +143,16 @@
     "webdav_test": "Test connection",
     "webdav_test_ok": "Connection successful",
     "result": "↑ {pushed} pushed · ↓ {pulled} pulled · ✕ {deleted} deleted · = {skipped} unchanged"
+  },
+  "trash": {
+    "title": "Trash",
+    "empty_btn": "Empty trash",
+    "no_items": "Trash is empty",
+    "deleted_at": "Deleted: {date}",
+    "restore": "Restore",
+    "delete_forever": "Delete forever",
+    "confirm_purge": "Permanently delete this note?",
+    "confirm_empty": "Empty the entire trash? This cannot be undone.",
+    "auto_purge_hint": "Notes are automatically deleted after 30 days."
   }
 }

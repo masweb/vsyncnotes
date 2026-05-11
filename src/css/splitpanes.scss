@@ -26,7 +26,7 @@
     background-color: transparent;
   }
   .split-dark.splitpanes .splitpanes__splitter {
-    background-color: #303445;
+    background-color: #333333;
     box-sizing: border-box;
     position: relative;
     flex-shrink: 0;
@@ -37,12 +37,12 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    background-color: #61698c;
+    background-color: #aaaaaa;
     transition: background-color 0.3s;
   }
   .split-dark.splitpanes .splitpanes__splitter:hover:before,
   .split-dark.splitpanes .splitpanes__splitter:hover:after {
-    background-color: #7c87b3;
+    background-color: #bbbbbb;
   }
   .split-dark.splitpanes .splitpanes__splitter:first-child {
     cursor: auto;

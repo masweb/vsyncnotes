@@ -2,14 +2,15 @@
 import Sortable, { type SortableEvent, type MoveEvent } from 'sortablejs'
 import { IconNote, IconTrash } from '@tabler/icons-vue'
 import { Menu, MenuItem } from '@tauri-apps/api/menu'
-import * as api from '@/services/tauriApi'
+import TrashModal from '@/components/modals/TrashModal.vue'
 
-const emit = defineEmits<{ (e: 'create-notebook'): void; (e: 'open-trash'): void }>()
+const emit = defineEmits<{ (e: 'create-notebook'): void }>()
 
 const { t } = useI18n()
 const appStore = useAppStore()
 const noteStore = useNoteStore()
 const notebookStore = useNotebookStore()
+const trashStore = useTrashStore()
 
 const currentNotebookName = computed(() => {
   if (!appStore.selectedNotebookId) return t('note.root')
@@ -68,21 +69,11 @@ watch(noteListEl, el => {
   })
 })
 
-// ── Trash count ────────────────────────────────────────────────────────────────
+// ── Trash ──────────────────────────────────────────────────────────────────────
 
-const trashCount = ref(0)
+const trashOpen = ref(false)
 
-const refreshTrashCount = async () => {
-  const list = await api.trashList()
-  trashCount.value = list.length
-}
-
-onMounted(refreshTrashCount)
-
-// Refetch when a note is deleted (notes array shrinks)
-watch(() => noteStore.notes.length, refreshTrashCount)
-
-defineExpose({ refreshTrashCount })
+onMounted(() => trashStore.load())
 </script>
 
 <template>
@@ -161,20 +152,18 @@ defineExpose({ refreshTrashCount })
       </div>
     </div>
 
-    <!-- Footer: papelera -->
-    <div class="flex-shrink-0 border-top">
-      <button
-        class="btn btn-sm w-100 d-flex align-items-center gap-2 px-3 text-muted rounded-0 hover-bg"
-        style="height: 29px"
-        :title="$t('trash.title')"
-        @click="emit('open-trash')"
-      >
-        <IconTrash :size="14" stroke-width="1.5" class="flex-shrink-0" />
-        <span class="small">{{ $t('trash.title') }}</span>
-        <span class="small ms-auto opacity-60">
-          {{ trashCount ? $t('trash.count', trashCount) : $t('trash.empty_label') }}
-        </span>
+    <!-- Footer: Trash -->
+    <div
+      v-if="trashStore.count > 0"
+      class="border-top flex-shrink-0 d-flex align-items-center px-3"
+      style="height: 29px"
+    >
+      <button class="btn btn-link btn-sm text-muted p-0 d-flex align-items-center gap-1" @click="trashOpen = true">
+        <IconTrash :size="14" stroke-width="1.5" />
+        <span class="small">{{ $t('trash.title') }} ({{ trashStore.count }})</span>
       </button>
     </div>
+
+    <TrashModal :open="trashOpen" @close="((trashOpen = false), trashStore.load())" />
   </div>
 </template>

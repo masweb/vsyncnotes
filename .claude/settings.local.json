@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(cargo check:*)",
-      "Bash(pnpm vue-tsc:*)"
+      "Bash(pnpm vue-tsc:*)",
+      "Bash(git show:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "tessl"
+  ]
 }

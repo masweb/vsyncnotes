@@ -237,6 +237,8 @@ impl FsRepo {
 
     /// Create a tombstone marker for a deleted item (used by sync to propagate deletions)
     pub async fn create_tombstone(&self, id: Uuid, subdir: &str) -> Result<()> {
+        let dir = self.vault_path.join("tombstones");
+        tokio::fs::create_dir_all(&dir).await?;
         let path = self.tombstone_path(id, subdir);
         let content = serde_json::json!({
             "id": id.to_string(),
@@ -487,87 +489,6 @@ impl FsRepo {
 
 }
 
-// ── Trash methods (not in trait — direct FsRepo methods) ──────────────────────
-
-impl FsRepo {
-    pub async fn list_deleted_notes(&self) -> Result<Vec<DeletedNoteMeta>> {
-        let master_key = self.get_master_key().await?;
-        let dir = self.vault_path.join("deleted");
-        let mut entries = tokio::fs::read_dir(&dir).await.context("Failed to read deleted dir")?;
-        let cutoff = Utc::now() - chrono::Duration::days(30);
-        let mut notes = Vec::new();
-        while let Some(entry) = entries.next_entry().await? {
-            let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) != Some("json") { continue; }
-            let content = tokio::fs::read_to_string(&path).await?;
-            let enc: EncryptedNote = match serde_json::from_str(&content) {
-                Ok(e) => e,
-                Err(_) => continue,
-            };
-            let deleted_at = match enc.deleted_at {
-                Some(d) => d,
-                None => continue,
-            };
-            // Auto-purge notes older than 30 days
-            if deleted_at < cutoff {
-                let _ = tokio::fs::remove_file(&path).await;
-                continue;
-            }
-            let dek_bytes = decrypt(&enc.dek_encrypted, &enc.nonce_dek, &master_key)?;
-            let dek: [u8; 32] = dek_bytes.try_into().map_err(|_| anyhow!("Invalid DEK length"))?;
-            let title = String::from_utf8(decrypt(&enc.title_encrypted, &enc.nonce_title, &dek)?)?;
-            notes.push(DeletedNoteMeta {
-                id: enc.id,
-                notebook_id: enc.notebook_id,
-                title,
-                deleted_at,
-                updated_at: enc.updated_at,
-            });
-        }
-        notes.sort_by(|a, b| b.deleted_at.cmp(&a.deleted_at));
-        Ok(notes)
-    }
-
-    pub async fn restore_note(&self, id: Uuid) -> Result<()> {
-        let src = self.deleted_path(id);
-        let content = tokio::fs::read_to_string(&src)
-            .await
-            .with_context(|| format!("Deleted note {id} not found"))?;
-        let mut enc: serde_json::Value = serde_json::from_str(&content)?;
-        enc["deleted_at"] = serde_json::Value::Null;
-        tokio::fs::write(self.note_path(id), serde_json::to_string_pretty(&enc)?).await?;
-        tokio::fs::remove_file(&src).await?;
-        Ok(())
-    }
-
-    pub async fn purge_note(&self, id: Uuid) -> Result<()> {
-        tokio::fs::remove_file(self.deleted_path(id))
-            .await
-            .with_context(|| format!("Deleted note {id} not found"))?;
-        // Create tombstone so sync propagates deletion to remote
-        self.create_tombstone(id, "notes").await?;
-        Ok(())
-    }
-
-    pub async fn trash_empty(&self) -> Result<()> {
-        let dir = self.vault_path.join("deleted");
-        let mut entries = tokio::fs::read_dir(&dir).await?;
-        while let Some(entry) = entries.next_entry().await? {
-            let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) == Some("json") {
-                // Extract ID from filename before removing
-                if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
-                    if let Ok(id) = stem.parse::<Uuid>() {
-                        let _ = self.create_tombstone(id, "notes").await;
-                    }
-                }
-                let _ = tokio::fs::remove_file(path).await;
-            }
-        }
-        Ok(())
-    }
-}
-
 // ── StorageRepo impl ──────────────────────────────────────────────────────────
 
 #[async_trait]
@@ -674,7 +595,7 @@ impl StorageRepo for FsRepo {
     }
 
     async fn delete_note(&self, id: Uuid) -> Result<()> {
-        // Move to deleted/ instead of permanently removing
+        // Soft-delete: move to deleted/ instead of permanent removal
         let src = self.note_path(id);
         let content = tokio::fs::read_to_string(&src)
             .await
@@ -683,8 +604,12 @@ impl StorageRepo for FsRepo {
         enc["deleted_at"] = serde_json::Value::String(Utc::now().to_rfc3339());
         tokio::fs::write(self.deleted_path(id), serde_json::to_string_pretty(&enc)?).await?;
         tokio::fs::remove_file(&src).await?;
+
+        // Create tombstone so sync propagates deletion to remote
+        self.create_tombstone(id, "notes").await?;
+
+        // Remove from search indexes
         self.search_index.lock().await.remove(&id);
-        // Remove from tantivy
         let tantivy_guard = self.tantivy_index.lock().await;
         if let Some(ref tidx) = *tantivy_guard {
             if let Ok(mut writer) = tidx.writer::<TantivyDocument>(10_000_000) {
@@ -835,6 +760,94 @@ impl StorageRepo for FsRepo {
     async fn delete_attachment(&self, id: Uuid) -> Result<()> {
         let _ = tokio::fs::remove_file(self.attachment_meta_path(id)).await;
         let _ = tokio::fs::remove_file(self.attachment_data_path(id)).await;
+        Ok(())
+    }
+}
+
+// ── Trash methods (not in trait — direct FsRepo methods) ──────────────────────
+
+impl FsRepo {
+    pub async fn list_deleted_notes(&self) -> Result<Vec<DeletedNoteMeta>> {
+        let master_key = self.get_master_key().await?;
+        let dir = self.vault_path.join("deleted");
+        if !dir.exists() {
+            return Ok(Vec::new());
+        }
+        let mut entries = tokio::fs::read_dir(&dir).await.context("Failed to read deleted dir")?;
+        let cutoff = Utc::now() - chrono::Duration::days(30);
+        let mut notes = Vec::new();
+        while let Some(entry) = entries.next_entry().await? {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) != Some("json") { continue; }
+            let content = match tokio::fs::read_to_string(&path).await {
+                Ok(c) => c,
+                Err(_) => continue,
+            };
+            let enc: EncryptedNote = match serde_json::from_str(&content) {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            let deleted_at = match enc.deleted_at {
+                Some(d) => d,
+                None => continue,
+            };
+            // Auto-purge notes older than 30 days
+            if deleted_at < cutoff {
+                let _ = tokio::fs::remove_file(&path).await;
+                continue;
+            }
+            let dek_bytes = decrypt(&enc.dek_encrypted, &enc.nonce_dek, &master_key)?;
+            let dek: [u8; 32] = dek_bytes.try_into().map_err(|_| anyhow!("Invalid DEK length"))?;
+            let title = String::from_utf8(decrypt(&enc.title_encrypted, &enc.nonce_title, &dek)?)?;
+            notes.push(DeletedNoteMeta {
+                id: enc.id,
+                notebook_id: enc.notebook_id,
+                title,
+                deleted_at,
+                updated_at: enc.updated_at,
+            });
+        }
+        notes.sort_by(|a, b| b.deleted_at.cmp(&a.deleted_at));
+        Ok(notes)
+    }
+
+    pub async fn restore_note(&self, id: Uuid) -> Result<()> {
+        let src = self.deleted_path(id);
+        let content = tokio::fs::read_to_string(&src)
+            .await
+            .with_context(|| format!("Deleted note {id} not found"))?;
+        let mut enc: serde_json::Value = serde_json::from_str(&content)?;
+        enc["deleted_at"] = serde_json::Value::Null;
+        tokio::fs::write(self.note_path(id), serde_json::to_string_pretty(&enc)?).await?;
+        tokio::fs::remove_file(&src).await?;
+
+        // Remove tombstone so sync doesn't try to delete the restored note
+        let tombstone = self.tombstone_path(id, "notes");
+        let _ = tokio::fs::remove_file(&tombstone).await;
+
+        Ok(())
+    }
+
+    pub async fn purge_note(&self, id: Uuid) -> Result<()> {
+        tokio::fs::remove_file(self.deleted_path(id))
+            .await
+            .with_context(|| format!("Deleted note {id} not found"))?;
+        // Tombstone already exists from soft-delete, sync will propagate deletion
+        Ok(())
+    }
+
+    pub async fn trash_empty(&self) -> Result<()> {
+        let dir = self.vault_path.join("deleted");
+        if !dir.exists() {
+            return Ok(());
+        }
+        let mut entries = tokio::fs::read_dir(&dir).await?;
+        while let Some(entry) = entries.next_entry().await? {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("json") {
+                let _ = tokio::fs::remove_file(path).await;
+            }
+        }
         Ok(())
     }
 }
