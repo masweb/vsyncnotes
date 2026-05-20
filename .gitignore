@@ -39,3 +39,16 @@ __screenshots__/
 *storybook.log
 storybook-static
 update.md
+
+# AI tool artifacts
+.claude/
+.cursor/
+.gemini/
+.codex/
+.agents/
+.tessl/
+.mcp.json
+CLAUDE.md
+AGENTS.md
+tile.json
+tessl.json
