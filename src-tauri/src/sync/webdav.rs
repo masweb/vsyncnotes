@@ -33,7 +33,7 @@ impl WebDavClient {
         let url = self.url(&format!("{}/", subdir));
         let resp = self
             .client
-            .request(reqwest::Method::from_bytes(b"MKCOL").unwrap(), &url)
+            .request(reqwest::Method::from_bytes(b"MKCOL").expect("valid HTTP method"), &url)
             .basic_auth(&self.username, Some(&self.password))
             .send()
             .await?;
@@ -52,7 +52,7 @@ impl WebDavClient {
 
         let resp = self
             .client
-            .request(reqwest::Method::from_bytes(b"PROPFIND").unwrap(), &url)
+            .request(reqwest::Method::from_bytes(b"PROPFIND").expect("valid HTTP method"), &url)
             .header("Depth", "1")
             .header("Content-Type", "application/xml; charset=utf-8")
             .basic_auth(&self.username, Some(&self.password))
@@ -120,7 +120,7 @@ impl WebDavClient {
         let resp = self
             .client
             .request(
-                reqwest::Method::from_bytes(b"PROPFIND").unwrap(),
+                reqwest::Method::from_bytes(b"PROPFIND").expect("valid HTTP method"),
                 &self.base_url,
             )
             .header("Depth", "0")
@@ -192,8 +192,7 @@ fn extract_json_filenames(xml: &str) -> Vec<String> {
 }
 
 fn percent_decode(s: &str) -> String {
-    s.replace("%20", " ")
-        .replace("%2B", "+")
-        .replace("%40", "@")
-        .replace("%2F", "/")
+    percent_encoding::percent_decode_str(s)
+        .decode_utf8_lossy()
+        .to_string()
 }

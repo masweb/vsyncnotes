@@ -183,7 +183,7 @@ impl SyncEngine {
         };
         while let Some(entry) = local_rd.next_entry().await? {
             let path = entry.path();
-            let fname = path.file_name().unwrap().to_string_lossy().to_string();
+            let fname = path.file_name().unwrap_or_default().to_string_lossy().to_string();
             if !fname.ends_with(".json") {
                 continue;
             }
@@ -237,7 +237,7 @@ impl SyncEngine {
         };
         while let Some(entry) = remote_rd.next_entry().await? {
             let path = entry.path();
-            let fname = path.file_name().unwrap().to_string_lossy().to_string();
+            let fname = path.file_name().unwrap_or_default().to_string_lossy().to_string();
             if !fname.ends_with(".json") {
                 continue;
             }
@@ -386,7 +386,7 @@ impl SyncEngine {
         };
         while let Some(entry) = local_rd.next_entry().await? {
             let path = entry.path();
-            let fname = path.file_name().unwrap().to_string_lossy().to_string();
+            let fname = path.file_name().unwrap_or_default().to_string_lossy().to_string();
             if !fname.ends_with(".json") {
                 continue;
             }

@@ -61,7 +61,8 @@ pub fn run() {
             commands::sync_clear_config,
             commands::sync_run,
             commands::sync_webdav_test,
-            // Dev
+            // Dev (debug only)
+            #[cfg(debug_assertions)]
             commands::seed::dev_seed,
         ])
         .run(tauri::generate_context!())

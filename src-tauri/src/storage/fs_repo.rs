@@ -559,6 +559,7 @@ impl StorageRepo for FsRepo {
 
     // ── Notes (encrypted) ─────────────────────────────────────────────────────
 
+    // TODO: perf — add notebook_id index or directory-based filtering to avoid decrypting all notes
     async fn list_notes(&self, notebook_id: Uuid) -> Result<Vec<NoteMeta>> {
         let master_key = self.get_master_key().await?;
         let dir = self.vault_path.join("notes");

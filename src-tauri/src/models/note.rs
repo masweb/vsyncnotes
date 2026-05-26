@@ -16,7 +16,7 @@ pub struct Note {
     pub updated_at: DateTime<Utc>,
 }
 
-/// Versión ligera de Note para listados (sin body completo).
+/// Lightweight Note variant for listings (no full body).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteMeta {
     pub id: Uuid,
@@ -29,7 +29,7 @@ pub struct NoteMeta {
     pub updated_at: DateTime<Utc>,
 }
 
-/// Resultado de búsqueda por título (sin body).
+/// Title search result (no body).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoteSearchResult {
     pub id: Uuid,
@@ -38,7 +38,7 @@ pub struct NoteSearchResult {
     pub updated_at: DateTime<Utc>,
 }
 
-/// Nota en la papelera (soft-deleted).
+/// Soft-deleted note.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeletedNoteMeta {
     pub id: Uuid,

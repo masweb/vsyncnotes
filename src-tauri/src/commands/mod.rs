@@ -1,3 +1,4 @@
+#[cfg(debug_assertions)]
 pub mod seed;
 
 use sha2::{Digest, Sha256};

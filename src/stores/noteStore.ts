@@ -69,7 +69,7 @@ export const useNoteStore = defineStore('notes', () => {
     try {
       await Promise.all(list.map((note, i) => api.noteSetSortOrder(note.id, i)))
     } catch (e) {
-      console.error('reorderNote failed:', e)
+      console.warn('reorderNote failed:', e)
     }
   }
 
