@@ -1,6 +1,16 @@
-# vsyncnotes
+<div align="center">
 
-> Personal notes app, offline-first, with end-to-end encryption and multi-device sync.
+# 🔐 VSyncNotes
+
+**Private, offline-first notes with end-to-end encryption and multi-device sync.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tauri 2](https://img.shields.io/badge/Tauri-2-blue)](https://tauri.app)
+[![Vue 3](https://img.shields.io/badge/Vue-3.5-green)](https://vuejs.org)
+
+<img src="docs/screenshots/vsdark.webp" width="45%" alt="Dark mode"> <img src="docs/screenshots/vslight.webp" width="45%" alt="Light mode">
+
+</div>
 
 ---
 
