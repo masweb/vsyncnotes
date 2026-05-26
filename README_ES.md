@@ -1,6 +1,19 @@
-# vsyncnotes
+<div align="center">
 
-> Aplicación de notas personal, offline-first, con cifrado extremo a extremo y sincronización multi-dispositivo.
+# 🔐 VSyncNotes
+
+**Notas privadas, offline-first, con cifrado extremo a extremo y sincronización multi-dispositivo.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tauri 2](https://img.shields.io/badge/Tauri-2-blue)](https://tauri.app)
+[![Vue 3](https://img.shields.io/badge/Vue-3.5-green)](https://vuejs.org)
+[![English](https://img.shields.io/badge/README-English-blue)](README.md)
+
+<img src="docs/screenshots/vsdark.webp" width="45%" alt="Modo oscuro"> <img src="docs/screenshots/vslight.webp" width="45%" alt="Modo claro">
+
+</div>
+
+⬇️ **[Descargar para macOS — Última Release](https://github.com/masweb/vsyncnotes/releases/latest)**
 
 ---
 
