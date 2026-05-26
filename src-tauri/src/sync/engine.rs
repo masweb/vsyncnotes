@@ -191,7 +191,7 @@ impl SyncEngine {
 
             // Skip files that have a tombstone (pending deletion)
             if tombstones.contains(id) {
-                eprintln!("[SYNC] {fname}: has tombstone, skipping push (will be deleted)");
+                log::info!("[SYNC] {fname}: has tombstone, skipping push (will be deleted)");
                 continue;
             }
 
@@ -246,7 +246,7 @@ impl SyncEngine {
             if !local_path.exists() {
                 if tombstones.contains(id) {
                     // Local deletion with tombstone → delete from remote
-                    eprintln!("[SYNC] {fname}: has tombstone, deleting from remote");
+                    log::info!("[SYNC] {fname}: has tombstone, deleting from remote");
                     if let Err(e) = fs::remove_file(&path).await {
                         result
                             .errors
@@ -259,7 +259,7 @@ impl SyncEngine {
                     }
                 } else {
                     // New file on remote → pull it
-                    eprintln!("[SYNC] {fname}: new on remote, pulling");
+                    log::info!("[SYNC] {fname}: new on remote, pulling");
                     if let Err(e) = copy_atomic(&path, &local_path).await {
                         result
                             .errors
@@ -280,7 +280,7 @@ impl SyncEngine {
             let local_exists = local_dir.join(format!("{id}.json")).exists();
             let remote_exists = remote_dir.join(format!("{id}.json")).exists();
             if !local_exists && !remote_exists {
-                eprintln!("[SYNC] Cleaning orphan tombstone for {id}");
+                log::info!("[SYNC] Cleaning orphan tombstone for {id}");
                 remove_tombstone(&self.vault_path, id, subdir).await;
             }
         }
@@ -394,7 +394,7 @@ impl SyncEngine {
 
             // Skip files that have a tombstone (pending deletion)
             if tombstones.contains(id) {
-                eprintln!("[SYNC WebDAV] {fname}: has tombstone, skipping push (will be deleted)");
+                log::info!("[SYNC WebDAV] {fname}: has tombstone, skipping push (will be deleted)");
                 continue;
             }
 
@@ -483,7 +483,7 @@ impl SyncEngine {
 
                 if tombstones.contains(id) {
                     // Local deletion with tombstone → delete from remote
-                    eprintln!("[SYNC WebDAV] {fname}: has tombstone, deleting from remote");
+                    log::info!("[SYNC WebDAV] {fname}: has tombstone, deleting from remote");
                     if let Err(e) = client.delete(&remote_path).await {
                         result
                             .errors
@@ -496,7 +496,7 @@ impl SyncEngine {
                     }
                 } else {
                     // New file on remote → pull it
-                    eprintln!("[SYNC WebDAV] {fname}: new on remote, pulling");
+                    log::info!("[SYNC WebDAV] {fname}: new on remote, pulling");
                     match client.read_bytes(&remote_path).await {
                         Ok(bytes) => {
                             let local_path = local_dir.join(fname);
@@ -522,7 +522,7 @@ impl SyncEngine {
             if !local_files.contains(&format!("{id}.json"))
                 && !remote_files.contains(&format!("{id}.json"))
             {
-                eprintln!("[SYNC WebDAV] Cleaning orphan tombstone for {id}");
+                log::info!("[SYNC WebDAV] Cleaning orphan tombstone for {id}");
                 remove_tombstone(&self.vault_path, id, subdir).await;
             }
         }

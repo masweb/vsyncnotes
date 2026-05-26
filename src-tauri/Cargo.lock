@@ -13,6 +13,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "cocoa",
+ "log",
  "rand",
  "regex",
  "reqwest 0.12.28",

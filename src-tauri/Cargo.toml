@@ -38,6 +38,7 @@ base64 = "0.22"
 reqwest = { version = "0.12", features = ["json"] }
 tantivy = { version = "0.22", default-features = false, features = ["mmap"] }
 regex = "1"
+log = "0.4"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.26"
