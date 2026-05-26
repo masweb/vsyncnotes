@@ -13,6 +13,8 @@
 
 </div>
 
+⬇️ **[Download for macOS — Latest Release](https://github.com/masweb/vsyncnotes/releases/latest)**
+
 ---
 
 ## What is vsyncnotes?
@@ -209,10 +211,6 @@ SyncResult { pushed, pulled, skipped, errors[], vault_updated, pulled_note_ids }
 | `sync_clear_config` | `() → ()` |
 | `sync_run` | `() → SyncResult` |
 | `sync_webdav_test` | `(url, user, pass) → ()` |
-
-### Download
-
-⬇️ [Latest Release — macOS (.dmg)](https://github.com/masweb/vsyncnotes/releases/latest)
 
 ### Development
 
