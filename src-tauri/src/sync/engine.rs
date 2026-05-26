@@ -577,6 +577,7 @@ async fn sync_bin_sidecar(local_dir: &Path, remote_dir: &Path, json_fname: &str,
     }
 }
 
+#[derive(Debug)]
 enum TimestampCmp {
     LocalNewer,
     RemoteNewer,
@@ -675,4 +676,143 @@ async fn remove_tombstone(vault_path: &Path, id: &str, subdir: &str) {
         .join("tombstones")
         .join(format!("{subdir}_{id}.deleted"));
     let _ = fs::remove_file(&path).await;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_copy_atomic_writes_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let dst = dir.path().join("output.json");
+        let content = b"{\"hello\": \"world\"}".to_vec();
+        copy_atomic_bytes(&dst, content.clone()).await.unwrap();
+        assert!(dst.exists());
+        let on_disk = std::fs::read(&dst).unwrap();
+        assert_eq!(on_disk, content);
+    }
+
+    #[tokio::test]
+    async fn test_copy_atomic_rejects_empty() {
+        let dir = tempfile::tempdir().unwrap();
+        let dst = dir.path().join("output.json");
+        let result = copy_atomic_bytes(&dst, vec![]).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_copy_atomic_src_empty_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("src.json");
+        let dst = dir.path().join("dst.json");
+        std::fs::write(&src, "").unwrap();
+        let result = copy_atomic(&src, &dst).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_compare_timestamps_local_newer() {
+        let dir = tempfile::tempdir().unwrap();
+        let local = dir.path().join("local.json");
+        let remote = dir.path().join("remote.json");
+        let ts_old = "2025-01-01T00:00:00Z";
+        let ts_new = "2025-06-01T00:00:00Z";
+        std::fs::write(&local, format!("{{\"updated_at\": \"{ts_new}\"}}")).unwrap();
+        std::fs::write(&remote, format!("{{\"updated_at\": \"{ts_old}\"}}")).unwrap();
+        match compare_timestamps(&local, &remote).await {
+            TimestampCmp::LocalNewer => {}
+            other => panic!("expected LocalNewer, got: {:?}", other),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_compare_timestamps_remote_newer() {
+        let dir = tempfile::tempdir().unwrap();
+        let local = dir.path().join("local.json");
+        let remote = dir.path().join("remote.json");
+        let ts_old = "2025-01-01T00:00:00Z";
+        let ts_new = "2025-06-01T00:00:00Z";
+        std::fs::write(&local, format!("{{\"updated_at\": \"{ts_old}\"}}")).unwrap();
+        std::fs::write(&remote, format!("{{\"updated_at\": \"{ts_new}\"}}")).unwrap();
+        match compare_timestamps(&local, &remote).await {
+            TimestampCmp::RemoteNewer => {}
+            other => panic!("expected RemoteNewer, got: {:?}", other),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_compare_timestamps_equal() {
+        let dir = tempfile::tempdir().unwrap();
+        let local = dir.path().join("local.json");
+        let remote = dir.path().join("remote.json");
+        let ts = "2025-03-15T12:00:00Z";
+        std::fs::write(&local, format!("{{\"updated_at\": \"{ts}\"}}")).unwrap();
+        std::fs::write(&remote, format!("{{\"updated_at\": \"{ts}\"}}")).unwrap();
+        match compare_timestamps(&local, &remote).await {
+            TimestampCmp::Equal => {}
+            other => panic!("expected Equal, got: {:?}", other),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_compare_timestamps_remote_missing() {
+        let dir = tempfile::tempdir().unwrap();
+        let local = dir.path().join("local.json");
+        let remote = dir.path().join("nonexistent.json");
+        std::fs::write(&local, "{\"updated_at\": \"2025-01-01T00:00:00Z\"}").unwrap();
+        match compare_timestamps(&local, &remote).await {
+            TimestampCmp::RemoteMissing => {}
+            other => panic!("expected RemoteMissing, got: {:?}", other),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_read_tombstones() {
+        let dir = tempfile::tempdir().unwrap();
+        let tomb_dir = dir.path().join("tombstones");
+        std::fs::create_dir_all(&tomb_dir).unwrap();
+        // Create tombstone files: notes_abc123.deleted, notes_def456.deleted, notebooks_xyz.deleted
+        std::fs::write(tomb_dir.join("notes_abc123.deleted"), "").unwrap();
+        std::fs::write(tomb_dir.join("notes_def456.deleted"), "").unwrap();
+        std::fs::write(tomb_dir.join("notebooks_xyz.deleted"), "").unwrap();
+        std::fs::write(tomb_dir.join("notes_other.txt"), "").unwrap(); // not a tombstone
+
+        let ids = read_tombstones(dir.path(), "notes").await;
+        assert_eq!(ids.len(), 2);
+        assert!(ids.contains("abc123"));
+        assert!(ids.contains("def456"));
+        assert!(!ids.contains("xyz"));
+    }
+
+    #[tokio::test]
+    async fn test_remove_tombstone() {
+        let dir = tempfile::tempdir().unwrap();
+        let tomb_dir = dir.path().join("tombstones");
+        std::fs::create_dir_all(&tomb_dir).unwrap();
+        let tomb_file = tomb_dir.join("notes_to-delete-id.deleted");
+        std::fs::write(&tomb_file, "").unwrap();
+        assert!(tomb_file.exists());
+
+        remove_tombstone(dir.path(), "to-delete-id", "notes").await;
+        assert!(!tomb_file.exists());
+    }
+
+    #[test]
+    fn test_sync_config_serialization() {
+        let config = SyncConfig {
+            provider: "webdav".to_string(),
+            target_path: Some("/tmp/sync".to_string()),
+            webdav_url: Some("https://example.com/dav".to_string()),
+            webdav_username: Some("user".to_string()),
+            webdav_password: Some("pass".to_string()),
+            auto_sync_interval_secs: 300,
+        };
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: SyncConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.provider, "webdav");
+        assert_eq!(deserialized.target_path, Some("/tmp/sync".to_string()));
+        assert_eq!(deserialized.webdav_url, Some("https://example.com/dav".to_string()));
+        assert_eq!(deserialized.auto_sync_interval_secs, 300);
+    }
 }

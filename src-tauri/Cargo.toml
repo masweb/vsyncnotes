@@ -1,7 +1,7 @@
 [package]
 name = "VSyncNotes"
 version = "0.1.0"
-description = "Another sync notes app"
+description = "Personal notes app, offline-first, with end-to-end encryption and multi-device sync."
 authors = ["Guillermo Valentín"]
 edition = "2021"
 
@@ -29,7 +29,7 @@ chrono = { version = "0.4", features = ["serde"] }
 async-trait = "0.1"
 anyhow = "1"
 sha2 = "0.10"
-tokio = { version = "1", features = ["fs", "sync"] }
+tokio = { version = "1", features = ["fs", "sync", "macros", "rt", "rt-multi-thread"] }
 aes-gcm = "0.10"
 argon2 = "0.5"
 rand = "0.8"
@@ -41,6 +41,9 @@ regex = "1"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 cocoa = "0.26"
+
+[dev-dependencies]
+tempfile = "3"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-updater = "2"

@@ -65,3 +65,78 @@ pub fn verify_key_check(key_check_b64: &str, nonce_b64: &str, master_key: &[u8; 
         Err(_) => false,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_encrypt_decrypt_roundtrip() {
+        let key = *generate_dek();
+        let plaintext = b"hello vsyncnotes!";
+        let (ct_b64, nonce_b64) = encrypt(plaintext, &key).unwrap();
+        let decrypted = decrypt(&ct_b64, &nonce_b64, &key).unwrap();
+        assert_eq!(decrypted, plaintext);
+    }
+
+    #[test]
+    fn test_encrypt_decrypt_empty() {
+        let key = *generate_dek();
+        let plaintext: &[u8] = b"";
+        // AES-GCM should handle empty plaintext
+        let (ct_b64, nonce_b64) = encrypt(plaintext, &key).unwrap();
+        let decrypted = decrypt(&ct_b64, &nonce_b64, &key).unwrap();
+        assert_eq!(decrypted, plaintext);
+    }
+
+    #[test]
+    fn test_decrypt_wrong_key_fails() {
+        let key_a = *generate_dek();
+        let key_b = *generate_dek();
+        let plaintext = b"secret data";
+        let (ct_b64, nonce_b64) = encrypt(plaintext, &key_a).unwrap();
+        let result = decrypt(&ct_b64, &nonce_b64, &key_b);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_derive_key_deterministic() {
+        let password = "my-password";
+        let salt = b"somesalt12345678";
+        let key1 = derive_key(password, salt).unwrap();
+        let key2 = derive_key(password, salt).unwrap();
+        assert_eq!(*key1, *key2);
+    }
+
+    #[test]
+    fn test_derive_key_different_salt() {
+        let password = "my-password";
+        let salt_a = b"salt_aaaaaaaaaa";
+        let salt_b = b"salt_bbbbbbbbbb";
+        let key_a = derive_key(password, salt_a).unwrap();
+        let key_b = derive_key(password, salt_b).unwrap();
+        assert_ne!(*key_a, *key_b);
+    }
+
+    #[test]
+    fn test_generate_dek_unique() {
+        let dek1 = generate_dek();
+        let dek2 = generate_dek();
+        assert_ne!(*dek1, *dek2);
+    }
+
+    #[test]
+    fn test_key_check_roundtrip() {
+        let master_key = *generate_dek();
+        let (kc_b64, nonce_b64) = make_key_check(&master_key).unwrap();
+        assert!(verify_key_check(&kc_b64, &nonce_b64, &master_key));
+    }
+
+    #[test]
+    fn test_key_check_wrong_key() {
+        let key_a = *generate_dek();
+        let key_b = *generate_dek();
+        let (kc_b64, nonce_b64) = make_key_check(&key_a).unwrap();
+        assert!(!verify_key_check(&kc_b64, &nonce_b64, &key_b));
+    }
+}

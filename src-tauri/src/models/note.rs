@@ -78,3 +78,50 @@ impl Note {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use uuid::Uuid;
+
+    #[test]
+    fn test_note_new_generates_v7_uuid() {
+        let notebook_id = Uuid::now_v7();
+        let note = Note::new(notebook_id, "Test note".to_string());
+        // UUID v7 is a time-ordered UUID; verify it's valid and not nil
+        assert!(!note.id.is_nil());
+        assert_eq!(note.notebook_id, notebook_id);
+    }
+
+    #[test]
+    fn test_note_serialization_roundtrip() {
+        let notebook_id = Uuid::now_v7();
+        let note = Note::new(notebook_id, "Roundtrip test".to_string());
+        let json = serde_json::to_string(&note).unwrap();
+        let deserialized: Note = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.id, note.id);
+        assert_eq!(deserialized.notebook_id, note.notebook_id);
+        assert_eq!(deserialized.title, note.title);
+        assert_eq!(deserialized.body, note.body);
+        assert_eq!(deserialized.body_format, note.body_format);
+        assert_eq!(deserialized.sort_order, note.sort_order);
+        assert_eq!(deserialized.is_pinned, note.is_pinned);
+        assert_eq!(deserialized.created_at, note.created_at);
+        assert_eq!(deserialized.updated_at, note.updated_at);
+    }
+
+    #[test]
+    fn test_note_meta_from_note() {
+        let notebook_id = Uuid::now_v7();
+        let note = Note::new(notebook_id, "Meta test".to_string());
+        let meta = note.to_meta();
+        assert_eq!(meta.id, note.id);
+        assert_eq!(meta.notebook_id, note.notebook_id);
+        assert_eq!(meta.title, note.title);
+        assert_eq!(meta.snippet, None);
+        assert_eq!(meta.sort_order, note.sort_order);
+        assert_eq!(meta.is_pinned, note.is_pinned);
+        assert_eq!(meta.created_at, note.created_at);
+        assert_eq!(meta.updated_at, note.updated_at);
+    }
+}
