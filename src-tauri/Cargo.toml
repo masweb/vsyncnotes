@@ -1,9 +1,12 @@
 [package]
 name = "VSyncNotes"
 version = "0.1.0"
-description = "Personal notes app, offline-first, with end-to-end encryption and multi-device sync."
+description = "Private offline-first notes with E2E encryption and multi-device sync"
 authors = ["Guillermo Valentín"]
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/masweb/vsyncnotes"
+keywords = ["notes", "encryption", "e2ee", "tauri", "webdav"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -1,3 +1,4 @@
+use crate::crypto::envelope;
 use crate::sync::webdav::WebDavClient;
 use anyhow::{anyhow, Result};
 use chrono::{DateTime, Utc};
@@ -7,6 +8,17 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use tokio::fs;
 use tokio::sync::Mutex;
+
+/// Application-level key used to encrypt the WebDAV password at rest.
+/// This prevents the password from appearing in plaintext in sync_config.json.
+/// In production this would be stored in the OS keychain; for this demo a
+/// fixed key suffices to demonstrate AES-256-GCM encryption of credentials.
+const APP_CONFIG_KEY: [u8; 32] = [
+    0xA1, 0xB2, 0xC3, 0xD4, 0xE5, 0xF6, 0x07, 0x18,
+    0x29, 0x3A, 0x4B, 0x5C, 0x6D, 0x7E, 0x8F, 0x90,
+    0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0,
+    0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
+];
 
 fn default_fs() -> String {
     "fs".to_string()
@@ -24,6 +36,14 @@ pub struct SyncConfig {
     pub webdav_username: Option<String>,
     #[serde(default)]
     pub webdav_password: Option<String>,
+    /// AES-256-GCM encrypted password (base64). Written to disk instead of
+    /// the plaintext `webdav_password` so credentials are never stored in
+    /// cleartext in sync_config.json.
+    #[serde(default)]
+    pub webdav_password_encrypted: Option<String>,
+    /// Random nonce used for the encrypted password (base64).
+    #[serde(default)]
+    pub webdav_password_nonce: Option<String>,
     pub auto_sync_interval_secs: u64,
 }
 
@@ -55,11 +75,36 @@ impl SyncEngine {
 
     pub async fn load_config(&self) -> Option<SyncConfig> {
         let bytes = fs::read(&self.config_path).await.ok()?;
-        serde_json::from_slice(&bytes).ok()
+        let mut config: SyncConfig = serde_json::from_slice(&bytes).ok()?;
+        // Decrypt password from encrypted storage
+        if let (Some(ct), Some(nonce)) =
+            (&config.webdav_password_encrypted, &config.webdav_password_nonce)
+        {
+            match envelope::decrypt(ct, nonce, &APP_CONFIG_KEY) {
+                Ok(plain) => {
+                    config.webdav_password = Some(
+                        String::from_utf8(plain)
+                            .unwrap_or_default(),
+                    );
+                }
+                Err(e) => {
+                    log::warn!("Failed to decrypt stored WebDAV password: {e}");
+                }
+            }
+        }
+        Some(config)
     }
 
     pub async fn save_config(&self, config: &SyncConfig) -> Result<()> {
-        let bytes = serde_json::to_vec_pretty(config)?;
+        // Build a serializable copy with the password encrypted
+        let mut on_disk = config.clone();
+        if let Some(ref pw) = on_disk.webdav_password {
+            let (ct, nonce) = envelope::encrypt(pw.as_bytes(), &APP_CONFIG_KEY)?;
+            on_disk.webdav_password_encrypted = Some(ct);
+            on_disk.webdav_password_nonce = Some(nonce);
+            on_disk.webdav_password = None; // never write plaintext to disk
+        }
+        let bytes = serde_json::to_vec_pretty(&on_disk)?;
         fs::write(&self.config_path, &bytes).await?;
         Ok(())
     }
@@ -806,6 +851,8 @@ mod tests {
             webdav_url: Some("https://example.com/dav".to_string()),
             webdav_username: Some("user".to_string()),
             webdav_password: Some("pass".to_string()),
+            webdav_password_encrypted: None,
+            webdav_password_nonce: None,
             auto_sync_interval_secs: 300,
         };
         let json = serde_json::to_string(&config).unwrap();
@@ -814,5 +861,131 @@ mod tests {
         assert_eq!(deserialized.target_path, Some("/tmp/sync".to_string()));
         assert_eq!(deserialized.webdav_url, Some("https://example.com/dav".to_string()));
         assert_eq!(deserialized.auto_sync_interval_secs, 300);
+    }
+
+    #[tokio::test]
+    async fn test_save_config_encrypts_password() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("sync_config.json");
+        let engine = SyncEngine::new(dir.path().to_path_buf(), config_path.clone());
+
+        let config = SyncConfig {
+            provider: "webdav".to_string(),
+            target_path: None,
+            webdav_url: Some("https://dav.example.com".to_string()),
+            webdav_username: Some("alice".to_string()),
+            webdav_password: Some("s3cret!".to_string()),
+            webdav_password_encrypted: None,
+            webdav_password_nonce: None,
+            auto_sync_interval_secs: 300,
+        };
+        engine.save_config(&config).await.unwrap();
+
+        // Read raw JSON from disk and verify the password is NOT in plaintext
+        let raw = std::fs::read_to_string(&config_path).unwrap();
+        assert!(
+            !raw.contains("s3cret!"),
+            "password must not appear in plaintext in sync_config.json"
+        );
+        assert!(
+            raw.contains("webdav_password_encrypted"),
+            "encrypted field must be present"
+        );
+
+        // The raw JSON should have webdav_password set to null (not the plaintext)
+        let raw_json: serde_json::Value = serde_json::from_str(&raw).unwrap();
+        assert!(
+            raw_json["webdav_password"].is_null(),
+            "webdav_password must be null on disk"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_load_config_decrypts_password() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("sync_config.json");
+        let engine = SyncEngine::new(dir.path().to_path_buf(), config_path.clone());
+
+        let config = SyncConfig {
+            provider: "webdav".to_string(),
+            target_path: None,
+            webdav_url: Some("https://dav.example.com".to_string()),
+            webdav_username: Some("bob".to_string()),
+            webdav_password: Some("hunter2".to_string()),
+            webdav_password_encrypted: None,
+            webdav_password_nonce: None,
+            auto_sync_interval_secs: 600,
+        };
+        engine.save_config(&config).await.unwrap();
+
+        // Load the config back — password should be decrypted
+        let loaded = engine.load_config().await.unwrap();
+        assert_eq!(loaded.webdav_password, Some("hunter2".to_string()));
+        assert_eq!(loaded.webdav_username, Some("bob".to_string()));
+        assert_eq!(loaded.auto_sync_interval_secs, 600);
+    }
+
+    #[tokio::test]
+    async fn test_save_load_config_no_password() {
+        let dir = tempfile::tempdir().unwrap();
+        let config_path = dir.path().join("sync_config.json");
+        let engine = SyncEngine::new(dir.path().to_path_buf(), config_path.clone());
+
+        let config = SyncConfig {
+            provider: "fs".to_string(),
+            target_path: Some("/tmp/sync".to_string()),
+            webdav_url: None,
+            webdav_username: None,
+            webdav_password: None,
+            webdav_password_encrypted: None,
+            webdav_password_nonce: None,
+            auto_sync_interval_secs: 300,
+        };
+        engine.save_config(&config).await.unwrap();
+        let loaded = engine.load_config().await.unwrap();
+        assert_eq!(loaded.provider, "fs");
+        assert_eq!(loaded.webdav_password, None);
+    }
+
+    #[test]
+    fn test_password_not_in_serialized_json() {
+        // Verify that after save_config-style encryption, the plaintext
+        // password is absent from the serialized JSON.
+        let config = SyncConfig {
+            provider: "webdav".to_string(),
+            target_path: None,
+            webdav_url: Some("https://example.com".to_string()),
+            webdav_username: Some("user".to_string()),
+            webdav_password: Some("my-secret-password".to_string()),
+            webdav_password_encrypted: None,
+            webdav_password_nonce: None,
+            auto_sync_interval_secs: 300,
+        };
+
+        // Simulate what save_config does
+        let mut on_disk = config.clone();
+        if let Some(ref pw) = on_disk.webdav_password {
+            let (ct, nonce) = envelope::encrypt(pw.as_bytes(), &APP_CONFIG_KEY).unwrap();
+            on_disk.webdav_password_encrypted = Some(ct);
+            on_disk.webdav_password_nonce = Some(nonce);
+            on_disk.webdav_password = None;
+        }
+
+        let json = serde_json::to_string(&on_disk).unwrap();
+        assert!(
+            !json.contains("my-secret-password"),
+            "plaintext password must not appear in serialized JSON"
+        );
+        assert!(json.contains("webdav_password_encrypted"));
+
+        // Simulate what load_config does: decrypt back
+        let mut loaded: SyncConfig = serde_json::from_str(&json).unwrap();
+        if let (Some(ct), Some(nonce)) =
+            (&loaded.webdav_password_encrypted, &loaded.webdav_password_nonce)
+        {
+            let plain = envelope::decrypt(ct, nonce, &APP_CONFIG_KEY).unwrap();
+            loaded.webdav_password = Some(String::from_utf8(plain).unwrap());
+        }
+        assert_eq!(loaded.webdav_password, Some("my-secret-password".to_string()));
     }
 }

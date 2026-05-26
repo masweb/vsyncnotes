@@ -242,6 +242,8 @@ pub async fn sync_configure(
         webdav_url,
         webdav_username,
         webdav_password,
+        webdav_password_encrypted: None,
+        webdav_password_nonce: None,
         auto_sync_interval_secs: auto_sync_interval_secs.unwrap_or(300),
     };
     engine.save_config(&config).await.map_err(|e| e.to_string())
